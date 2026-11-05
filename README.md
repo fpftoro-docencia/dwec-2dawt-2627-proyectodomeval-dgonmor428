@@ -1,4 +1,4 @@
-# Nombre de tu aplicación
+# Horizonte
 
 <!-- Sprint 2: la insignia de tu workflow, con tu organización y tu repositorio. -->
 ![Integración continua](https://github.com/<organización>/<repositorio>/actions/workflows/ci.yml/badge.svg)
@@ -9,34 +9,52 @@
 
 ## Mi proyecto
 
-<!-- Sprint 1. De qué es tu aplicación y para quién, en dos o tres frases. -->
+**Horizonte** es un diario personal de fotografía y observación de **paisajes, del cielo y del espacio**. Cada usuario guarda sus capturas (un atardecer, una tormenta, una aurora, la Vía Láctea, una nebulosa…) con su lugar, sus coordenadas, sus imágenes y la información de cómo las hizo. El administrador gestiona a los usuarios de la aplicación. Se inspira en Locationscout (paisajes con coordenadas) y AstroBin (astrofotografía).
 
 **Web publicada:** <!-- https://<proyecto>.vercel.app -->
 
 ### La entidad
 
-<!-- Sprint 2 (puedes adelantarla en el sprint 1). Una fila por campo, con los mínimos del requisito 13:
-     marca el campo condicional y el grupo dinámico (con su mínimo y su máximo). -->
+La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo condicional** (los datos astronómicos, solo si la categoría es «Espacio») y un **grupo dinámico** (las imágenes, de 0 a 3).
 
 | Campo | Control | Obligatorio | Regla de validación | Mensaje si no se cumple |
 |-------|---------|:-----------:|---------------------|-------------------------|
-| | | | | |
+| Título | Texto | Sí | No puede quedar vacío | «Escribe un título.» |
+| Categoría | Botones de opción: Paisaje, Cielo, Espacio | Sí | Hay que elegir una | «Elige una categoría.» |
+| Fecha y hora | `datetime-local` | Sí | No puede ser futura (el `max` lo pone el código con la fecha de hoy) | «La fecha no puede ser futura.» |
+| Lugar | Texto | Sí | No puede quedar vacío | «Escribe el lugar.» |
+| Coordenadas GPS | Texto | Sí | Regex del formato `36.7213, -4.4214` **y** comprobación con código de los rangos (latitud entre −90 y 90, longitud entre −180 y 180) | «Usa el formato 36.7213, -4.4214.» / «La latitud va de −90 a 90 y la longitud de −180 a 180.» |
+| Altitud (m) | Número | Sí | Entre −430 y 8849 | «La altitud va de −430 a 8849 m.» |
+| Condiciones del cielo | Lista desplegable: despejado, nubes, niebla, tormenta, aurora… | Sí | Hay que elegir una | «Elige las condiciones del cielo.» |
+| Equipo | Lista desplegable: móvil, cámara, prismáticos, telescopio | Sí | Hay que elegir uno | «Elige el equipo.» |
+| Código de observatorio | Texto | No | Si se rellena: regex `OBS-NNNN-D` **y** comprobación con código de que el último dígito (D) es el dígito de control: la suma de las cuatro cifras multiplicadas por 3, 1, 3 y 1, módulo 10 (`OBS-4821-7`: 4·3 + 8·1 + 2·3 + 1·1 = 27 → 7) | «Usa el formato OBS-4821-7.» / «El dígito de control no es correcto.» |
+| **Campo condicional** (solo si la categoría es «Espacio»; con `hidden` y `disabled` en otro caso) | | | | |
+| Código de catálogo | Texto | Sí, si se ve | Regex: `M42`, `NGC 1976`, `IC 434` | «Usa un código como M42, NGC 1976 o IC 434.» |
+| Ascensión recta | Texto | Sí, si se ve | Regex del formato `05h 35m 17s` | «Usa el formato 05h 35m 17s.» |
+| Declinación | Texto | Sí, si se ve | Regex del formato `-05° 23′ 28″` | «Usa el formato -05° 23′ 28″.» |
+| **Grupo dinámico: imágenes** (de 0 a 3, desde un `<template>`) | | | | |
+| URL de la imagen | Texto | Sí, en cada imagen añadida | Regex de URL `http://` o `https://` (se guarda la URL, no el fichero, porque `localStorage` solo admite unos 5 MB) | «Escribe una URL que empiece por http:// o https://.» |
+| Pie de foto | Texto | No | — | — |
 
 ### El registro de usuarios
 
 | Campo | Control | Regla | Mensaje |
 |-------|---------|-------|---------|
-| | | | |
+| Nombre de usuario | Texto | Regex: de 3 a 20 caracteres entre letras, cifras y `_`; y no puede estar ocupado | «Usa de 3 a 20 letras, cifras o _.» / «Ese nombre ya está en uso.» |
+| Correo | Correo (`type="email"`) | Regex de correo | «Escribe un correo válido.» |
+| Contraseña | Contraseña | Mínimo 8 caracteres, con una minúscula (`\p{Ll}`), una mayúscula (`\p{Lu}`) y una cifra. Se ve cuáles cumple mientras se escribe | «La contraseña no cumple todos los requisitos.» |
+| Repetir contraseña | Contraseña | Igual que la contraseña | «Las contraseñas no coinciden.» |
+| Aceptación | Casilla | Obligatoria | «Tienes que aceptar las condiciones.» |
 
 ### Páginas
 
 | Página | Acceso | Qué hace |
 |--------|--------|----------|
-| `index.html` | Pública | |
-| `registro.html` | Pública | |
-| `listado.html` | Usuarios | |
-| `ficha.html` | Usuarios | |
-| `usuarios.html` | Administradores | |
+| `index.html` | Pública | Inicio de sesión. Si ya hay sesión, lleva al listado |
+| `registro.html` | Pública | Alta de un usuario. El primero que se registra es administrador |
+| `listado.html` | Usuarios | Lista, busca, pagina y borra las capturas del usuario |
+| `ficha.html` | Usuarios | Da de alta una captura o edita una existente (`ficha.html?id=…`) |
+| `usuarios.html` | Administradores | Lista y busca usuarios, y da o quita el rol de administrador |
 
 ## Arquitectura y módulos
 
