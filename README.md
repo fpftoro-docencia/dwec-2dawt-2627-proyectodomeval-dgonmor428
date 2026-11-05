@@ -1,7 +1,6 @@
 # Horizonte
 
-<!-- Sprint 2: la insignia de tu workflow, con tu organización y tu repositorio. -->
-![Integración continua](https://github.com/<organización>/<repositorio>/actions/workflows/ci.yml/badge.svg)
+![Integración continua](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/workflows/ci.yml/badge.svg)
 
 <!-- Completa cada sección a medida que avanzas en los sprints. Borra los comentarios como este
      cuando termines. Este README es también la portada de la documentación que genera `npm run docs`.
@@ -190,11 +189,11 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 | Sprint | *Tag* | Qué incluye | Reflexión |
 |--------|-------|-------------|-----------|
-| 1 | `v0.1` | | |
-| 2 | `v0.2` | | |
-| 3 | `v1.0` | | |
+| 1 | `v0.1` | Usuarios, sesión y roles, avisos, ESLint, tests unitarios y `ci.yml` (calidad y tests) | *(al cerrar el sprint)* |
+| 2 | `v0.2` | Validadores de la captura, `paginar`, CRUD (ficha y listado), administración, validación en tiempo real, tests de integración y e2e, cobertura y `ci.yml` completo | *(al cerrar el sprint)* |
+| 3 | `v1.0` | Vercel, Deployment Checks, `despliegue.yml`, prueba de humo, `release.yml`, evidencias, JSDoc y entrega | *(al cerrar el sprint)* |
 
-**Tablero de Trello:** <!-- enlace (compartido con el profesor) -->
+**Tablero de Trello:** [Horizonte](https://trello.com/b/e5RiblPh/horizonte)
 
 **Blog del proyecto:** [blog/README.md](blog/README.md) <!-- dificultades y problemas conceptuales de cada sprint -->
 
@@ -206,6 +205,6 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 | Rama | Funcionalidad | *Pull request* |
 |------|---------------|----------------|
-| | | |
+| `mi-proyecto` | Sección «Mi proyecto» del README | *(pendiente: se abrirá cuando exista `ci.yml`)* |
 
 **Versión de entrega:** `v1.0`
