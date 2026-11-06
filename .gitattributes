@@ -1,0 +1,4 @@
+# Finales de línea: siempre LF, en cualquier sistema.
+# Sin esto, Git en Windows (core.autocrlf=true) convierte los ficheros a CRLF al descargarlos
+# y `npm run format:check` falla, porque Prettier espera LF.
+* text=auto eol=lf
