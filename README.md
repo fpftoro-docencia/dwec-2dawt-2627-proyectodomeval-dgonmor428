@@ -205,6 +205,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 | Rama | Funcionalidad | *Pull request* |
 |------|---------------|----------------|
-| `mi-proyecto` | Sección «Mi proyecto» del README | *(pendiente: se abrirá cuando exista `ci.yml`)* |
+| `definicion-de-hecho` | Definición de Hecho en el README | [#3](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/3) |
+| `readme-mi-proyecto` | Sección «Mi proyecto» del README | [#4](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/4) |
 
 **Versión de entrega:** `v1.0`
