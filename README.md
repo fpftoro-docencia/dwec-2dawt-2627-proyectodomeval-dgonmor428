@@ -152,10 +152,18 @@
 
 ### Definición de Hecho
 
-<!-- Sprint 1. Tu lista de condiciones para dar una tarea por terminada. Cada una tiene que poder
-     comprobarse. Si la cambias en algún sprint, di qué cambiaste y por qué. -->
+Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas condiciones. Cada una se puede comprobar:
 
-- [ ] <!-- … -->
+- [ ] **Hace lo que dice su tarjeta:** cada punto de la descripción de la tarjeta está hecho y las tarjetas de las que depende ya están en «Hecho».
+- [ ] **Rama y pull request:** el trabajo está en su propia rama, ha llegado a `main` por *pull request* y la rama no se ha borrado.
+- [ ] **Calidad:** `npm run lint` y `npm run format:check` terminan sin errores.
+- [ ] **Tests:** `npm test` pasa. Si la tarea añade lógica (validadores, módulos de datos, `paginar`…), incluye sus tests en `tests/unitarios/` o `tests/integracion/`.
+- [ ] **Workflow en verde:** desde que existe `ci.yml`, todos los trabajos de la *pull request* (`Calidad`, `Tests` y, después, `E2E`) salen en verde antes de fusionar.
+- [ ] **Reglas del proyecto:** no hay librerías (solo el CSS de Bootstrap), ni APIs remotas, ni `innerHTML` con datos, ni estilos en el JavaScript. Se comprueba buscando `innerHTML` y `style` en `js/`.
+- [ ] **Probada a mano:** si la tarea cambia lo que se ve o se hace en la web, se ha probado en el navegador, en una ventana privada para empezar con el almacenamiento vacío.
+- [ ] **Documentada:** si la tarea cambia el comportamiento o la estructura, el README (y el JSDoc, desde el sprint 3) está al día. Los *commits* son pequeños y con mensajes que dicen qué cambia.
+
+*Cambios en la Definición de Hecho:* ninguno todavía. Si la cambio en algún sprint, lo anotaré aquí con qué cambio y por qué.
 
 ### Sprints
 
