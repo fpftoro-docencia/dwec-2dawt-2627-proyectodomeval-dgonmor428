@@ -199,13 +199,34 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 ### Ramas y versiones
 
-<!-- 1. Tabla con tus ramas: nombre, qué funcionalidad y enlace a su pull request.
-     2. Si integras con merge o con rebase, y por qué.
-     3. Qué deja fuera tu .gitignore y por qué. -->
-
 | Rama | Funcionalidad | *Pull request* |
 |------|---------------|----------------|
 | `definicion-de-hecho` | Definición de Hecho en el README | [#3](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/3) |
 | `readme-mi-proyecto` | Sección «Mi proyecto» del README | [#4](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/4) |
+| `gitignore-y-merge` | `.gitignore` y elección entre *merge* y *rebase* | [#5](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/5) |
+
+#### *Merge* o *rebase*
+
+Integro con ***merge***: cada *pull request* se fusiona con el botón «Merge» de GitHub, que crea un *commit* de fusión (por ejemplo, `c75761a` para la pull request 3).
+
+- **No reescribe historia.** *Rebase* cambia los *commits* de mi rama (les da otro identificador) para ponerlos en línea recta sobre `main`. Mis ramas ya están subidas y enlazadas desde su *pull request*, y no quiero cambiar *commits* que ya están publicados.
+- **Se ve la historia del trabajo.** Con `git log --graph` se ve que cada funcionalidad nació en su rama y se unió a `main` en un punto concreto, que es lo que pide el enunciado (una rama por funcionalidad, sin borrarlas).
+- **Es la opción más segura trabajando solo y con ramas cortas.** Si hay un conflicto, se resuelve una sola vez en el *commit* de fusión, no *commit* por *commit*.
+- **Lo que pierdo:** el historial de `main` no es una línea recta y tiene *commits* de fusión extra. Lo acepto a cambio de lo anterior.
+
+#### Qué deja fuera el `.gitignore`
+
+| Entrada | Por qué no se sube |
+|---------|--------------------|
+| `node_modules/` | Son las dependencias: las instala `npm install` desde `package.json` y `package-lock.json`. Pesan mucho y se recrean en cualquier equipo |
+| `dist/` | La web preparada para publicar la genera `npm run build`; Vercel la construye por su cuenta |
+| `coverage/` | El informe de cobertura lo genera `npm run coverage`; el *workflow* lo sube como artefacto |
+| `docs/` | La documentación JSDoc la genera `npm run docs` |
+| `playwright-report/` y `test-results/` | Los genera cada ejecución de los tests e2e |
+| `*.log` | Registros de errores de npm y de las herramientas |
+| `.DS_Store` y `Thumbs.db` | Ficheros que crea el sistema operativo |
+| `.env` y `.env.*` | Por si algún día hubiera claves: el repositorio es público |
+
+`package-lock.json` **sí** se sube: sin él, `npm ci` falla en el *workflow*.
 
 **Versión de entrega:** `v1.0`
