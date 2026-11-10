@@ -39,6 +39,7 @@ import {
   mostrarAvisoPendiente,
 } from '../avisos.js';
 import { resumirClave } from '../clave.js';
+import { mostrarEstadoCampo, ponerEnviando } from '../formularios.js';
 
 /** Adónde se va después de registrarse. */
 export const PAGINA_TRAS_REGISTRO = 'listado.html';
@@ -105,14 +106,8 @@ export function iniciarRegistro({
    * @returns {boolean} `true` si el campo es válido.
    */
   function validarCampo(nombre) {
-    const campo = campos[nombre];
-    const mensaje = reglas[nombre]();
-    const invalido = mensaje !== '';
-    campo.setCustomValidity(mensaje);
-    campo.classList.toggle('is-invalid', invalido);
-    campo.setAttribute('aria-invalid', String(invalido));
-    documento.querySelector(`#registro-${nombre}-error`).textContent = mensaje;
-    return !invalido;
+    const caja = documento.querySelector(`#registro-${nombre}-error`);
+    return mostrarEstadoCampo(campos[nombre], caja, reglas[nombre]());
   }
 
   /** Marca en la lista los requisitos que cumple la contraseña escrita. */
@@ -123,12 +118,7 @@ export function iniciarRegistro({
     }
   }
 
-  /** Pone el formulario en estado de envío, o lo saca de él. */
-  function ponerEnviando(enviando) {
-    boton.disabled = enviando;
-    boton.textContent = enviando ? 'Creando tu cuenta…' : textoBoton;
-    formulario.toggleAttribute('aria-busy', enviando);
-  }
+  const textosBoton = { enviando: 'Creando tu cuenta…', normal: textoBoton };
 
   // Delegación: un solo oyente en el formulario para todos sus campos
   const alCambiar = (evento) => {
@@ -166,7 +156,7 @@ export function iniciarRegistro({
     }
 
     enviando = true;
-    ponerEnviando(true);
+    ponerEnviando(formulario, boton, true, textosBoton);
     try {
       const usuario = await registrarUsuario(
         almacenUsuarios,
@@ -192,7 +182,7 @@ export function iniciarRegistro({
       // El nombre se ocupó entretanto o el almacenamiento está lleno
       lanzarAviso(formulario, error.message, 'error');
       enviando = false;
-      ponerEnviando(false);
+      ponerEnviando(formulario, boton, false, textosBoton);
     }
   });
 }

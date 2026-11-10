@@ -1722,3 +1722,8 @@ a {
   cursor: progress;
   opacity: 0.75;
 }
+
+/* Dentro de un panel, el aviso va arriba y separado del título */
+.panel .avisos:not(:empty) {
+  margin: 0 0 1.25rem;
+}

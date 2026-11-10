@@ -105,6 +105,12 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   `#<pagina>-<campo>-error` (enlazada con `aria-describedby`), con `setCustomValidity`,
   `aria-invalid` y `is-invalid`; aviso de error y foco en el primero. Un campo con error se
   revalida al escribir. Sin doble envío: botón desactivado y `aria-busy` mientras se envía.
+  Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
+  lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
+  avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
+- **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
+  («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
+  da el foco.
 - **Avisos:** evento propio `aviso` (`CustomEvent`, `bubbles: true`, `detail: { mensaje, tipo }`) con
   un único oyente en `document`. Tipos: `exito`, `error`, `advertencia` e `info` (las clases de
   alerta de Bootstrap). El aviso para la página siguiente se guarda en `sessionStorage` con la clave
@@ -117,9 +123,10 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
   Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
   (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js`,
-  `js/sesion.js` y `js/avisos.js` (con sus tests al 100 % de cobertura), las reglas de ESLint y la
-  página de registro (`js/paginas/registro.js`, con tests de integración).
-- **Siguiente:** la página de inicio de sesión, la cabecera común con la protección de páginas y
-  el workflow de integración continua (`ci.yml`).
+  `js/sesion.js`, `js/avisos.js` y `js/formularios.js` (con sus tests al 100 % de cobertura), las
+  reglas de ESLint y las páginas de registro e inicio de sesión (`js/paginas/`, con tests de
+  integración): ya se puede crear una cuenta y entrar.
+- **Siguiente:** la cabecera común con la protección de páginas y el cierre de sesión; después, el
+  workflow de integración continua (`ci.yml`), el blog y el cierre del sprint 1.
 - **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
   real que encuentre con el depurador de las DevTools. No se inventa.
