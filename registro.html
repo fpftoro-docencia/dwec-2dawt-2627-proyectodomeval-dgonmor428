@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crear cuenta · Horizonte</title>
+    <meta
+      name="description"
+      content="Crea tu cuenta en Horizonte, tu diario de paisajes, cielo y espacio."
+    />
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="cabecera cabecera--flotante">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="index.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <a class="enlace-pildora" href="index.html">Entrar</a>
+      </div>
+    </header>
+
+    <main id="contenido" class="registro">
+      <!-- A la izquierda, el cielo; a la derecha, el formulario -->
+      <section class="cielo registro__escena" aria-labelledby="titulo-registro">
+        <div class="estrellas" aria-hidden="true"></div>
+        <div class="aurora" aria-hidden="true"></div>
+        <div class="luna" aria-hidden="true"></div>
+        <span class="fugaz" aria-hidden="true"></span>
+
+        <p class="heroe__antetitulo">Cuenta nueva</p>
+        <h1 id="titulo-registro" class="registro__titulo">Abre tu cuaderno de cielo</h1>
+        <p class="registro__texto">
+          Solo necesitas un nombre de usuario, tu correo y una contraseña. Si eres la primera
+          persona en registrarte, administrarás Horizonte.
+        </p>
+
+        <svg
+          class="cordilleras"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            fill="#2a2457"
+            fill-opacity="0.85"
+            d="M0 205 L80 178 L150 192 L230 148 L300 168 L380 118 L460 158 L540 138 L620 172 L700 128 L780 148 L860 106 L940 148 L1020 132 L1100 162 L1180 122 L1260 152 L1340 136 L1440 166 V320 H0 Z"
+          />
+          <path
+            fill="#161638"
+            d="M0 248 L100 212 L190 232 L280 188 L360 222 L450 198 L540 236 L640 202 L720 228 L820 182 L900 218 L1000 198 L1090 232 L1180 206 L1280 238 L1360 212 L1440 228 V320 H0 Z"
+          />
+          <path
+            fill="#050816"
+            d="M0 288 C120 258 220 272 320 260 C420 248 520 282 640 270 C760 258 860 238 980 260 C1100 282 1220 266 1320 274 C1380 279 1420 276 1440 278 V320 H0 Z"
+          />
+        </svg>
+      </section>
+
+      <div class="registro__formulario">
+        <div class="cristal panel">
+          <div id="avisos" class="avisos" role="status"></div>
+
+          <h2 class="panel__titulo">Crear cuenta</h2>
+          <p class="panel__entrada">Te llevará un minuto.</p>
+
+          <form id="form-registro" method="post" novalidate>
+            <div class="campo">
+              <label class="form-label" for="registro-usuario">Nombre de usuario</label>
+              <input
+                class="form-control"
+                id="registro-usuario"
+                name="usuario"
+                type="text"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                aria-describedby="registro-usuario-ayuda"
+                required
+              />
+              <p class="form-text" id="registro-usuario-ayuda">
+                De 3 a 20 letras, cifras o guiones bajos (_).
+              </p>
+            </div>
+
+            <div class="campo">
+              <label class="form-label" for="registro-correo">Correo electrónico</label>
+              <input
+                class="form-control"
+                id="registro-correo"
+                name="correo"
+                type="email"
+                autocomplete="email"
+                spellcheck="false"
+                required
+              />
+            </div>
+
+            <div class="campo">
+              <label class="form-label" for="registro-clave">Contraseña</label>
+              <input
+                class="form-control"
+                id="registro-clave"
+                name="clave"
+                type="password"
+                autocomplete="new-password"
+                aria-describedby="registro-clave-requisitos"
+                required
+              />
+              <ul class="requisitos" id="registro-clave-requisitos">
+                <li data-requisito="longitud">8 caracteres o más</li>
+                <li data-requisito="minuscula">Una minúscula</li>
+                <li data-requisito="mayuscula">Una mayúscula</li>
+                <li data-requisito="cifra">Una cifra</li>
+              </ul>
+            </div>
+
+            <div class="campo">
+              <label class="form-label" for="registro-repetir">Repite la contraseña</label>
+              <input
+                class="form-control"
+                id="registro-repetir"
+                name="repetir"
+                type="password"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <div class="campo form-check">
+              <input
+                class="form-check-input"
+                id="registro-acepto"
+                name="acepto"
+                type="checkbox"
+                value="si"
+                required
+              />
+              <label class="form-check-label" for="registro-acepto">
+                Acepto las condiciones: mis datos se guardan solo en este navegador.
+              </label>
+            </div>
+
+            <button class="btn btn-amanecer w-100" type="submit">Crear mi cuenta</button>
+          </form>
+          <p class="panel__pie">¿Ya tienes cuenta? <a href="index.html">Entrar</a></p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
