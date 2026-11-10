@@ -1621,3 +1621,74 @@ a {
     left: 52%;
   }
 }
+
+/* Avisos: las alertas de Bootstrap con el aspecto de la noche ------------------- */
+
+.aviso {
+  --bs-alert-color: var(--texto);
+  --bs-alert-bg: rgb(43 179 255 / 12%);
+  --bs-alert-border-color: rgb(43 179 255 / 45%);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin: 0;
+  border-radius: var(--radio-peque);
+  backdrop-filter: blur(12px);
+  animation: aviso-entra 0.4s var(--suave);
+}
+
+/* Un punto de color, como el de las chapas, que dice el tipo de un vistazo */
+.aviso::before {
+  content: '';
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-top: 0.55rem;
+  border-radius: 50%;
+  background: var(--bs-alert-border-color);
+  box-shadow: 0 0 0.6rem var(--bs-alert-border-color);
+}
+
+.aviso.alert-success {
+  --bs-alert-bg: rgb(62 240 192 / 12%);
+  --bs-alert-border-color: rgb(62 240 192 / 55%);
+}
+
+.aviso.alert-danger {
+  --bs-alert-bg: rgb(255 107 91 / 14%);
+  --bs-alert-border-color: rgb(255 107 91 / 60%);
+}
+
+.aviso.alert-warning {
+  --bs-alert-bg: rgb(255 195 107 / 14%);
+  --bs-alert-border-color: rgb(255 195 107 / 60%);
+}
+
+.aviso__texto {
+  flex: 1;
+  margin: 0;
+}
+
+.aviso__cerrar {
+  flex: none;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--cristal-borde);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.aviso__cerrar:hover {
+  border-color: rgb(255 255 255 / 35%);
+  color: var(--texto);
+}
+
+@keyframes aviso-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}

@@ -95,6 +95,10 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   tests de integración.
 - La **sesión** se guarda en `sessionStorage` con la clave `horizonte.sesion` y solo contiene el
   nombre y el rol (nunca el correo ni la contraseña). Si está estropeada, se lee como `null`.
+- **Avisos:** evento propio `aviso` (`CustomEvent`, `bubbles: true`, `detail: { mensaje, tipo }`) con
+  un único oyente en `document`. Tipos: `exito`, `error`, `advertencia` e `info` (las clases de
+  alerta de Bootstrap). El aviso para la página siguiente se guarda en `sessionStorage` con la clave
+  `horizonte.aviso` y se borra al mostrarse.
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
@@ -102,7 +106,7 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 
 - **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
   Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
-  (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js` y
-  `js/sesion.js` (con sus tests al 100 % de cobertura).
-- **Siguiente:** sistema de avisos; después, ESLint, las páginas de registro e inicio de sesión, la
-  cabecera común y el workflow de integración continua (`ci.yml`).
+  (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js`,
+  `js/sesion.js` y `js/avisos.js` (con sus tests al 100 % de cobertura).
+- **Siguiente:** ESLint; después, las páginas de registro e inicio de sesión (que conectarán los
+  módulos con el HTML), la cabecera común y el workflow de integración continua (`ci.yml`).
