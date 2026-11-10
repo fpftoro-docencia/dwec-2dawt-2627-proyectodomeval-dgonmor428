@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Captura · Horizonte</title>
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body class="app">
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <!-- Cabecera común de las páginas privadas. El usuario, su rol y «Usuarios» los rellenará el código -->
+    <header class="cabecera cabecera--app">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="listado.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <nav class="menu" aria-label="Principal">
+          <ul>
+            <li><a href="listado.html">Mis capturas</a></li>
+            <li hidden><a href="usuarios.html">Usuarios</a></li>
+          </ul>
+        </nav>
+        <div class="sesion">
+          <p class="sesion__usuario">
+            <span id="sesion-nombre"></span><span id="sesion-rol" class="sesion__rol"></span>
+          </p>
+          <button class="btn btn-salir" id="cerrar-sesion" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido" class="pagina">
+      <div class="envoltorio">
+        <div id="avisos" class="avisos" role="status"></div>
+
+        <div class="pagina__cabeza">
+          <div>
+            <p class="seccion__marca">Cuaderno de campo</p>
+            <h1 class="pagina__titulo">Nueva captura</h1>
+          </div>
+          <a class="volver" href="listado.html">Volver a mis capturas</a>
+        </div>
+
+        <!-- El formulario de la captura llegará en el sprint 2 -->
+        <section class="cristal preparacion" aria-labelledby="titulo-preparacion">
+          <h2 id="titulo-preparacion" class="vacio__titulo">Lo que guardarás de cada captura</h2>
+          <ul>
+            <li class="chapa chapa--sin-punto">Título</li>
+            <li class="chapa chapa--sin-punto">Categoría</li>
+            <li class="chapa chapa--sin-punto">Fecha y hora</li>
+            <li class="chapa chapa--sin-punto">Lugar</li>
+            <li class="chapa chapa--sin-punto">Coordenadas GPS</li>
+            <li class="chapa chapa--sin-punto">Altitud</li>
+            <li class="chapa chapa--sin-punto">Condiciones del cielo</li>
+            <li class="chapa chapa--sin-punto">Equipo</li>
+            <li class="chapa chapa--sin-punto">Hasta 3 imágenes</li>
+            <li class="chapa chapa--espacio">Catálogo y coordenadas celestes</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

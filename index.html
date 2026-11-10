@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Horizonte · Tu diario de paisajes, cielo y espacio</title>
+    <meta
+      name="description"
+      content="Horizonte es el diario de tus fotos de paisaje, cielo y espacio: lugar, coordenadas, altitud, cielo y equipo de cada captura."
+    />
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="cabecera cabecera--flotante">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="index.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <a class="enlace-pildora" href="registro.html">Crear cuenta</a>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- Primera pantalla: el cielo al anochecer, qué es Horizonte y el panel para entrar -->
+      <section class="cielo heroe" aria-labelledby="titulo-heroe">
+        <div class="estrellas" aria-hidden="true"></div>
+        <div class="aurora" aria-hidden="true"></div>
+        <div class="luna" aria-hidden="true"></div>
+        <span class="fugaz" aria-hidden="true"></span>
+        <span class="fugaz fugaz--2" aria-hidden="true"></span>
+
+        <div class="envoltorio">
+          <div id="avisos" class="avisos" role="status"></div>
+
+          <div class="heroe__rejilla">
+            <div>
+              <p class="heroe__antetitulo">Diario de capturas</p>
+              <h1 id="titulo-heroe" class="heroe__titulo">
+                Tu diario de <span class="luz-paisaje">paisajes</span>,
+                <span class="luz-cielo">cielo</span> y <span class="luz-espacio">espacio</span>
+              </h1>
+              <p class="heroe__texto">
+                Guarda dónde, cuándo y bajo qué cielo hiciste cada foto: coordenadas, altitud,
+                condiciones y equipo, todo en la misma ficha.
+              </p>
+              <ul class="heroe__datos">
+                <li class="chapa chapa--sin-punto">Coordenadas GPS</li>
+                <li class="chapa chapa--sin-punto">Altitud</li>
+                <li class="chapa chapa--sin-punto">Condiciones del cielo</li>
+                <li class="chapa chapa--sin-punto">Hasta 3 imágenes</li>
+              </ul>
+            </div>
+
+            <div class="cristal panel panel--entrar" id="entrar">
+              <h2 class="panel__titulo">Entrar</h2>
+              <p class="panel__entrada">Vuelve a tu cuaderno de capturas.</p>
+              <form id="form-entrar" method="post" novalidate>
+                <div class="campo">
+                  <label class="form-label" for="entrar-usuario">Nombre de usuario</label>
+                  <input
+                    class="form-control"
+                    id="entrar-usuario"
+                    name="usuario"
+                    type="text"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    required
+                  />
+                </div>
+                <div class="campo">
+                  <label class="form-label" for="entrar-clave">Contraseña</label>
+                  <input
+                    class="form-control"
+                    id="entrar-clave"
+                    name="clave"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                  />
+                </div>
+                <button class="btn btn-amanecer w-100" type="submit">Entrar en mi diario</button>
+              </form>
+              <p class="panel__pie">
+                ¿Es tu primera vez? <a href="registro.html">Crea tu cuenta</a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <svg
+          class="cordilleras"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            fill="#2a2457"
+            fill-opacity="0.85"
+            d="M0 205 L80 178 L150 192 L230 148 L300 168 L380 118 L460 158 L540 138 L620 172 L700 128 L780 148 L860 106 L940 148 L1020 132 L1100 162 L1180 122 L1260 152 L1340 136 L1440 166 V320 H0 Z"
+          />
+          <path
+            fill="#161638"
+            d="M0 248 L100 212 L190 232 L280 188 L360 222 L450 198 L540 236 L640 202 L720 228 L820 182 L900 218 L1000 198 L1090 232 L1180 206 L1280 238 L1360 212 L1440 228 V320 H0 Z"
+          />
+          <path
+            fill="#050816"
+            d="M0 288 C120 258 220 272 320 260 C420 248 520 282 640 270 C760 258 860 238 980 260 C1100 282 1220 266 1320 274 C1380 279 1420 276 1440 278 V320 H0 Z"
+          />
+        </svg>
+      </section>
+
+      <!-- Tira de telemetría: capturas de ejemplo que se desplazan (decorativa) -->
+      <div class="telemetria" aria-hidden="true">
+        <ul class="telemetria__pista">
+          <li><strong>Torcal de Antequera</strong> 36.9536, -4.5446 · 1210 m · despejado</li>
+          <li><strong>Bahía de Málaga</strong> 36.7213, -4.4214 · 12 m · tormenta</li>
+          <li><strong>M42 · Orión</strong> AR 05h 35m 17s · Dec -05° 23′ 28″</li>
+          <li><strong>Teide</strong> 28.2724, -16.6425 · 3715 m · despejado</li>
+          <li><strong>NGC 7000 · Norteamérica</strong> AR 20h 59m 17s · Dec +44° 31′ 44″</li>
+          <li><strong>Sierra de Gredos</strong> 40.2578, -5.2306 · 1770 m · niebla</li>
+          <li><strong>Torcal de Antequera</strong> 36.9536, -4.5446 · 1210 m · despejado</li>
+          <li><strong>Bahía de Málaga</strong> 36.7213, -4.4214 · 12 m · tormenta</li>
+          <li><strong>M42 · Orión</strong> AR 05h 35m 17s · Dec -05° 23′ 28″</li>
+          <li><strong>Teide</strong> 28.2724, -16.6425 · 3715 m · despejado</li>
+          <li><strong>NGC 7000 · Norteamérica</strong> AR 20h 59m 17s · Dec +44° 31′ 44″</li>
+          <li><strong>Sierra de Gredos</strong> 40.2578, -5.2306 · 1770 m · niebla</li>
+        </ul>
+      </div>
+
+      <!-- Las tres categorías, cada una con su escena dibujada en CSS -->
+      <section class="seccion" aria-labelledby="titulo-alturas">
+        <div class="envoltorio">
+          <div class="seccion__cabeza">
+            <p class="seccion__marca">Tres alturas</p>
+            <h2 id="titulo-alturas" class="seccion__titulo">
+              Mira a ras de suelo, al cielo o más allá
+            </h2>
+            <p class="seccion__texto">
+              Cada captura pertenece a una categoría. Elígela y Horizonte te pedirá justo los datos
+              que necesita.
+            </p>
+          </div>
+
+          <div class="alturas">
+            <article class="cristal altura">
+              <div class="escena escena--paisaje" aria-hidden="true">
+                <div class="escena__fondo"></div>
+              </div>
+              <div class="altura__cuerpo">
+                <span class="chapa chapa--paisaje">Paisaje</span>
+                <h3 class="altura__titulo">Lo que pisas</h3>
+                <p class="altura__texto">
+                  Atardeceres, cumbres, costas y bosques. Guarda el lugar exacto y la altitud para
+                  volver con la misma luz.
+                </p>
+              </div>
+            </article>
+
+            <article class="cristal altura">
+              <div class="escena escena--cielo" aria-hidden="true">
+                <div class="escena__fondo"></div>
+              </div>
+              <div class="altura__cuerpo">
+                <span class="chapa chapa--cielo">Cielo</span>
+                <h3 class="altura__titulo">Lo que cambia sobre ti</h3>
+                <p class="altura__texto">
+                  Tormentas, nubes, nieblas y auroras. Anota qué cielo tenías y con qué equipo lo
+                  captaste.
+                </p>
+              </div>
+            </article>
+
+            <article class="cristal altura">
+              <div class="escena escena--espacio" aria-hidden="true">
+                <div class="escena__fondo"></div>
+              </div>
+              <div class="altura__cuerpo">
+                <span class="chapa chapa--espacio">Espacio</span>
+                <h3 class="altura__titulo">Lo que está más lejos</h3>
+                <p class="altura__texto">
+                  Nebulosas, galaxias y la Vía Láctea. Añade el código de catálogo y sus coordenadas
+                  celestes.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cuaderno de campo: cómo es una captura por dentro -->
+      <section class="seccion" aria-labelledby="titulo-cuaderno">
+        <div class="envoltorio cuaderno">
+          <div>
+            <p class="seccion__marca">Cuaderno de campo</p>
+            <h2 id="titulo-cuaderno" class="seccion__titulo">Cada captura, con todos sus datos</h2>
+            <p class="seccion__texto">
+              Una ficha clara para cada salida, y un diario que encuentras en segundos.
+            </p>
+
+            <ul class="rasgos">
+              <li>
+                <span class="rasgos__icono" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <circle cx="11" cy="11" r="6.5" />
+                    <path d="m16 16 4.5 4.5" />
+                  </svg>
+                </span>
+                <div>
+                  <strong>Busca sin preocuparte por las tildes</strong>
+                  <p>Encuentra «Orión» aunque escribas «orion», por título o por lugar.</p>
+                </div>
+              </li>
+              <li>
+                <span class="rasgos__icono" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="4" y="3" width="13" height="16" rx="2" />
+                    <path d="M8 21h10a2 2 0 0 0 2-2V7" />
+                  </svg>
+                </span>
+                <div>
+                  <strong>Página a página</strong>
+                  <p>Recorre tu diario por páginas y, si recargas, sigues en la misma.</p>
+                </div>
+              </li>
+              <li>
+                <span class="rasgos__icono" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z" />
+                  </svg>
+                </span>
+                <div>
+                  <strong>Se queda en tu navegador</strong>
+                  <p>Sin servidor ni cuentas en otros sitios: tus capturas son solo tuyas.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <article class="cristal ficha" aria-labelledby="ficha-titulo">
+            <div class="ficha__cabeza">
+              <h3 id="ficha-titulo" class="ficha__titulo">Nebulosa de Orión</h3>
+              <div>
+                <span class="chapa chapa--espacio">Espacio</span>
+                <span class="chapa chapa--sin-punto">Ejemplo</span>
+              </div>
+            </div>
+            <div class="ficha__cuerpo">
+              <div>
+                <dl class="datos">
+                  <dt>Fecha</dt>
+                  <dd><time datetime="2026-10-24T03:10">24/10/2026 · 03:10</time></dd>
+                  <dt>Lugar</dt>
+                  <dd>Sierra de los Filabres</dd>
+                  <dt>GPS</dt>
+                  <dd>37.2236, -2.5463</dd>
+                  <dt>Cielo</dt>
+                  <dd>Despejado</dd>
+                  <dt>Equipo</dt>
+                  <dd>Telescopio</dd>
+                </dl>
+                <dl class="datos datos--espacio">
+                  <dt>Catálogo</dt>
+                  <dd>M42 · NGC 1976</dd>
+                  <dt>AR</dt>
+                  <dd>05h 35m 17s</dd>
+                  <dt>Dec</dt>
+                  <dd>-05° 23′ 28″</dd>
+                </dl>
+              </div>
+
+              <div>
+                <div class="altimetro">
+                  <div
+                    class="altimetro__barra"
+                    role="img"
+                    aria-label="Altitud: 2168 metros, en una escala de -430 a 8849 metros"
+                  >
+                    <span class="altimetro__nivel"></span>
+                  </div>
+                  <ul class="altimetro__escala" aria-hidden="true">
+                    <li>8849 m</li>
+                    <li>-430 m</li>
+                  </ul>
+                </div>
+                <p class="altimetro__lectura" aria-hidden="true"><strong>2168 m</strong>altitud</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Llamada final, con un borde de luz que gira -->
+      <section class="seccion" aria-labelledby="titulo-llamada">
+        <div class="envoltorio">
+          <div class="llamada">
+            <p class="seccion__marca">Esta noche</p>
+            <h2 id="titulo-llamada" class="seccion__titulo">
+              Empieza tu diario antes de la próxima salida
+            </h2>
+            <p class="seccion__texto">
+              Crear tu cuenta lleva un minuto. Si eres la primera persona en registrarte,
+              administrarás Horizonte.
+            </p>
+            <div class="llamada__acciones">
+              <a class="btn btn-amanecer" href="registro.html">Crear mi cuenta</a>
+              <a class="btn btn-luz" href="#entrar">Ya tengo cuenta</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <div class="envoltorio pie__fila">
+        <a class="marca" href="index.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <p>Proyecto DOM de DWEC · 2.º DAW · Curso 2026/27</p>
+      </div>
+    </footer>
+  </body>
+</html>
