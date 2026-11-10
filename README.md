@@ -129,9 +129,45 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 
 ### ESLint y Prettier
 
-<!-- Sprint 1. Las reglas que has añadido a eslint.config.js (al menos tres): qué comprueba cada una
-     y por qué la quieres. Pega la salida de `npm run lint` y de `npm run format:check`. Cuenta un
-     problema real que encontraras con el depurador de las DevTools y cómo lo resolviste. -->
+**ESLint** revisa el código JavaScript y avisa de errores y malas costumbres antes de ejecutarlo.
+**Prettier** se encarga solo del formato (sangría, comillas, saltos de línea), para que todo el
+código tenga el mismo aspecto.
+
+La plantilla ya traía tres reglas (`no-var`, `prefer-const` y `eqeqeq`). He añadido cuatro más en
+`eslint.config.js`, cada una relacionada con algo que pide la rúbrica:
+
+| Regla | Qué comprueba | Por qué la quiero |
+|-------|---------------|-------------------|
+| `no-console` | Que no quede ningún `console.log` (ni `console.error`…) en el código. | Los `console.log` son para depurar y se olvidan; en Horizonte los mensajes a la persona van por el sistema de avisos. Solo se permite en `scripts/`, porque `npm run build` escribe en la terminal. |
+| `curly` | Que `if`, `else`, `for` y `while` lleven siempre llaves `{ }`, aunque tengan una sola instrucción. | Sin llaves, añadir una segunda línea «dentro» del `if` la deja fuera sin darte cuenta. Con llaves, el bloque siempre está claro. |
+| `no-implicit-coercion` | Que las conversiones de tipo sean explícitas: `Number(x)` y no `+x`, `Boolean(x)` y no `!!x`, `String(x)` y no `'' + x`. | La rúbrica pide «conversiones explícitas»: así se lee qué tipo se quiere obtener, sin trucos. |
+| `camelcase` | Que los nombres de variables y funciones estén en *camelCase* (`nombreUsuario`, no `nombre_usuario`). Las constantes en MAYÚSCULAS (`CLAVE_USUARIOS`) se aceptan. | Un solo estilo de nombres en todo el proyecto. No se aplica a las propiedades de los objetos (`properties: 'never'`), que a veces vienen de fuera. |
+
+Para comprobar que las cuatro funcionan, las probé con un archivo con un error de cada tipo:
+ESLint encontró los cuatro. Al activarlas también encontraron dos problemas reales en el proyecto:
+un `if` sin llaves en el test de ejemplo (corregido) y los `console.log` de `scripts/construir.js`
+(que no se puede modificar y que sí debe escribir en la terminal; por eso `no-console` no se aplica
+a `scripts/`).
+
+Salida de `npm run lint` (sin errores, no muestra nada después de la orden):
+
+```text
+> mi-aplicacion@1.0.0 lint
+> eslint .
+```
+
+Salida de `npm run format:check`:
+
+```text
+> mi-aplicacion@1.0.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+```
+
+<!-- Pendiente: un problema real que encuentre con el depurador de las DevTools y cómo lo resolví.
+     Se escribirá cuando ocurra, con mis palabras (las páginas aún no tienen JavaScript). -->
 
 ### El workflow
 
@@ -212,6 +248,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `memoria-ia` | Memoria del proyecto para la IA (`AGENTS.md` y `CLAUDE.md`) | [#11](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/11) |
 | `modulo-sesion` | Módulo de sesión (`js/sesion.js`) | [#12](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/12) |
 | `sistema-avisos` | Sistema de avisos (`js/avisos.js`) | [#13](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/13) |
+| `reglas-eslint` | Reglas de ESLint y su explicación | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/14) |
 
 #### *Merge* o *rebase*
 
