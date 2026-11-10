@@ -1692,3 +1692,33 @@ a {
     transform: translateY(-0.5rem);
   }
 }
+
+/* Errores de los formularios, legibles sobre la noche ----------------------------- */
+
+.form-control.is-invalid,
+.form-check-input.is-invalid {
+  border-color: var(--coral);
+}
+
+.form-control.is-invalid:focus,
+.form-check-input.is-invalid:focus {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 0.25rem rgb(255 107 91 / 25%);
+}
+
+.invalid-feedback {
+  margin-top: 0.4rem;
+  color: #ffa69c;
+  font-size: 0.875rem;
+}
+
+/* Los requisitos que todavía no se cumplen, una vez se ha empezado a escribir */
+.requisitos li[data-cumple='false'] {
+  color: var(--texto-suave);
+}
+
+/* El botón mientras se envía el formulario */
+.btn:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}

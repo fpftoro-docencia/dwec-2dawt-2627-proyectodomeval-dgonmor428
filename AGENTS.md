@@ -97,6 +97,14 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   tests de integración.
 - La **sesión** se guarda en `sessionStorage` con la clave `horizonte.sesion` y solo contiene el
   nombre y el rol (nunca el correo ni la contraseña). Si está estropeada, se lee como `null`.
+- **Páginas:** cada página tiene su módulo en `js/paginas/` con una función `iniciarX({ documento,
+  almacenUsuarios, almacenSesion, navegar, resumir })`. El HTML la llama desde un
+  `<script type="module">` pasándole `document`, `localStorage`, `sessionStorage` y
+  `(url) => location.assign(url)`; los tests de integración le pasan `AlmacenFalso` y `vi.fn()`.
+- **Formularios:** al enviar se validan todos los campos; los errores van a su caja
+  `#<pagina>-<campo>-error` (enlazada con `aria-describedby`), con `setCustomValidity`,
+  `aria-invalid` y `is-invalid`; aviso de error y foco en el primero. Un campo con error se
+  revalida al escribir. Sin doble envío: botón desactivado y `aria-busy` mientras se envía.
 - **Avisos:** evento propio `aviso` (`CustomEvent`, `bubbles: true`, `detail: { mensaje, tipo }`) con
   un único oyente en `document`. Tipos: `exito`, `error`, `advertencia` e `info` (las clases de
   alerta de Bootstrap). El aviso para la página siguiente se guarda en `sessionStorage` con la clave
@@ -109,9 +117,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
   Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
   (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js`,
-  `js/sesion.js` y `js/avisos.js` (con sus tests al 100 % de cobertura).
-- También hechas: las reglas de ESLint, explicadas en el README.
-- **Siguiente:** las páginas de registro e inicio de sesión (que conectarán los módulos con el
-  HTML), la cabecera común y el workflow de integración continua (`ci.yml`).
+  `js/sesion.js` y `js/avisos.js` (con sus tests al 100 % de cobertura), las reglas de ESLint y la
+  página de registro (`js/paginas/registro.js`, con tests de integración).
+- **Siguiente:** la página de inicio de sesión, la cabecera común con la protección de páginas y
+  el workflow de integración continua (`ci.yml`).
 - **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
   real que encuentre con el depurador de las DevTools. No se inventa.
