@@ -93,12 +93,16 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
   de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
   tests de integración.
+- La **sesión** se guarda en `sessionStorage` con la clave `horizonte.sesion` y solo contiene el
+  nombre y el rol (nunca el correo ni la contraseña). Si está estropeada, se lee como `null`.
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
 ## 8. Estado
 
 - **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
-  Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño,
-  `js/almacen.js`, `js/validadores.js` y `js/usuarios.js` (con tests al 100 % de cobertura).
-- **Siguiente:** módulo de sesión, o ESLint y el workflow de integración continua (`ci.yml`).
+  Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
+  (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js` y
+  `js/sesion.js` (con sus tests al 100 % de cobertura).
+- **Siguiente:** sistema de avisos; después, ESLint, las páginas de registro e inicio de sesión, la
+  cabecera común y el workflow de integración continua (`ci.yml`).
