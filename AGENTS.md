@@ -1,0 +1,104 @@
+# AGENTS.md · Memoria del proyecto Horizonte
+
+Este archivo es la memoria del proyecto para cualquier asistente de IA (Claude, Codex, Copilot,
+Cursor, Gemini…) o persona que trabaje en él. Recoge el contexto, las reglas, la forma de trabajar,
+las libertades y las decisiones ya tomadas, para que todo el que llegue siga las mismas normas.
+
+**Se actualiza en cada commit** si cambia alguna norma, alguna decisión o el estado del proyecto.
+
+## 1. El proyecto
+
+- **Horizonte** es un diario de fotografía y observación de paisajes, del cielo y del espacio. Cada
+  usuario guarda sus capturas (lugar, coordenadas, altitud, condiciones del cielo, equipo, hasta tres
+  imágenes y, si es del espacio, el código de catálogo y las coordenadas celestes). Un administrador
+  gestiona los usuarios.
+- Es el **Proyecto DOM** del módulo DWEC (2.º DAW, curso 2026/27): una aplicación web de gestión con
+  integración y despliegue continuos, en tres sprints con los tags `v0.1`, `v0.2` y `v1.0` (la que se
+  corrige).
+- Quien desarrolla es un alumno que tiene que **entender y explicar todo el código** en una exposición.
+
+## 2. Fuentes de verdad, por orden
+
+1. **`ENUNCIADO.md`** (el enunciado del profesor). Manda sobre todo lo demás: si algo de aquí lo
+   contradice, gana el enunciado. Se sigue al pie de la letra.
+2. **`README.md`**, sección «Mi proyecto»: la entidad, sus campos, validaciones y mensajes.
+3. **El tablero de Trello** del proyecto (enlazado en el README): tareas, dependencias y fechas.
+4. Este archivo.
+
+## 3. Reglas del enunciado que no se pueden saltar
+
+- JavaScript **sin librerías**. Bootstrap solo como **CSS**, enlazado desde `node_modules/`; nunca su
+  JavaScript. Sin APIs remotas ni librerías de mapas.
+- Páginas en la raíz: `index.html` (inicio de sesión), `registro.html`, `listado.html`, `ficha.html`
+  y `usuarios.html`.
+- Usuarios y capturas en `localStorage`; la sesión en `sessionStorage`. Contraseñas **solo** como
+  resumen calculado con `resumirClave` de `js/clave.js`.
+- Nada de `innerHTML` con datos ni estilos escritos desde el JavaScript. Elementos desde `<template>`
+  rellenados con `textContent`.
+- Los módulos de datos reciben el almacenamiento como parámetro (para probarlos con
+  `tests/AlmacenFalso.js`); las páginas reciben lo que necesitan (almacenamiento, resumen de la
+  contraseña, navegación) en lugar de usar `localStorage` o `location` directamente.
+- **No se modifican:** `.devcontainer/`, `playwright.config.js`, `serve.json`, `jsdoc.json`,
+  `js/clave.js`, `scripts/construir.js`, `tests/AlmacenFalso.js`, `tests/pagina.js`, ni lo que hacen
+  los scripts de `package.json`.
+- El repositorio y la web publicada son **públicos**: ningún dato real ni personal de nadie.
+
+## 4. Forma de trabajar
+
+- **Una tarjeta de Trello cada vez.** Al empezarla, a «Haciendo»; al terminarla, a «Hecho». Una
+  tarjeta solo está «Hecha» cuando cumple la Definición de Hecho del README (sobre todo: ha llegado a
+  `main` por pull request).
+- **«Haz la siguiente tarjeta»** significa seguir el orden del tablero sin preguntar antes de empezar.
+- **Cada tarjeta en su rama**, commits pequeños con mensajes claros, `push` y **pull request** hacia
+  `main`. Nunca se empuja directamente a `main`.
+- Las PRs se fusionan con **merge commit** (no squash ni rebase) y **las ramas no se borran**. A veces
+  fusiona el alumno para ver la PR y a veces pide que lo haga la IA.
+- Cada rama nueva se añade a la tabla «Ramas y versiones» del README, con su PR.
+- **Doble testeo** en todas las tarjetas: después de los tests, una segunda pasada que repasa cada
+  punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
+  encontrar lo que falte por probar, y lo añade.
+- Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores.
+- Al terminar cada tarea, un resumen breve: **qué se ha hecho, para qué sirve ahora y para qué
+  servirá en el futuro**.
+- Todo se explica en **español**, paso a paso y con el porqué.
+- Ante cualquier problema (entorno, permisos, algo raro), **parar y comentarlo** en lugar de
+  improvisar.
+- En cada commit, revisar si hay que actualizar este archivo.
+
+## 5. Entorno
+
+- Se trabaja en el **Dev Container** (`node:24-bookworm` con Chromium). La web se sirve en
+  <http://localhost:3901>.
+- En Windows, los comandos de npm se ejecutan dentro del contenedor (por ejemplo, con la imagen del
+  Dev Container y la carpeta montada en `/workspace`).
+- `.gitattributes` fuerza los finales de línea LF; sin él, `format:check` falla en Windows.
+
+## 6. Libertades
+
+- **El diseño visual es libre** y lo propone la IA: ahora es un cielo nocturno (estrellas, aurora,
+  cordilleras, paneles de cristal) hecho solo con CSS y SVG, en `css/estilos.css`. El alumno puede
+  cambiarlo cuando quiera.
+- Los textos de la interfaz, los mensajes y los ejemplos se pueden proponer, siempre sin datos reales
+  de personas.
+
+## 7. Decisiones tomadas
+
+- **Merge** frente a rebase (justificado en el README).
+- **Requisito 13** (validador con regla de control): el campo «código de observatorio» con formato
+  `OBS-NNNN-D`, cuyo último dígito es la suma de las cuatro cifras multiplicadas por 3, 1, 3 y 1,
+  módulo 10 (`OBS-4821-7`). Los rangos de las coordenadas GPS se comprueban además, como extra.
+- Los **validadores** devuelven el mensaje de error o `''` si el valor es válido (listo para
+  `setCustomValidity`).
+- Los **nombres de usuario no distinguen mayúsculas** («Ana» = «ana»).
+- Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
+  de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
+  tests de integración.
+- Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
+  **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
+
+## 8. Estado
+
+- **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
+  Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño,
+  `js/almacen.js`, `js/validadores.js` y `js/usuarios.js` (con tests al 100 % de cobertura).
+- **Siguiente:** módulo de sesión, o ESLint y el workflow de integración continua (`ci.yml`).
