@@ -58,6 +58,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
   encontrar lo que falte por probar, y lo añade.
 - Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores.
+- ESLint tiene, además de `no-var`, `prefer-const` y `eqeqeq`: `no-console` (salvo en `scripts/`),
+  `curly`, `no-implicit-coercion` y `camelcase`. El código nuevo tiene que cumplirlas.
 - Al terminar cada tarea, un resumen breve: **qué se ha hecho, para qué sirve ahora y para qué
   servirá en el futuro**.
 - Todo se explica en **español**, paso a paso y con el porqué.
@@ -108,5 +110,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
   (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js`,
   `js/sesion.js` y `js/avisos.js` (con sus tests al 100 % de cobertura).
-- **Siguiente:** ESLint; después, las páginas de registro e inicio de sesión (que conectarán los
-  módulos con el HTML), la cabecera común y el workflow de integración continua (`ci.yml`).
+- También hechas: las reglas de ESLint, explicadas en el README.
+- **Siguiente:** las páginas de registro e inicio de sesión (que conectarán los módulos con el
+  HTML), la cabecera común y el workflow de integración continua (`ci.yml`).
+- **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
+  real que encuentre con el depurador de las DevTools. No se inventa.
