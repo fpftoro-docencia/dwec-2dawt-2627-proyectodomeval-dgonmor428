@@ -49,8 +49,6 @@
         <span class="fugaz fugaz--2" aria-hidden="true"></span>
 
         <div class="envoltorio">
-          <div id="avisos" class="avisos" role="status"></div>
-
           <div class="heroe__rejilla">
             <div>
               <p class="heroe__antetitulo">Diario de capturas</p>
@@ -71,6 +69,7 @@
             </div>
 
             <div class="cristal panel panel--entrar" id="entrar">
+              <div id="avisos" class="avisos" role="status"></div>
               <h2 class="panel__titulo">Entrar</h2>
               <p class="panel__entrada">Vuelve a tu cuaderno de capturas.</p>
               <form id="form-entrar" method="post" novalidate>
@@ -84,8 +83,10 @@
                     autocomplete="username"
                     autocapitalize="none"
                     spellcheck="false"
+                    aria-describedby="entrar-usuario-error"
                     required
                   />
+                  <p class="invalid-feedback" id="entrar-usuario-error"></p>
                 </div>
                 <div class="campo">
                   <label class="form-label" for="entrar-clave">Contraseña</label>
@@ -95,8 +96,10 @@
                     name="clave"
                     type="password"
                     autocomplete="current-password"
+                    aria-describedby="entrar-clave-error"
                     required
                   />
+                  <p class="invalid-feedback" id="entrar-clave-error"></p>
                 </div>
                 <button class="btn btn-amanecer w-100" type="submit">Entrar en mi diario</button>
               </form>
@@ -370,5 +373,17 @@
         <p>Proyecto DOM de DWEC · 2.º DAW · Curso 2026/27</p>
       </div>
     </footer>
+
+    <!-- La página recibe lo que necesita: el almacenamiento, la sesión y cómo navegar -->
+    <script type="module">
+      import { iniciarEntrar } from './js/paginas/entrar.js';
+
+      iniciarEntrar({
+        documento: document,
+        almacenUsuarios: localStorage,
+        almacenSesion: sessionStorage,
+        navegar: (url) => location.assign(url),
+      });
+    </script>
   </body>
 </html>
