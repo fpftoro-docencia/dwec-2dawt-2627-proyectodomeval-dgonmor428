@@ -42,7 +42,7 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 | Nombre de usuario | Texto | Regex: de 3 a 20 caracteres entre letras, cifras y `_`; y no puede estar ocupado | «Usa de 3 a 20 letras, cifras o _.» / «Ese nombre ya está en uso.» |
 | Correo | Correo (`type="email"`) | Regex de correo | «Escribe un correo válido.» |
 | Contraseña | Contraseña | Mínimo 8 caracteres, con una minúscula (`\p{Ll}`), una mayúscula (`\p{Lu}`) y una cifra. Se ve cuáles cumple mientras se escribe | «La contraseña no cumple todos los requisitos.» |
-| Repetir contraseña | Contraseña | Igual que la contraseña | «Las contraseñas no coinciden.» |
+| Repetir contraseña | Contraseña | Obligatoria e igual que la contraseña | «Repite la contraseña.» / «Las contraseñas no coinciden.» |
 | Aceptación | Casilla | Obligatoria | «Tienes que aceptar las condiciones.» |
 
 ### Páginas
@@ -249,6 +249,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `modulo-sesion` | Módulo de sesión (`js/sesion.js`) | [#12](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/12) |
 | `sistema-avisos` | Sistema de avisos (`js/avisos.js`) | [#13](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/13) |
 | `reglas-eslint` | Reglas de ESLint y su explicación | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/14) |
+| `pagina-registro` | Página de registro conectada a sus módulos | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/15) |
 
 #### *Merge* o *rebase*
 

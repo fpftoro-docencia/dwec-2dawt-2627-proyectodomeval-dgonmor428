@@ -94,12 +94,13 @@
                 autocomplete="username"
                 autocapitalize="none"
                 spellcheck="false"
-                aria-describedby="registro-usuario-ayuda"
+                aria-describedby="registro-usuario-ayuda registro-usuario-error"
                 required
               />
               <p class="form-text" id="registro-usuario-ayuda">
                 De 3 a 20 letras, cifras o guiones bajos (_).
               </p>
+              <p class="invalid-feedback" id="registro-usuario-error"></p>
             </div>
 
             <div class="campo">
@@ -111,8 +112,10 @@
                 type="email"
                 autocomplete="email"
                 spellcheck="false"
+                aria-describedby="registro-correo-error"
                 required
               />
+              <p class="invalid-feedback" id="registro-correo-error"></p>
             </div>
 
             <div class="campo">
@@ -123,7 +126,7 @@
                 name="clave"
                 type="password"
                 autocomplete="new-password"
-                aria-describedby="registro-clave-requisitos"
+                aria-describedby="registro-clave-requisitos registro-clave-error"
                 required
               />
               <ul class="requisitos" id="registro-clave-requisitos">
@@ -132,6 +135,7 @@
                 <li data-requisito="mayuscula">Una mayúscula</li>
                 <li data-requisito="cifra">Una cifra</li>
               </ul>
+              <p class="invalid-feedback" id="registro-clave-error"></p>
             </div>
 
             <div class="campo">
@@ -142,8 +146,10 @@
                 name="repetir"
                 type="password"
                 autocomplete="new-password"
+                aria-describedby="registro-repetir-error"
                 required
               />
+              <p class="invalid-feedback" id="registro-repetir-error"></p>
             </div>
 
             <div class="campo form-check">
@@ -153,11 +159,13 @@
                 name="acepto"
                 type="checkbox"
                 value="si"
+                aria-describedby="registro-acepto-error"
                 required
               />
               <label class="form-check-label" for="registro-acepto">
                 Acepto las condiciones: mis datos se guardan solo en este navegador.
               </label>
+              <p class="invalid-feedback" id="registro-acepto-error"></p>
             </div>
 
             <button class="btn btn-amanecer w-100" type="submit">Crear mi cuenta</button>
@@ -166,5 +174,17 @@
         </div>
       </div>
     </main>
+
+    <!-- La página recibe lo que necesita: el almacenamiento, la sesión y cómo navegar -->
+    <script type="module">
+      import { iniciarRegistro } from './js/paginas/registro.js';
+
+      iniciarRegistro({
+        documento: document,
+        almacenUsuarios: localStorage,
+        almacenSesion: sessionStorage,
+        navegar: (url) => location.assign(url),
+      });
+    </script>
   </body>
 </html>
