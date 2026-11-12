@@ -3,11 +3,13 @@
  *
  * HTML que necesita:
  * - un formulario `#form-entrar` con los campos `usuario` y `clave` y un botón de envío;
- * - para cada campo, su caja de error `#entrar-<campo>-error`;
+ * - para cada campo, su caja de error `#entrar-<campo>-error`, enlazada con `aria-describedby`,
+ *   y su mensaje de campo vacío en `data-vacio`;
  * - la región de avisos `#avisos`.
  *
  * Qué hace:
  * - si ya hay una sesión abierta, va directamente al listado;
+ * - valida cada campo al salir de él y desde entonces con cada cambio (`js/validacion.js`);
  * - al enviar, comprueba que los dos campos estén rellenos;
  * - con la contraseña incorrecta (o un usuario que no existe), avisa, vacía la contraseña y le da
  *   el foco; el mensaje no dice cuál de los dos falla, para no dar pistas a quien pruebe nombres;
@@ -26,7 +28,8 @@ import {
   guardarAvisoPendiente,
   mostrarAvisoPendiente,
 } from '../avisos.js';
-import { mostrarEstadoCampo, ponerEnviando } from '../formularios.js';
+import { ponerEnviando } from '../formularios.js';
+import { activarValidacion } from '../validacion.js';
 import { resumirClave } from '../clave.js';
 
 /** Adónde se va después de entrar (o si ya había sesión). */
@@ -49,7 +52,6 @@ export const MENSAJE_CREDENCIALES = 'El usuario o la contraseña no son correcto
  * @returns {boolean} `false` si ya había sesión y se ha ido al listado; `true` si la página se ha
  *   preparado para entrar.
  * @listens submit
- * @listens input
  * @fires aviso
  */
 export function iniciarEntrar({
@@ -73,27 +75,13 @@ export function iniciarEntrar({
   escucharAvisos(documento, documento.querySelector('#avisos'));
   mostrarAvisoPendiente(almacenSesion, documento);
 
-  const reglas = {
-    usuario: () => (campos.usuario.value.trim() === '' ? 'Escribe tu nombre de usuario.' : ''),
-    clave: () => (campos.clave.value === '' ? 'Escribe tu contraseña.' : ''),
-  };
-
-  /**
-   * Valida un campo y muestra su estado.
-   *
-   * @param {string} nombre - El nombre del campo.
-   * @returns {boolean} `true` si el campo es válido.
-   */
-  function validarCampo(nombre) {
-    const caja = documento.querySelector(`#entrar-${nombre}-error`);
-    return mostrarEstadoCampo(campos[nombre], caja, reglas[nombre]());
-  }
-
-  // Un campo marcado como erróneo se revisa al escribir, para quitar el error
-  formulario.addEventListener('input', (evento) => {
-    if (evento.target.classList.contains('is-invalid')) {
-      validarCampo(evento.target.name);
-    }
+  // Que no estén vacíos lo dicen `required` y `data-vacio`; `required` da por relleno un nombre
+  // de solo espacios, así que eso lo comprueba una regla
+  const validacion = activarValidacion(formulario, {
+    reglas: {
+      usuario: (campo) => (campo.value.trim() === '' ? campo.dataset.vacio : ''),
+    },
+    avisoErrores: 'Rellena los campos marcados en rojo.',
   });
 
   let enviando = false;
@@ -104,12 +92,8 @@ export function iniciarEntrar({
       return; // un segundo envío mientras se calcula el resumen no hace nada
     }
 
-    const nombres = Object.keys(reglas);
-    const validos = nombres.map(validarCampo);
-    const primeroConError = nombres.find((_nombre, posicion) => !validos[posicion]);
-    if (primeroConError !== undefined) {
-      lanzarAviso(formulario, 'Rellena los campos marcados en rojo.', 'error');
-      campos[primeroConError].focus();
+    // Valida los dos campos; si hay errores, avisa y lleva el foco al primero
+    if (!validacion.validarFormulario()) {
       return;
     }
 

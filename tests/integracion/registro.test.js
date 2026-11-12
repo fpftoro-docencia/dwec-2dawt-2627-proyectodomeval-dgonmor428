@@ -1,7 +1,7 @@
 // Test de integración de la página de registro: registro.html en happy-dom con sus módulos reales.
 // Solo se sustituyen el almacenamiento (AlmacenFalso), el resumen de la contraseña y la navegación.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cargarPagina, escribir } from '../pagina.js';
+import { cargarPagina, escribir, salir } from '../pagina.js';
 import { AlmacenFalso } from '../AlmacenFalso.js';
 import { iniciarRegistro, PAGINA_TRAS_REGISTRO } from '../../js/paginas/registro.js';
 import { registrarUsuario, listarUsuarios, CLAVE_USUARIOS } from '../../js/usuarios.js';
@@ -129,7 +129,10 @@ describe('página de registro', () => {
         expect(campos[nombre].getAttribute('aria-invalid')).toBe('true');
         expect(errorDe(nombre)).not.toBe('');
       }
-      expect(errorDe('usuario')).toBe('Usa de 3 a 20 letras, cifras o _.');
+      // Los mensajes de campo vacío salen de validity.valueMissing y del data-vacio de cada campo
+      expect(errorDe('usuario')).toBe('Escribe un nombre de usuario.');
+      expect(errorDe('correo')).toBe('Escribe tu correo.');
+      expect(errorDe('clave')).toBe('Escribe una contraseña.');
       expect(errorDe('repetir')).toBe('Repite la contraseña.'); // vacía no «coincide» con otra vacía
       expect(errorDe('acepto')).toBe('Tienes que aceptar las condiciones.');
       expect(textoAvisos()).toContain('Revisa los campos marcados en rojo.');
@@ -164,7 +167,9 @@ describe('página de registro', () => {
     });
 
     it.each([
+      ['usuario', { usuario: 'a b' }, 'Usa de 3 a 20 letras, cifras o _.'],
       ['correo', { correo: 'ana@ejemplo' }, 'Escribe un correo válido.'],
+      ['correo', { correo: 'ana.ejemplo.es' }, 'Escribe un correo válido.'], // typeMismatch
       [
         'clave',
         { clave: 'corta1A', repetir: 'corta1A' },
@@ -180,6 +185,68 @@ describe('página de registro', () => {
       expect(errorDe(nombre)).toBe(mensaje);
       expect(document.activeElement).toBe(campos[nombre]);
       expect(navegar).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('validación en tiempo real', () => {
+    it('mientras se escribe por primera vez no sale ningún error', () => {
+      iniciar();
+      escribir(campos.usuario, 'a');
+      expect(campos.usuario.classList.contains('is-invalid')).toBe(false);
+      expect(errorDe('usuario')).toBe('');
+    });
+
+    it('al salir de un campo se valida por primera vez', () => {
+      iniciar();
+      escribir(campos.usuario, 'a');
+      salir(campos.usuario);
+      expect(errorDe('usuario')).toBe('Usa de 3 a 20 letras, cifras o _.');
+      expect(campos.usuario.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('al salir de un campo vacío se avisa de que falta', () => {
+      iniciar();
+      salir(campos.correo);
+      expect(errorDe('correo')).toBe('Escribe tu correo.');
+    });
+
+    it('después de salir, se valida con cada cambio', () => {
+      iniciar();
+      escribir(campos.usuario, 'ana');
+      salir(campos.usuario);
+      expect(errorDe('usuario')).toBe('');
+
+      escribir(campos.usuario, 'a');
+      expect(errorDe('usuario')).toBe('Usa de 3 a 20 letras, cifras o _.');
+    });
+
+    it('al salir del nombre se avisa si ya está ocupado', async () => {
+      await registrarUsuario(almacenUsuarios, {
+        nombre: 'ana',
+        correo: 'a@ejemplo.es',
+        clave: 'x',
+      });
+      iniciar();
+      escribir(campos.usuario, 'Ana');
+      salir(campos.usuario);
+      expect(errorDe('usuario')).toBe('Ese nombre ya está en uso.');
+    });
+
+    it('«repetir» se revisa al cambiar la contraseña aunque no tuviera error', () => {
+      iniciar();
+      escribir(campos.clave, 'Nebulosa42');
+      escribir(campos.repetir, 'Nebulosa42');
+      salir(campos.repetir);
+      expect(errorDe('repetir')).toBe('');
+
+      escribir(campos.clave, 'Nebulosa43');
+      expect(errorDe('repetir')).toBe('Las contraseñas no coinciden.');
+    });
+
+    it('«repetir» no se revisa al cambiar la contraseña si aún no se ha tocado', () => {
+      iniciar();
+      escribir(campos.clave, 'Nebulosa42');
+      expect(errorDe('repetir')).toBe('');
     });
   });
 

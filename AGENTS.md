@@ -126,10 +126,17 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   almacenUsuarios, almacenSesion, navegar, resumir })`. El HTML la llama desde un
   `<script type="module">` pasándole `document`, `localStorage`, `sessionStorage` y
   `(url) => location.assign(url)`; los tests de integración le pasan `AlmacenFalso` y `vi.fn()`.
-- **Formularios:** al enviar se validan todos los campos; los errores van a su caja
-  `#<pagina>-<campo>-error` (enlazada con `aria-describedby`), con `setCustomValidity`,
-  `aria-invalid` y `is-invalid`; aviso de error y foco en el primero. Un campo con error se
-  revalida al escribir. Sin doble envío: botón desactivado y `aria-busy` mientras se envía.
+- **Formularios:** la validación en tiempo real es el componente común `js/validacion.js`:
+  `activarValidacion(formulario, { reglas, dependencias, avisoErrores })` devuelve
+  `{ validarCampo, validarFormulario }`. Cada campo se valida por primera vez al salir (`blur` en
+  la fase de captura del formulario) y desde entonces con cada `input`/`change`; los de
+  `dependencias` (`{ clave: ['repetir'] }`) se revalidan al cambiar el otro. El mensaje sale, por
+  orden, de `validity` (texto en `data-vacio` y `data-invalido` del HTML), del validador de
+  `data-validar` (solo si no está vacío) y de la regla de la página. La caja de error es la
+  `.invalid-feedback` de su `aria-describedby`. Los campos `disabled` no se validan. Los botones de
+  opción se validan como grupo, con el que lleva `required`. `validarFormulario` avisa y lleva el
+  foco al primer error. Los formularios nuevos (la ficha) lo usan; no se repite la lógica en cada
+  página. Sin doble envío: botón desactivado y `aria-busy` mientras se envía.
   Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
   lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
   avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
@@ -163,8 +170,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   «Almacenamiento y sesión».
 - **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
 - **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
-  cobertura), `paginar` y el módulo de capturas, cada uno con sus tests.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: ficha, listado, administración, validación en tiempo real, tests de integración
+  cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
+  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: ficha, listado, administración, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
