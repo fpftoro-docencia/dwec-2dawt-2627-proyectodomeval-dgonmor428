@@ -1,0 +1,27 @@
+# Dependencias: las instala `npm install` a partir de package.json y package-lock.json.
+# Pesan mucho y se recrean en cualquier equipo.
+node_modules/
+
+# Web preparada para publicar: la genera `npm run build` (scripts/construir.js).
+dist/
+
+# Informe de cobertura: lo genera `npm run coverage` y el workflow lo sube como artefacto.
+coverage/
+
+# Documentación generada por `npm run docs` (JSDoc).
+docs/
+
+# Informes de Playwright: los generan los tests e2e en cada ejecución.
+playwright-report/
+test-results/
+
+# Registros de errores de npm y de las herramientas.
+*.log
+
+# Ficheros que crea el sistema operativo.
+.DS_Store
+Thumbs.db
+
+# Variables de entorno: si algún día hubiera claves, no deben subirse (el repositorio es público).
+.env
+.env.*

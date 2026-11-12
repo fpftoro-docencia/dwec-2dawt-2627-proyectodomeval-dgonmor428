@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mis capturas · Horizonte</title>
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body class="app">
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <!-- Cabecera común de las páginas privadas. El usuario, su rol y «Usuarios» los rellena js/paginas/privada.js -->
+    <header class="cabecera cabecera--app">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="listado.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <nav class="menu" aria-label="Principal">
+          <ul>
+            <li><a href="listado.html" aria-current="page">Mis capturas</a></li>
+            <li hidden><a href="usuarios.html">Usuarios</a></li>
+          </ul>
+        </nav>
+        <div class="sesion">
+          <p class="sesion__usuario">
+            <span id="sesion-nombre"></span><span id="sesion-rol" class="sesion__rol"></span>
+          </p>
+          <button class="btn btn-salir" id="cerrar-sesion" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido" class="pagina">
+      <div class="envoltorio">
+        <div id="avisos" class="avisos" role="status"></div>
+
+        <div class="pagina__cabeza">
+          <div>
+            <p class="seccion__marca">Tu cuaderno</p>
+            <h1 class="pagina__titulo">Mis capturas</h1>
+          </div>
+          <a class="btn btn-amanecer" href="ficha.html">Nueva captura</a>
+        </div>
+
+        <!-- Estado vacío: se verá mientras no haya capturas -->
+        <section class="cristal vacio" aria-labelledby="titulo-vacio">
+          <div class="cielo vacio__escena" aria-hidden="true">
+            <div class="estrellas"></div>
+            <div class="luna"></div>
+            <svg class="cordilleras" viewBox="0 0 1440 320" preserveAspectRatio="none">
+              <path
+                fill="#2a2457"
+                fill-opacity="0.85"
+                d="M0 205 L80 178 L150 192 L230 148 L300 168 L380 118 L460 158 L540 138 L620 172 L700 128 L780 148 L860 106 L940 148 L1020 132 L1100 162 L1180 122 L1260 152 L1340 136 L1440 166 V320 H0 Z"
+              />
+              <path
+                fill="#0e1430"
+                d="M0 288 C120 258 220 272 320 260 C420 248 520 282 640 270 C760 258 860 238 980 260 C1100 282 1220 266 1320 274 C1380 279 1420 276 1440 278 V320 H0 Z"
+              />
+            </svg>
+          </div>
+          <div class="vacio__cuerpo">
+            <h2 id="titulo-vacio" class="vacio__titulo">Tu cielo aún está vacío</h2>
+            <p>
+              Empieza por la última foto que hiciste: el lugar, la hora y el cielo que tenías. Cada
+              captura que guardes aparecerá aquí.
+            </p>
+            <a class="btn btn-luz" href="ficha.html">Añadir la primera captura</a>
+          </div>
+        </section>
+      </div>
+    </main>
+    <!-- Protege la página (sesión) y prepara la cabecera común -->
+    <script type="module">
+      import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+
+      iniciarPaginaPrivada({
+        documento: document,
+        almacenSesion: sessionStorage,
+        reemplazar: (url) => location.replace(url),
+      });
+    </script>
+  </body>
+</html>

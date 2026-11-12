@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Usuarios · Horizonte</title>
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body class="app">
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <!-- Cabecera común de las páginas privadas. El usuario y su rol los rellena js/paginas/privada.js -->
+    <header class="cabecera cabecera--app">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="listado.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <nav class="menu" aria-label="Principal">
+          <ul>
+            <li><a href="listado.html">Mis capturas</a></li>
+            <li><a href="usuarios.html" aria-current="page">Usuarios</a></li>
+          </ul>
+        </nav>
+        <div class="sesion">
+          <p class="sesion__usuario">
+            <span id="sesion-nombre"></span><span id="sesion-rol" class="sesion__rol"></span>
+          </p>
+          <button class="btn btn-salir" id="cerrar-sesion" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido" class="pagina">
+      <div class="envoltorio">
+        <div id="avisos" class="avisos" role="status"></div>
+
+        <div class="pagina__cabeza">
+          <div>
+            <p class="seccion__marca">Administración</p>
+            <h1 class="pagina__titulo">Usuarios</h1>
+          </div>
+        </div>
+
+        <!-- La lista de usuarios llegará en el sprint 2 -->
+        <section class="cristal preparacion" aria-labelledby="titulo-preparacion">
+          <h2 id="titulo-preparacion" class="vacio__titulo">Las personas de Horizonte</h2>
+          <p class="pagina__texto">
+            Aquí verás a todas las personas registradas, con su correo y su rol, y podrás dar o
+            quitar el rol de administrador.
+          </p>
+          <ul>
+            <li class="chapa chapa--sin-punto">Nombre</li>
+            <li class="chapa chapa--sin-punto">Correo</li>
+            <li class="chapa chapa--paisaje">Rol</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+    <!-- Protege la página (sesión y rol) y prepara la cabecera común -->
+    <script type="module">
+      import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+
+      iniciarPaginaPrivada({
+        documento: document,
+        almacenSesion: sessionStorage,
+        reemplazar: (url) => location.replace(url),
+        soloAdministradores: true,
+      });
+    </script>
+  </body>
+</html>

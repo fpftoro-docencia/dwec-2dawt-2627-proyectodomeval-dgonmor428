@@ -1,0 +1,198 @@
+# AGENTS.md · Memoria del proyecto Horizonte
+
+Este archivo es la memoria del proyecto para cualquier asistente de IA (Claude, Codex, Copilot,
+Cursor, Gemini…) o persona que trabaje en él. Recoge el contexto, las reglas, la forma de trabajar,
+las libertades y las decisiones ya tomadas, para que todo el que llegue siga las mismas normas.
+
+**Se actualiza en cada commit** si cambia alguna norma, alguna decisión o el estado del proyecto.
+
+## 1. El proyecto
+
+- **Horizonte** es un diario de fotografía y observación de paisajes, del cielo y del espacio. Cada
+  usuario guarda sus capturas (lugar, coordenadas, altitud, condiciones del cielo, equipo, hasta tres
+  imágenes y, si es del espacio, el código de catálogo y las coordenadas celestes). Un administrador
+  gestiona los usuarios.
+- Es el **Proyecto DOM** del módulo DWEC (2.º DAW, curso 2026/27): una aplicación web de gestión con
+  integración y despliegue continuos, en tres sprints con los tags `v0.1`, `v0.2` y `v1.0` (la que se
+  corrige).
+- Quien desarrolla es un alumno que tiene que **entender y explicar todo el código** en una exposición.
+
+## 2. Fuentes de verdad, por orden
+
+1. **`ENUNCIADO.md`** (el enunciado del profesor). Manda sobre todo lo demás: si algo de aquí lo
+   contradice, gana el enunciado. Se sigue al pie de la letra.
+2. **`README.md`**, sección «Mi proyecto»: la entidad, sus campos, validaciones y mensajes.
+3. **El tablero de Trello** del proyecto (enlazado en el README): tareas, dependencias y fechas.
+4. Este archivo.
+
+## 3. Reglas del enunciado que no se pueden saltar
+
+- JavaScript **sin librerías**. Bootstrap solo como **CSS**, enlazado desde `node_modules/`; nunca su
+  JavaScript. Sin APIs remotas ni librerías de mapas.
+- Páginas en la raíz: `index.html` (inicio de sesión), `registro.html`, `listado.html`, `ficha.html`
+  y `usuarios.html`.
+- Usuarios y capturas en `localStorage`; la sesión en `sessionStorage`. Contraseñas **solo** como
+  resumen calculado con `resumirClave` de `js/clave.js`.
+- Nada de `innerHTML` con datos ni estilos escritos desde el JavaScript. Elementos desde `<template>`
+  rellenados con `textContent`.
+- Los módulos de datos reciben el almacenamiento como parámetro (para probarlos con
+  `tests/AlmacenFalso.js`); las páginas reciben lo que necesitan (almacenamiento, resumen de la
+  contraseña, navegación) en lugar de usar `localStorage` o `location` directamente.
+- **No se modifican:** `.devcontainer/`, `playwright.config.js`, `serve.json`, `jsdoc.json`,
+  `js/clave.js`, `scripts/construir.js`, `tests/AlmacenFalso.js`, `tests/pagina.js`, ni lo que hacen
+  los scripts de `package.json`.
+- El repositorio y la web publicada son **públicos**: ningún dato real ni personal de nadie.
+
+## 4. Forma de trabajar
+
+- **Una tarjeta de Trello cada vez.** Al empezarla, a «Haciendo»; al terminarla, a «Hecho». Una
+  tarjeta solo está «Hecha» cuando cumple la Definición de Hecho del README (sobre todo: ha llegado a
+  `main` por pull request).
+- **«Haz la siguiente tarjeta»** significa seguir el orden del tablero sin preguntar antes de empezar.
+- **Cada tarjeta en su rama**, commits pequeños con mensajes claros, `push` y **pull request** hacia
+  `main`. Nunca se empuja directamente a `main`.
+- Las PRs se fusionan con **merge commit** (no squash ni rebase) y **las ramas no se borran**. A veces
+  fusiona el alumno para ver la PR y a veces pide que lo haga la IA.
+- Cada rama nueva se añade a la tabla «Ramas y versiones» del README, con su PR.
+- **Doble testeo** en todas las tarjetas: después de los tests, una segunda pasada que repasa cada
+  punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
+  encontrar lo que falte por probar, y lo añade.
+- Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores. El «doble testeo»
+  es una condición de la Definición de Hecho del README.
+- **JSDoc:** los tipos de función se escriben como `function(string): void` (no `(x: string) => void`,
+  que es sintaxis de TypeScript y rompe `npm run docs`). Si se cambia un comentario JSDoc, comprobar que
+  `npm run docs` sigue sin errores.
+- **Integración continua:** `.github/workflows/ci.yml` ejecuta `Calidad` (lint y formato) y, si pasa,
+  `Tests` en cada `push` y cada PR a `main`. Una PR solo se fusiona con sus comprobaciones en verde.
+  No se cambian los nombres de los trabajos: Vercel los usará como comprobaciones en el sprint 3.
+- ESLint tiene, además de `no-var`, `prefer-const` y `eqeqeq`: `no-console` (salvo en `scripts/`),
+  `curly`, `no-implicit-coercion` y `camelcase`. El código nuevo tiene que cumplirlas.
+- Al terminar cada tarea, un resumen breve: **qué se ha hecho, para qué sirve ahora y para qué
+  servirá en el futuro**.
+- Todo se explica en **español**, paso a paso y con el porqué.
+- Ante cualquier problema (entorno, permisos, algo raro), **parar y comentarlo** en lugar de
+  improvisar.
+- En cada commit, revisar si hay que actualizar este archivo.
+
+## 5. Entorno
+
+- Se trabaja en el **Dev Container** (`node:24-bookworm` con Chromium). La web se sirve en
+  <http://localhost:3901>.
+- En Windows, los comandos de npm se ejecutan dentro del contenedor (por ejemplo, con la imagen del
+  Dev Container y la carpeta montada en `/workspace`).
+- `.gitattributes` fuerza los finales de línea LF; sin él, `format:check` falla en Windows.
+
+## 6. Libertades
+
+- **El diseño visual es libre** y lo propone la IA: ahora es un cielo nocturno (estrellas, aurora,
+  cordilleras, paneles de cristal) hecho solo con CSS y SVG, en `css/estilos.css`. El alumno puede
+  cambiarlo cuando quiera.
+- Los textos de la interfaz, los mensajes y los ejemplos se pueden proponer, siempre sin datos reales
+  de personas.
+
+## 7. Decisiones tomadas
+
+- **Merge** frente a rebase (justificado en el README).
+- **Requisito 13** (validador con regla de control): el campo «código de observatorio» con formato
+  `OBS-NNNN-D`, cuyo último dígito es la suma de las cuatro cifras multiplicadas por 3, 1, 3 y 1,
+  módulo 10 (`OBS-4821-7`). Los rangos de las coordenadas GPS se comprueban además, como extra.
+- Los **validadores** devuelven el mensaje de error o `''` si el valor es válido (listo para
+  `setCustomValidity`). Están todos en `js/validadores.js` (registro y captura) y los de formato se
+  reúnen en el objeto `validadores`, cuyas claves son los valores de `data-validar`: `nombreUsuario`,
+  `correo`, `clave`, `gps`, `urlImagen`, `catalogo`, `ascensionRecta`, `declinacion` y
+  `observatorio`. Un validador nuevo se añade a ese objeto. Que un campo obligatorio no quede vacío
+  no lo dicen los validadores, sino `required` y `validity.valueMissing`; el código de observatorio
+  es opcional y vacío es válido. La declinación admite `′ ″` y también `' "` del teclado.
+- **Paginación:** `paginar(lista, pagina, porPagina)` en `js/paginar.js` (pura, sin DOM) devuelve
+  `{ elementos, pagina, totalPaginas }`. Una lista vacía tiene 1 página (vacía), así la página
+  siempre va de 1 al total. Una página fuera de rango va a la más cercana; `NaN` (`?pagina=abc`) va
+  a la 1; los decimales se truncan. Un `porPagina` que no es un entero mayor que 0 lanza
+  `RangeError`. Los controles y `?pagina=` los ponen las páginas que la usan.
+- **Capturas** (`js/capturas.js`): en `localStorage`, una clave por usuario,
+  `horizonte.capturas.<nombre en minúsculas>`. Funciones: `listarCapturas`, `buscarCaptura`
+  (`null` si no existe), `crearCaptura` (el `id` lo pone siempre el módulo, con
+  `crypto.randomUUID()` o la función `crearId` que se le pase; nunca se repite),
+  `actualizarCaptura` (`null` si no existe; conserva `id` y posición) y `borrarCaptura` (`false`
+  si no existe). Todas reciben `(almacen, usuario, …)`, con `usuario` el nombre de la sesión. Se
+  descartan las entradas sin `id` de texto. Si no se puede guardar, lanzan un `Error` con mensaje
+  para el aviso.
+- Los **nombres de usuario no distinguen mayúsculas** («Ana» = «ana»).
+- Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
+  de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
+  tests de integración.
+- La **sesión** se guarda en `sessionStorage` con la clave `horizonte.sesion` y solo contiene el
+  nombre y el rol (nunca el correo ni la contraseña). Si está estropeada, se lee como `null`.
+- **Páginas:** cada página tiene su módulo en `js/paginas/` con una función `iniciarX({ documento,
+  almacenUsuarios, almacenSesion, navegar, resumir })`. El HTML la llama desde un
+  `<script type="module">` pasándole `document`, `localStorage`, `sessionStorage` y
+  `(url) => location.assign(url)`; los tests de integración le pasan `AlmacenFalso` y `vi.fn()`.
+- **Formularios:** la validación en tiempo real es el componente común `js/validacion.js`:
+  `activarValidacion(formulario, { reglas, dependencias, avisoErrores })` devuelve
+  `{ validarCampo, validarFormulario }`. Cada campo se valida por primera vez al salir (`blur` en
+  la fase de captura del formulario) y desde entonces con cada `input`/`change`; los de
+  `dependencias` (`{ clave: ['repetir'] }`) se revalidan al cambiar el otro. El mensaje sale, por
+  orden, de `validity` (texto en `data-vacio` y `data-invalido` del HTML), del validador de
+  `data-validar` (solo si no está vacío) y de la regla de la página. La caja de error es la
+  `.invalid-feedback` de su `aria-describedby`. Los campos `disabled` no se validan. Los botones de
+  opción se validan como grupo, con el que lleva `required`. `validarFormulario` avisa y lleva el
+  foco al primer error. Los formularios nuevos (la ficha) lo usan; no se repite la lógica en cada
+  página. Sin doble envío: botón desactivado y `aria-busy` mientras se envía.
+  Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
+  lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
+  avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
+- **Ficha** (`js/paginas/ficha.js`): `iniciarFicha({ documento, ahora })` se llama desde
+  `ficha.html` después de `iniciarPaginaPrivada`, solo si hay sesión. Campos con `name`:
+  `titulo`, `categoria` (`paisaje`, `cielo`, `espacio`), `fecha`, `lugar`, `gps`, `altitud`,
+  `condiciones`, `equipo`, `observatorio` y, en `#ficha-espacio`, `catalogo`, `ascension` y
+  `declinacion`. El `max` de la fecha es «ahora» con `fechaLocal` (hora local); una regla repite la
+  comprobación porque happy-dom no hace `rangeOverflow` con `datetime-local`. Los datos del espacio
+  se ocultan y se desactivan (el `fieldset` y cada campo) si la categoría no es `espacio`, y al
+  ocultarse se borran sus errores. La categoría se lee con la propiedad `checked` de cada botón, no
+  con `:checked` (happy-dom lo devuelve desactualizado). `iniciarFicha` recibe además `sesion`,
+  `almacenCapturas`, `almacenSesion`, `busqueda` (`location.search`), `navegar` y `reemplazar`.
+  **Imágenes** (0–3, `MIN_IMAGENES`/`MAX_IMAGENES`): desde `#plantilla-imagen`, con campos
+  `imagen-url` (obligatoria, `data-validar="urlImagen"`) e `imagen-pie` (opcional), `id`
+  `ficha-imagen-<n>-url` con un número que nunca se repite, y un solo oyente `click` en
+  `#ficha-imagenes` (delegación con `closest('[data-accion]')`). **Guardar:** `datosDeCaptura(new
+  FormData(formulario))` normaliza (textos con `trim`, `altitud` número, `gps` «lat, lon»,
+  `observatorio` vacío → `null`, `espacio` → `null` si no es del espacio, `imagenes` →
+  `[{ url, pie }]` con `getAll`); se guarda con `crearCaptura` o `actualizarCaptura`, se deja un
+  aviso pendiente y se va al listado. **Editar** con `?id=…`: rellena el formulario; con un `id`
+  que no existe o es de otro usuario, aviso pendiente de error y `reemplazar('listado.html')`.
+- **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
+  («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
+  da el foco.
+- **Páginas privadas** (`listado`, `ficha`, `usuarios`): las protege `iniciarPaginaPrivada` de
+  `js/paginas/privada.js`, que recibe `reemplazar: (url) => location.replace(url)`. Sin sesión, a
+  `index.html` con `replace` (el botón «Atrás» no vuelve); en `usuarios.html`
+  (`soloAdministradores: true`), un usuario normal vuelve al listado con un aviso de error. Rellena la
+  cabecera (nombre, rol, «Usuarios» solo para administradores) y gestiona «Cerrar sesión». Las demás
+  partes de cada página privada se inician después, con la sesión que devuelve.
+- **Avisos:** evento propio `aviso` (`CustomEvent`, `bubbles: true`, `detail: { mensaje, tipo }`) con
+  un único oyente en `document`. Tipos: `exito`, `error`, `advertencia` e `info` (las clases de
+  alerta de Bootstrap). El aviso para la página siguiente se guarda en `sessionStorage` con la clave
+  `horizonte.aviso` y se borra al mostrarse.
+- Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
+  **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
+
+## 8. Estado
+
+- **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
+  Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
+  (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js`,
+  `js/sesion.js`, `js/avisos.js` y `js/formularios.js` (con sus tests al 100 % de cobertura), las
+  reglas de ESLint, las páginas de registro e inicio de sesión y la cabecera común con la protección
+  de las páginas privadas (`js/paginas/`, con tests de integración): el ciclo de sesión completo
+  (registrarse, entrar, ver la cabecera, cerrar sesión) funciona.
+- También hecho: el workflow de integración continua, paso 1 (`ci.yml` con `Calidad` y `Tests`).
+- También hechas: la entrada del sprint 1 en el blog y las secciones del README «Cómo ejecutarlo» y
+  «Almacenamiento y sesión».
+- **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
+- **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
+  cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
+  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
+  campos, campo condicional, imágenes, guardar y editar.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: listado, administración, tests de integración
+  y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
+- **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
+  lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
