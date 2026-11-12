@@ -58,6 +58,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
   encontrar lo que falte por probar, y lo añade.
 - Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores.
+- **JSDoc:** los tipos de función se escriben como `function(string): void` (no `(x: string) => void`,
+  que es sintaxis de TypeScript y rompe `npm run docs`). Si se cambia un comentario JSDoc, comprobar que
+  `npm run docs` sigue sin errores.
 - **Integración continua:** `.github/workflows/ci.yml` ejecuta `Calidad` (lint y formato) y, si pasa,
   `Tests` en cada `push` y cada PR a `main`. Una PR solo se fusiona con sus comprobaciones en verde.
   No se cambian los nombres de los trabajos: Vercel los usará como comprobaciones en el sprint 3.

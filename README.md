@@ -67,9 +67,44 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 
 ## Cómo ejecutarlo
 
-<!-- Cómo abrir el proyecto en el Dev Container y ver la web, y cómo pasar los tests, la cobertura,
-     las pruebas de extremo a extremo, ESLint y Prettier, generar la documentación y preparar la web
-     publicable (`npm run build`). -->
+### Abrir el proyecto
+
+El proyecto trae su **Dev Container** en `.devcontainer/`: un entorno con Node.js 24 y Chromium (para
+las pruebas de extremo a extremo), igual en cualquier ordenador.
+
+1. Con **Docker Desktop** en marcha, abre en VS Code la carpeta del repositorio (la que contiene
+   `.devcontainer/`).
+2. Ejecuta **Dev Containers: Reopen in Container**. La primera vez tarda, porque construye la imagen.
+3. Al crearse, el contenedor ejecuta `npm install`; al abrirse, arranca el servidor de la web.
+4. Abre **<http://localhost:3901>** (si no responde, búscala en el panel **Puertos** de VS Code).
+
+La web usa módulos de JavaScript, así que necesita un servidor: abrir los HTML con doble clic no
+funciona. Las órdenes de abajo se escriben en la terminal de VS Code, que ya es la del contenedor.
+
+### Órdenes
+
+| Orden | Qué hace |
+|-------|----------|
+| `npm test` | Pasa los tests unitarios (`tests/unitarios/`) y de integración (`tests/integracion/`) con Vitest. |
+| `npm run coverage` | Pasa los mismos tests y mide la cobertura; el informe queda en `coverage/`. |
+| `npm run e2e` | Pasa las pruebas de extremo a extremo de `e2e/` con Playwright, en Chromium. Arranca la web solo; con la variable `BASE_URL` las pasa contra otra dirección (por ejemplo, la web publicada). |
+| `npm run lint` | Revisa el JavaScript con ESLint y sus reglas (explicadas en «ESLint y Prettier»). |
+| `npm run format:check` | Comprueba que todo el código tiene el formato de Prettier, sin cambiar nada. |
+| `npm run format` | Le da el formato de Prettier a todo el código. |
+| `npm run docs` | Genera la documentación del código a partir de los comentarios JSDoc, en `docs/`. |
+| `npm run build` | Prepara la web publicable en `dist/`: las páginas, `css/`, `js/`, `img/` y el CSS de Bootstrap. |
+
+`coverage/`, `docs/`, `dist/`, `playwright-report/` y `test-results/` se generan al ejecutar estas
+órdenes y no se suben al repositorio (ver el `.gitignore`).
+
+### Al terminar
+
+Cierra VS Code y borra el contenedor para liberar memoria (tu trabajo está en la carpeta, no se
+pierde). En una terminal de Windows (PowerShell):
+
+```bash
+docker rm -f $(docker ps -aq --filter label=devcontainer.local_folder)
+```
 
 ## Almacenamiento y sesión
 
@@ -323,6 +358,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `cabecera-comun` | Cabecera común y protección de las páginas privadas | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/17) |
 | `ci-paso-1` | Integración continua, paso 1 (`ci.yml`) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/18) |
 | `blog-sprint-1` | Entrada del sprint 1 en el blog | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/19) |
+| `readme-como-ejecutarlo` | Sección «Cómo ejecutarlo» del README y tipos JSDoc para `npm run docs` | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/20) |
 
 #### *Merge* o *rebase*
 

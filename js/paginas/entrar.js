@@ -43,8 +43,8 @@ export const MENSAJE_CREDENCIALES = 'El usuario o la contraseña no son correcto
  * @param {Storage} dependencias.almacenUsuarios - Dónde están los usuarios (`localStorage`).
  * @param {Storage} dependencias.almacenSesion - Dónde van la sesión y los avisos pendientes
  *   (`sessionStorage`).
- * @param {(url: string) => void} dependencias.navegar - Cómo ir a otra página.
- * @param {(clave: string) => Promise<string>} [dependencias.resumir] - Cómo calcular el resumen de
+ * @param {function(string): void} dependencias.navegar - Cómo ir a otra página.
+ * @param {function(string): Promise<string>} [dependencias.resumir] - Cómo calcular el resumen de
  *   la contraseña. Por defecto, `resumirClave`.
  * @returns {boolean} `false` si ya había sesión y se ha ido al listado; `true` si la página se ha
  *   preparado para entrar.
