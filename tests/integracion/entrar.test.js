@@ -1,7 +1,7 @@
 // Test de integración de la página de inicio de sesión: index.html en happy-dom con sus módulos
 // reales. Solo se sustituyen el almacenamiento (AlmacenFalso), el resumen y la navegación.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cargarPagina, escribir } from '../pagina.js';
+import { cargarPagina, escribir, salir } from '../pagina.js';
 import { AlmacenFalso } from '../AlmacenFalso.js';
 import {
   iniciarEntrar,
@@ -171,6 +171,35 @@ describe('página de inicio de sesión', () => {
       iniciar();
       expect(campos.usuario.getAttribute('aria-describedby')).toBe('entrar-usuario-error');
       expect(campos.clave.getAttribute('aria-describedby')).toBe('entrar-clave-error');
+    });
+  });
+
+  describe('validación en tiempo real', () => {
+    it('al salir de un campo vacío se avisa de que falta', () => {
+      iniciar();
+      salir(campos.usuario);
+      expect(errorDe('usuario')).toBe('Escribe tu nombre de usuario.');
+      expect(errorDe('clave')).toBe(''); // el otro campo no se ha tocado
+    });
+
+    it('al salir de un nombre de solo espacios, también cuenta como vacío', () => {
+      iniciar();
+      escribir(campos.usuario, '   ');
+      salir(campos.usuario);
+      expect(errorDe('usuario')).toBe('Escribe tu nombre de usuario.');
+    });
+
+    it('después de salir, el error desaparece en cuanto se escribe', () => {
+      iniciar();
+      salir(campos.clave);
+      expect(errorDe('clave')).toBe('Escribe tu contraseña.');
+      escribir(campos.clave, 'N');
+      expect(errorDe('clave')).toBe('');
+    });
+
+    it('el formulario lleva novalidate: los mensajes los pone el código', () => {
+      iniciar();
+      expect(formulario.hasAttribute('novalidate')).toBe(true);
     });
   });
 
