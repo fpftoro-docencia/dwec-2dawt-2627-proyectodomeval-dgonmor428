@@ -97,7 +97,12 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   `OBS-NNNN-D`, cuyo último dígito es la suma de las cuatro cifras multiplicadas por 3, 1, 3 y 1,
   módulo 10 (`OBS-4821-7`). Los rangos de las coordenadas GPS se comprueban además, como extra.
 - Los **validadores** devuelven el mensaje de error o `''` si el valor es válido (listo para
-  `setCustomValidity`).
+  `setCustomValidity`). Están todos en `js/validadores.js` (registro y captura) y los de formato se
+  reúnen en el objeto `validadores`, cuyas claves son los valores de `data-validar`: `nombreUsuario`,
+  `correo`, `clave`, `gps`, `urlImagen`, `catalogo`, `ascensionRecta`, `declinacion` y
+  `observatorio`. Un validador nuevo se añade a ese objeto. Que un campo obligatorio no quede vacío
+  no lo dicen los validadores, sino `required` y `validity.valueMissing`; el código de observatorio
+  es opcional y vacío es válido. La declinación admite `′ ″` y también `' "` del teclado.
 - Los **nombres de usuario no distinguen mayúsculas** («Ana» = «ana»).
 - Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
   de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
@@ -144,7 +149,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - También hechas: la entrada del sprint 1 en el blog y las secciones del README «Cómo ejecutarlo» y
   «Almacenamiento y sesión».
 - **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
-- **Siguiente: sprint 2** (16–26 de noviembre, tag `v0.2`): validadores de la captura, `paginar`,
+- **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
+  cobertura).
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: `paginar`,
   módulo de capturas, ficha, listado, administración, validación en tiempo real, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
