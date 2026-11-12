@@ -58,6 +58,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
   encontrar lo que falte por probar, y lo añade.
 - Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores.
+- **Integración continua:** `.github/workflows/ci.yml` ejecuta `Calidad` (lint y formato) y, si pasa,
+  `Tests` en cada `push` y cada PR a `main`. Una PR solo se fusiona con sus comprobaciones en verde.
+  No se cambian los nombres de los trabajos: Vercel los usará como comprobaciones en el sprint 3.
 - ESLint tiene, además de `no-var`, `prefer-const` y `eqeqeq`: `no-console` (salvo en `scripts/`),
   `curly`, `no-implicit-coercion` y `camelcase`. El código nuevo tiene que cumplirlas.
 - Al terminar cada tarea, un resumen breve: **qué se ha hecho, para qué sirve ahora y para qué
@@ -133,7 +136,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   reglas de ESLint, las páginas de registro e inicio de sesión y la cabecera común con la protección
   de las páginas privadas (`js/paginas/`, con tests de integración): el ciclo de sesión completo
   (registrarse, entrar, ver la cabecera, cerrar sesión) funciona.
-- **Siguiente:** el workflow de integración continua (`ci.yml`); después, la entrada del blog, la
-  reflexión del sprint en el README y el tag `v0.1` (cierre del sprint 1, 15 de noviembre).
+- También hecho: el workflow de integración continua, paso 1 (`ci.yml` con `Calidad` y `Tests`).
+- **Siguiente:** la entrada del sprint 1 en el blog, la reflexión del sprint en el README y el tag
+  `v0.1` (cierre del sprint 1, 15 de noviembre).
 - **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
   real que encuentre con el depurador de las DevTools. No se inventa.

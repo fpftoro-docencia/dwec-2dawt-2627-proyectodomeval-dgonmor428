@@ -171,14 +171,27 @@ All matched files use Prettier code style!
 
 ### El workflow
 
-<!-- Sprints 1 y 2. Qué hace ci.yml: cuándo se ejecuta, la tabla de sus trabajos y por qué están en
-     ese orden, qué artefactos sube y para qué sirven, y qué hace concurrency. -->
+`.github/workflows/ci.yml` es el *workflow* de integración continua: GitHub Actions lo ejecuta en sus
+servidores **con cada `push` y con cada *pull request* a `main`**. Así cada cambio se comprueba solo,
+antes de fusionarlo, sin depender de que me acuerde de pasar las pruebas. Solo pide permiso para
+**leer** el código (`permissions: contents: read`).
+
+Cada trabajo empieza en una máquina limpia (`ubuntu-latest`): descarga el código, instala Node.js 24
+(con la caché de npm, para que sea más rápido) e instala las dependencias con `npm ci`, que usa las
+versiones exactas de `package-lock.json`.
 
 | Trabajo | Espera a | Pasos | Artefacto |
 |---------|----------|-------|-----------|
-| `Calidad` | — | | — |
-| `Tests` | | | |
-| `E2E` | | | |
+| `Calidad` | — | Descargar el código, Node.js 24, `npm ci`, `npm run lint` y `npm run format:check` | — |
+| `Tests` | `Calidad` | Descargar el código, Node.js 24, `npm ci` y `npm test` | — (sprint 2: informe de cobertura) |
+| `E2E` | `Tests` | Sprint 2 | Sprint 2: informe de Playwright si falla |
+
+**Por qué en ese orden:** `Calidad` es lo más rápido y lo que más a menudo falla (un `if` sin llaves,
+un archivo sin formatear). `Tests` espera a `Calidad` con `needs`: si el código ni siquiera pasa
+ESLint, no tiene sentido gastar minutos en los tests. En el sprint 2, `E2E` esperará a `Tests` por la
+misma razón, porque instalar el navegador es lo más lento.
+
+<!-- Sprint 2: los artefactos (cobertura e informe de Playwright), concurrency y la insignia. -->
 
 **Ejecución en verde con sus artefactos:** <!-- enlace -->
 
@@ -252,6 +265,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `pagina-registro` | Página de registro conectada a sus módulos | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/15) |
 | `pagina-entrar` | Página de inicio de sesión y utilidades comunes de formularios | [#16](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/16) |
 | `cabecera-comun` | Cabecera común y protección de las páginas privadas | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/17) |
+| `ci-paso-1` | Integración continua, paso 1 (`ci.yml`) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/18) |
 
 #### *Merge* o *rebase*
 
