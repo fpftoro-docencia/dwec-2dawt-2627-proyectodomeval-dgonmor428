@@ -108,6 +108,14 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   siempre va de 1 al total. Una página fuera de rango va a la más cercana; `NaN` (`?pagina=abc`) va
   a la 1; los decimales se truncan. Un `porPagina` que no es un entero mayor que 0 lanza
   `RangeError`. Los controles y `?pagina=` los ponen las páginas que la usan.
+- **Capturas** (`js/capturas.js`): en `localStorage`, una clave por usuario,
+  `horizonte.capturas.<nombre en minúsculas>`. Funciones: `listarCapturas`, `buscarCaptura`
+  (`null` si no existe), `crearCaptura` (el `id` lo pone siempre el módulo, con
+  `crypto.randomUUID()` o la función `crearId` que se le pase; nunca se repite),
+  `actualizarCaptura` (`null` si no existe; conserva `id` y posición) y `borrarCaptura` (`false`
+  si no existe). Todas reciben `(almacen, usuario, …)`, con `usuario` el nombre de la sesión. Se
+  descartan las entradas sin `id` de texto. Si no se puede guardar, lanzan un `Error` con mensaje
+  para el aviso.
 - Los **nombres de usuario no distinguen mayúsculas** («Ana» = «ana»).
 - Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
   de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
@@ -155,8 +163,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   «Almacenamiento y sesión».
 - **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
 - **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
-  cobertura) y `paginar` con sus tests.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: módulo de capturas, ficha, listado, administración, validación en tiempo real, tests de integración
+  cobertura), `paginar` y el módulo de capturas, cada uno con sus tests.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: ficha, listado, administración, validación en tiempo real, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).

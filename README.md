@@ -119,9 +119,11 @@ valor por defecto).
 | `horizonte.usuarios` | `localStorage` | La lista de usuarios: nombre, correo, **resumen** SHA-256 de la contraseña (nunca la contraseña) y rol. | `[{"nombre":"ana","correo":"ana@ejemplo.es","resumen":"4f7e57cc…47e5","rol":"administrador"}]` |
 | `horizonte.sesion` | `sessionStorage` | Quién ha entrado y con qué rol. Nada más: ni correo ni contraseña. | `{"nombre":"ana","rol":"administrador"}` |
 | `horizonte.aviso` | `sessionStorage` | Un aviso que espera a la página siguiente («Te has registrado»). Se borra al mostrarse. | `{"mensaje":"Te has registrado…","tipo":"exito"}` |
+| `horizonte.capturas.<usuario>` | `localStorage` | Las capturas de **un** usuario, cada una con su `id` único (`crypto.randomUUID()`). Hay una clave por usuario, con el nombre en minúsculas. | `horizonte.capturas.ana` → `[{"titulo":"Vía Láctea en el Teide","categoria":"espacio",…,"id":"3b241101-…"}]` |
 
-En el sprint 2 se añadirán las capturas de cada usuario, en `localStorage` y en una clave propia de
-ese usuario.
+**Una clave por usuario** (`js/capturas.js`): cada uno lee solo la suya, así que no puede ver ni
+cambiar las capturas de otro, ni aunque conozca su `id`. Si lo guardado está estropeado, se
+descartan las entradas que no son capturas (sin `id` de texto) y se quedan las buenas.
 
 ### Por qué cada dato va donde va
 
@@ -370,6 +372,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `quitar-pendiente-devtools` | Quita del README el pendiente de las DevTools, que no pide el enunciado | [#23](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/23) |
 | `validadores-captura` | Validadores de la captura, el objeto `validadores` para `data-validar` y sus tests | [#24](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/24) |
 | `paginar` | Función pura `paginar` y sus tests | [#25](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/25) |
+| `modulo-capturas` | Módulo de capturas (una clave por usuario, `id` único, lecturas seguras) y sus tests | [#26](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/26) |
 
 #### *Merge* o *rebase*
 
