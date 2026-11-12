@@ -49,8 +49,6 @@
 
     <main id="contenido" class="pagina">
       <div class="envoltorio">
-        <div id="avisos" class="avisos" role="status"></div>
-
         <div class="pagina__cabeza">
           <div>
             <p class="seccion__marca">Cuaderno de campo</p>
@@ -59,33 +57,287 @@
           <a class="volver" href="listado.html">Volver a mis capturas</a>
         </div>
 
-        <!-- El formulario de la captura llegará en el sprint 2 -->
-        <section class="cristal preparacion" aria-labelledby="titulo-preparacion">
-          <h2 id="titulo-preparacion" class="vacio__titulo">Lo que guardarás de cada captura</h2>
-          <ul>
-            <li class="chapa chapa--sin-punto">Título</li>
-            <li class="chapa chapa--sin-punto">Categoría</li>
-            <li class="chapa chapa--sin-punto">Fecha y hora</li>
-            <li class="chapa chapa--sin-punto">Lugar</li>
-            <li class="chapa chapa--sin-punto">Coordenadas GPS</li>
-            <li class="chapa chapa--sin-punto">Altitud</li>
-            <li class="chapa chapa--sin-punto">Condiciones del cielo</li>
-            <li class="chapa chapa--sin-punto">Equipo</li>
-            <li class="chapa chapa--sin-punto">Hasta 3 imágenes</li>
-            <li class="chapa chapa--espacio">Catálogo y coordenadas celestes</li>
-          </ul>
+        <section class="cristal panel panel--ficha" aria-labelledby="titulo-ficha">
+          <div id="avisos" class="avisos" role="status"></div>
+
+          <h2 id="titulo-ficha" class="panel__titulo">Datos de la captura</h2>
+          <p class="panel__entrada">
+            Todos los campos son obligatorios salvo el código de observatorio.
+          </p>
+
+          <!-- novalidate: los mensajes los pone js/validacion.js, no los globos del navegador -->
+          <form id="form-ficha" method="post" novalidate>
+            <div class="rejilla-ficha">
+              <div class="campo rejilla-ficha__ancho">
+                <label class="form-label" for="ficha-titulo">Título</label>
+                <input
+                  class="form-control"
+                  id="ficha-titulo"
+                  name="titulo"
+                  type="text"
+                  maxlength="80"
+                  aria-describedby="ficha-titulo-error"
+                  required
+                  data-vacio="Escribe un título."
+                />
+                <p class="invalid-feedback" id="ficha-titulo-error"></p>
+              </div>
+
+              <!-- Botones de opción: el primero lleva required y los mensajes del grupo -->
+              <fieldset class="campo rejilla-ficha__ancho">
+                <legend class="form-label">Categoría</legend>
+                <div class="categorias">
+                  <div class="form-check categoria categoria--paisaje">
+                    <input
+                      class="form-check-input"
+                      id="ficha-categoria-paisaje"
+                      name="categoria"
+                      type="radio"
+                      value="paisaje"
+                      aria-describedby="ficha-categoria-error"
+                      required
+                      data-vacio="Elige una categoría."
+                    />
+                    <label class="form-check-label" for="ficha-categoria-paisaje">Paisaje</label>
+                  </div>
+                  <div class="form-check categoria categoria--cielo">
+                    <input
+                      class="form-check-input"
+                      id="ficha-categoria-cielo"
+                      name="categoria"
+                      type="radio"
+                      value="cielo"
+                      aria-describedby="ficha-categoria-error"
+                    />
+                    <label class="form-check-label" for="ficha-categoria-cielo">Cielo</label>
+                  </div>
+                  <div class="form-check categoria categoria--espacio">
+                    <input
+                      class="form-check-input"
+                      id="ficha-categoria-espacio"
+                      name="categoria"
+                      type="radio"
+                      value="espacio"
+                      aria-describedby="ficha-categoria-error"
+                    />
+                    <label class="form-check-label" for="ficha-categoria-espacio">Espacio</label>
+                  </div>
+                </div>
+                <p class="invalid-feedback" id="ficha-categoria-error"></p>
+              </fieldset>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-fecha">Fecha y hora</label>
+                <!-- El max (ahora mismo) lo pone js/paginas/ficha.js -->
+                <input
+                  class="form-control"
+                  id="ficha-fecha"
+                  name="fecha"
+                  type="datetime-local"
+                  aria-describedby="ficha-fecha-error"
+                  required
+                  data-vacio="Escribe la fecha y la hora."
+                  data-invalido="La fecha no puede ser futura."
+                />
+                <p class="invalid-feedback" id="ficha-fecha-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-lugar">Lugar</label>
+                <input
+                  class="form-control"
+                  id="ficha-lugar"
+                  name="lugar"
+                  type="text"
+                  maxlength="80"
+                  aria-describedby="ficha-lugar-error"
+                  required
+                  data-vacio="Escribe el lugar."
+                />
+                <p class="invalid-feedback" id="ficha-lugar-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-gps">Coordenadas GPS</label>
+                <input
+                  class="form-control dato"
+                  id="ficha-gps"
+                  name="gps"
+                  type="text"
+                  inputmode="decimal"
+                  spellcheck="false"
+                  placeholder="36.7213, -4.4214"
+                  aria-describedby="ficha-gps-ayuda ficha-gps-error"
+                  required
+                  data-validar="gps"
+                  data-vacio="Escribe las coordenadas."
+                />
+                <p class="form-text" id="ficha-gps-ayuda">
+                  Latitud y longitud, separadas por una coma.
+                </p>
+                <p class="invalid-feedback" id="ficha-gps-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-altitud">Altitud (m)</label>
+                <input
+                  class="form-control dato"
+                  id="ficha-altitud"
+                  name="altitud"
+                  type="number"
+                  min="-430"
+                  max="8849"
+                  step="any"
+                  aria-describedby="ficha-altitud-ayuda ficha-altitud-error"
+                  required
+                  data-vacio="Escribe la altitud."
+                  data-invalido="La altitud va de −430 a 8849 m."
+                />
+                <p class="form-text" id="ficha-altitud-ayuda">
+                  De la orilla del mar Muerto (−430) a la cima del Everest (8849).
+                </p>
+                <p class="invalid-feedback" id="ficha-altitud-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-condiciones">Condiciones del cielo</label>
+                <select
+                  class="form-select"
+                  id="ficha-condiciones"
+                  name="condiciones"
+                  aria-describedby="ficha-condiciones-error"
+                  required
+                  data-vacio="Elige las condiciones del cielo."
+                >
+                  <option value="">Elige…</option>
+                  <option value="despejado">Despejado</option>
+                  <option value="nubes">Nubes</option>
+                  <option value="niebla">Niebla</option>
+                  <option value="lluvia">Lluvia</option>
+                  <option value="tormenta">Tormenta</option>
+                  <option value="nieve">Nieve</option>
+                  <option value="aurora">Aurora</option>
+                </select>
+                <p class="invalid-feedback" id="ficha-condiciones-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-equipo">Equipo</label>
+                <select
+                  class="form-select"
+                  id="ficha-equipo"
+                  name="equipo"
+                  aria-describedby="ficha-equipo-error"
+                  required
+                  data-vacio="Elige el equipo."
+                >
+                  <option value="">Elige…</option>
+                  <option value="movil">Móvil</option>
+                  <option value="camara">Cámara</option>
+                  <option value="prismaticos">Prismáticos</option>
+                  <option value="telescopio">Telescopio</option>
+                </select>
+                <p class="invalid-feedback" id="ficha-equipo-error"></p>
+              </div>
+
+              <div class="campo rejilla-ficha__ancho">
+                <label class="form-label" for="ficha-observatorio">
+                  Código de observatorio <span class="opcional">(opcional)</span>
+                </label>
+                <input
+                  class="form-control dato"
+                  id="ficha-observatorio"
+                  name="observatorio"
+                  type="text"
+                  spellcheck="false"
+                  placeholder="OBS-4821-7"
+                  aria-describedby="ficha-observatorio-ayuda ficha-observatorio-error"
+                  data-validar="observatorio"
+                />
+                <p class="form-text" id="ficha-observatorio-ayuda">
+                  Si la tomaste desde un observatorio: OBS, cuatro cifras y su dígito de control.
+                </p>
+                <p class="invalid-feedback" id="ficha-observatorio-error"></p>
+              </div>
+
+              <!--
+                Campo condicional: solo con la categoría «Espacio». js/paginas/ficha.js le quita
+                hidden (para que se vea) y disabled (para que se valide y se envíe). Desactivar el
+                fieldset desactiva todos sus campos de una vez.
+              -->
+              <fieldset class="espacio rejilla-ficha__ancho" id="ficha-espacio" hidden disabled>
+                <legend class="espacio__titulo">Datos del espacio</legend>
+                <div class="rejilla-ficha rejilla-ficha--tres">
+                  <div class="campo">
+                    <label class="form-label" for="ficha-catalogo">Código de catálogo</label>
+                    <input
+                      class="form-control dato"
+                      id="ficha-catalogo"
+                      name="catalogo"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="M42"
+                      aria-describedby="ficha-catalogo-error"
+                      required
+                      data-validar="catalogo"
+                      data-vacio="Escribe el código de catálogo."
+                    />
+                    <p class="invalid-feedback" id="ficha-catalogo-error"></p>
+                  </div>
+                  <div class="campo">
+                    <label class="form-label" for="ficha-ascension">Ascensión recta</label>
+                    <input
+                      class="form-control dato"
+                      id="ficha-ascension"
+                      name="ascension"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="05h 35m 17s"
+                      aria-describedby="ficha-ascension-error"
+                      required
+                      data-validar="ascensionRecta"
+                      data-vacio="Escribe la ascensión recta."
+                    />
+                    <p class="invalid-feedback" id="ficha-ascension-error"></p>
+                  </div>
+                  <div class="campo">
+                    <label class="form-label" for="ficha-declinacion">Declinación</label>
+                    <input
+                      class="form-control dato"
+                      id="ficha-declinacion"
+                      name="declinacion"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="-05° 23′ 28″"
+                      aria-describedby="ficha-declinacion-error"
+                      required
+                      data-validar="declinacion"
+                      data-vacio="Escribe la declinación."
+                    />
+                    <p class="invalid-feedback" id="ficha-declinacion-error"></p>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+
+            <button class="btn btn-amanecer" type="submit">Guardar captura</button>
+          </form>
         </section>
       </div>
     </main>
-    <!-- Protege la página (sesión) y prepara la cabecera común -->
+    <!-- Protege la página (sesión), prepara la cabecera común y, si hay sesión, la ficha -->
     <script type="module">
       import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+      import { iniciarFicha } from './js/paginas/ficha.js';
 
-      iniciarPaginaPrivada({
+      const sesion = iniciarPaginaPrivada({
         documento: document,
         almacenSesion: sessionStorage,
         reemplazar: (url) => location.replace(url),
       });
+      if (sesion !== null) {
+        iniciarFicha({ documento: document });
+      }
     </script>
   </body>
 </html>
