@@ -100,7 +100,7 @@ function crearAviso(documento, { mensaje, tipo }) {
  *
  * @param {Document} documento - El documento de la página.
  * @param {HTMLElement} region - La región de avisos (con `role="status"`).
- * @returns {() => void} Una función que quita los oyentes (útil en los tests).
+ * @returns {function(): void} Una función que quita los oyentes (útil en los tests).
  * @listens aviso
  * @listens click
  * @example

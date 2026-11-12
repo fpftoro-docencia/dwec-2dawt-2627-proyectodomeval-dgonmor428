@@ -52,8 +52,8 @@ export const PAGINA_TRAS_REGISTRO = 'listado.html';
  * @param {Storage} dependencias.almacenUsuarios - Dónde están los usuarios (`localStorage`).
  * @param {Storage} dependencias.almacenSesion - Dónde van la sesión y los avisos pendientes
  *   (`sessionStorage`).
- * @param {(url: string) => void} dependencias.navegar - Cómo ir a otra página.
- * @param {(clave: string) => Promise<string>} [dependencias.resumir] - Cómo calcular el resumen de
+ * @param {function(string): void} dependencias.navegar - Cómo ir a otra página.
+ * @param {function(string): Promise<string>} [dependencias.resumir] - Cómo calcular el resumen de
  *   la contraseña. Por defecto, `resumirClave`.
  * @returns {void}
  * @listens submit
