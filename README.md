@@ -32,8 +32,8 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 | Ascensión recta | Texto | Sí, si se ve | Regex del formato `05h 35m 17s` | «Escribe la ascensión recta.» / «Usa el formato 05h 35m 17s.» |
 | Declinación | Texto | Sí, si se ve | Regex del formato `-05° 23′ 28″` (también con `'` y `"` del teclado) | «Escribe la declinación.» / «Usa el formato -05° 23′ 28″.» |
 | **Grupo dinámico: imágenes** (de 0 a 3, desde un `<template>`) | | | | |
-| URL de la imagen | Texto | Sí, en cada imagen añadida | Regex de URL `http://` o `https://` (se guarda la URL, no el fichero, porque `localStorage` solo admite unos 5 MB) | «Escribe una URL que empiece por http:// o https://.» |
-| Pie de foto | Texto | No | — | — |
+| URL de la imagen | Texto | Sí, en cada imagen añadida | Regex de URL `http://` o `https://` (se guarda la URL, no el fichero, porque `localStorage` solo admite unos 5 MB) | «Escribe la dirección de la imagen.» / «Escribe una URL que empiece por http:// o https://.» |
+| Pie de foto | Texto | No | Como mucho 120 caracteres | «Usa 120 caracteres como mucho.» |
 
 ### El registro de usuarios
 
@@ -375,6 +375,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `modulo-capturas` | Módulo de capturas (una clave por usuario, `id` único, lecturas seguras) y sus tests | [#26](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/26) |
 | `validacion-tiempo-real` | Componente común de validación en tiempo real, usado en el registro y el inicio de sesión | [#27](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/27) |
 | `ficha-campos` | Ficha: los campos de la captura, el campo condicional del espacio y el `max` de la fecha | [#28](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/28) |
+| `ficha-guardar` | Ficha: grupo dinámico de imágenes, guardar con `FormData` y editar con `?id=…` | [#29](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/29) |
 
 #### *Merge* o *rebase*
 
