@@ -140,6 +140,16 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
   lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
   avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
+- **Ficha** (`js/paginas/ficha.js`): `iniciarFicha({ documento, ahora })` se llama desde
+  `ficha.html` después de `iniciarPaginaPrivada`, solo si hay sesión. Campos con `name`:
+  `titulo`, `categoria` (`paisaje`, `cielo`, `espacio`), `fecha`, `lugar`, `gps`, `altitud`,
+  `condiciones`, `equipo`, `observatorio` y, en `#ficha-espacio`, `catalogo`, `ascension` y
+  `declinacion`. El `max` de la fecha es «ahora» con `fechaLocal` (hora local); una regla repite la
+  comprobación porque happy-dom no hace `rangeOverflow` con `datetime-local`. Los datos del espacio
+  se ocultan y se desactivan (el `fieldset` y cada campo) si la categoría no es `espacio`, y al
+  ocultarse se borran sus errores. La categoría se lee con la propiedad `checked` de cada botón, no
+  con `:checked` (happy-dom lo devuelve desactualizado). Al enviar sin errores, de momento solo
+  avisa «Todos los datos son correctos.»: guardar y editar es la tarjeta siguiente.
 - **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
   («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
   da el foco.
@@ -171,8 +181,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
 - **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
   cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
-  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: ficha, listado, administración, tests de integración
+  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha tiene sus
+  campos y el campo condicional.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: ficha (imágenes, guardar y editar), listado, administración, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
