@@ -257,9 +257,6 @@ Checking formatting...
 All matched files use Prettier code style!
 ```
 
-<!-- Pendiente: un problema real que encuentre con el depurador de las DevTools y cómo lo resolví.
-     Se escribirá cuando ocurra, con mis palabras (las páginas aún no tienen JavaScript). -->
-
 ### El workflow
 
 `.github/workflows/ci.yml` es el *workflow* de integración continua: GitHub Actions lo ejecuta en sus
@@ -370,6 +367,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `readme-como-ejecutarlo` | Sección «Cómo ejecutarlo» del README y tipos JSDoc para `npm run docs` | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/20) |
 | `readme-almacenamiento` | Sección «Almacenamiento y sesión» del README | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/21) |
 | `cierre-sprint-1` | Cierre del sprint 1: reflexión y repaso de la Definición de Hecho | [#22](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/22) |
+| `quitar-pendiente-devtools` | Quita del README el pendiente de las DevTools, que no pide el enunciado | [#23](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/23) |
 
 #### *Merge* o *rebase*
 

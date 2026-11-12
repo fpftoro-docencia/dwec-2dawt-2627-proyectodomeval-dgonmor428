@@ -147,5 +147,5 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Siguiente: sprint 2** (16–26 de noviembre, tag `v0.2`): validadores de la captura, `paginar`,
   módulo de capturas, ficha, listado, administración, validación en tiempo real, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
-- **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
-  real que encuentre con el depurador de las DevTools. No se inventa.
+- **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
+  lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
