@@ -369,6 +369,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `cierre-sprint-1` | Cierre del sprint 1: reflexión y repaso de la Definición de Hecho | [#22](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/22) |
 | `quitar-pendiente-devtools` | Quita del README el pendiente de las DevTools, que no pide el enunciado | [#23](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/23) |
 | `validadores-captura` | Validadores de la captura, el objeto `validadores` para `data-validar` y sus tests | [#24](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/24) |
+| `paginar` | Función pura `paginar` y sus tests | [#25](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/25) |
 
 #### *Merge* o *rebase*
 

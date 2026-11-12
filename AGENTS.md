@@ -103,6 +103,11 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   `observatorio`. Un validador nuevo se añade a ese objeto. Que un campo obligatorio no quede vacío
   no lo dicen los validadores, sino `required` y `validity.valueMissing`; el código de observatorio
   es opcional y vacío es válido. La declinación admite `′ ″` y también `' "` del teclado.
+- **Paginación:** `paginar(lista, pagina, porPagina)` en `js/paginar.js` (pura, sin DOM) devuelve
+  `{ elementos, pagina, totalPaginas }`. Una lista vacía tiene 1 página (vacía), así la página
+  siempre va de 1 al total. Una página fuera de rango va a la más cercana; `NaN` (`?pagina=abc`) va
+  a la 1; los decimales se truncan. Un `porPagina` que no es un entero mayor que 0 lanza
+  `RangeError`. Los controles y `?pagina=` los ponen las páginas que la usan.
 - Los **nombres de usuario no distinguen mayúsculas** («Ana» = «ana»).
 - Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
   de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
@@ -150,9 +155,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   «Almacenamiento y sesión».
 - **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
 - **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
-  cobertura).
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: `paginar`,
-  módulo de capturas, ficha, listado, administración, validación en tiempo real, tests de integración
+  cobertura) y `paginar` con sus tests.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: módulo de capturas, ficha, listado, administración, validación en tiempo real, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
