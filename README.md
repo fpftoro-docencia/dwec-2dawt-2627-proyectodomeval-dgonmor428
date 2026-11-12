@@ -20,17 +20,17 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 |-------|---------|:-----------:|---------------------|-------------------------|
 | Título | Texto | Sí | No puede quedar vacío | «Escribe un título.» |
 | Categoría | Botones de opción: Paisaje, Cielo, Espacio | Sí | Hay que elegir una | «Elige una categoría.» |
-| Fecha y hora | `datetime-local` | Sí | No puede ser futura (el `max` lo pone el código con la fecha de hoy) | «La fecha no puede ser futura.» |
+| Fecha y hora | `datetime-local` | Sí | No puede ser futura (el `max` lo pone el código con la fecha y la hora de ahora) | «Escribe la fecha y la hora.» / «La fecha no puede ser futura.» |
 | Lugar | Texto | Sí | No puede quedar vacío | «Escribe el lugar.» |
-| Coordenadas GPS | Texto | Sí | Regex del formato `36.7213, -4.4214` **y** comprobación con código de los rangos (latitud entre −90 y 90, longitud entre −180 y 180) | «Usa el formato 36.7213, -4.4214.» / «La latitud va de −90 a 90 y la longitud de −180 a 180.» |
-| Altitud (m) | Número | Sí | Entre −430 y 8849 | «La altitud va de −430 a 8849 m.» |
-| Condiciones del cielo | Lista desplegable: despejado, nubes, niebla, tormenta, aurora… | Sí | Hay que elegir una | «Elige las condiciones del cielo.» |
+| Coordenadas GPS | Texto | Sí | Regex del formato `36.7213, -4.4214` **y** comprobación con código de los rangos (latitud entre −90 y 90, longitud entre −180 y 180) | «Escribe las coordenadas.» / «Usa el formato 36.7213, -4.4214.» / «La latitud va de −90 a 90 y la longitud de −180 a 180.» |
+| Altitud (m) | Número | Sí | Entre −430 y 8849 | «Escribe la altitud.» / «La altitud va de −430 a 8849 m.» |
+| Condiciones del cielo | Lista desplegable: despejado, nubes, niebla, lluvia, tormenta, nieve, aurora | Sí | Hay que elegir una | «Elige las condiciones del cielo.» |
 | Equipo | Lista desplegable: móvil, cámara, prismáticos, telescopio | Sí | Hay que elegir uno | «Elige el equipo.» |
 | Código de observatorio | Texto | No | Si se rellena: regex `OBS-NNNN-D` **y** comprobación con código de que el último dígito (D) es el dígito de control: la suma de las cuatro cifras multiplicadas por 3, 1, 3 y 1, módulo 10 (`OBS-4821-7`: 4·3 + 8·1 + 2·3 + 1·1 = 27 → 7) | «Usa el formato OBS-4821-7.» / «El dígito de control no es correcto.» |
 | **Campo condicional** (solo si la categoría es «Espacio»; con `hidden` y `disabled` en otro caso) | | | | |
-| Código de catálogo | Texto | Sí, si se ve | Regex: `M42`, `NGC 1976`, `IC 434` | «Usa un código como M42, NGC 1976 o IC 434.» |
-| Ascensión recta | Texto | Sí, si se ve | Regex del formato `05h 35m 17s` | «Usa el formato 05h 35m 17s.» |
-| Declinación | Texto | Sí, si se ve | Regex del formato `-05° 23′ 28″` | «Usa el formato -05° 23′ 28″.» |
+| Código de catálogo | Texto | Sí, si se ve | Regex: `M42`, `NGC 1976`, `IC 434` | «Escribe el código de catálogo.» / «Usa un código como M42, NGC 1976 o IC 434.» |
+| Ascensión recta | Texto | Sí, si se ve | Regex del formato `05h 35m 17s` | «Escribe la ascensión recta.» / «Usa el formato 05h 35m 17s.» |
+| Declinación | Texto | Sí, si se ve | Regex del formato `-05° 23′ 28″` (también con `'` y `"` del teclado) | «Escribe la declinación.» / «Usa el formato -05° 23′ 28″.» |
 | **Grupo dinámico: imágenes** (de 0 a 3, desde un `<template>`) | | | | |
 | URL de la imagen | Texto | Sí, en cada imagen añadida | Regex de URL `http://` o `https://` (se guarda la URL, no el fichero, porque `localStorage` solo admite unos 5 MB) | «Escribe una URL que empiece por http:// o https://.» |
 | Pie de foto | Texto | No | — | — |
@@ -374,6 +374,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `paginar` | Función pura `paginar` y sus tests | [#25](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/25) |
 | `modulo-capturas` | Módulo de capturas (una clave por usuario, `id` único, lecturas seguras) y sus tests | [#26](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/26) |
 | `validacion-tiempo-real` | Componente común de validación en tiempo real, usado en el registro y el inicio de sesión | [#27](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/27) |
+| `ficha-campos` | Ficha: los campos de la captura, el campo condicional del espacio y el `max` de la fecha | [#28](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/28) |
 
 #### *Merge* o *rebase*
 
