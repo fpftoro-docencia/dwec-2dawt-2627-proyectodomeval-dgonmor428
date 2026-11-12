@@ -39,9 +39,9 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 
 | Campo | Control | Regla | Mensaje |
 |-------|---------|-------|---------|
-| Nombre de usuario | Texto | Regex: de 3 a 20 caracteres entre letras, cifras y `_`; y no puede estar ocupado | «Usa de 3 a 20 letras, cifras o _.» / «Ese nombre ya está en uso.» |
-| Correo | Correo (`type="email"`) | Regex de correo | «Escribe un correo válido.» |
-| Contraseña | Contraseña | Mínimo 8 caracteres, con una minúscula (`\p{Ll}`), una mayúscula (`\p{Lu}`) y una cifra. Se ve cuáles cumple mientras se escribe | «La contraseña no cumple todos los requisitos.» |
+| Nombre de usuario | Texto | Obligatorio; regex: de 3 a 20 caracteres entre letras, cifras y `_`; y no puede estar ocupado | «Escribe un nombre de usuario.» / «Usa de 3 a 20 letras, cifras o _.» / «Ese nombre ya está en uso.» |
+| Correo | Correo (`type="email"`) | Obligatorio; regex de correo | «Escribe tu correo.» / «Escribe un correo válido.» |
+| Contraseña | Contraseña | Obligatoria; mínimo 8 caracteres, con una minúscula (`\p{Ll}`), una mayúscula (`\p{Lu}`) y una cifra. Se ve cuáles cumple mientras se escribe | «Escribe una contraseña.» / «La contraseña no cumple todos los requisitos.» |
 | Repetir contraseña | Contraseña | Obligatoria e igual que la contraseña | «Repite la contraseña.» / «Las contraseñas no coinciden.» |
 | Aceptación | Casilla | Obligatoria | «Tienes que aceptar las condiciones.» |
 
@@ -373,6 +373,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `validadores-captura` | Validadores de la captura, el objeto `validadores` para `data-validar` y sus tests | [#24](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/24) |
 | `paginar` | Función pura `paginar` y sus tests | [#25](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/25) |
 | `modulo-capturas` | Módulo de capturas (una clave por usuario, `id` único, lecturas seguras) y sus tests | [#26](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/26) |
+| `validacion-tiempo-real` | Componente común de validación en tiempo real, usado en el registro y el inicio de sesión | [#27](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/27) |
 
 #### *Merge* o *rebase*
 
