@@ -148,8 +148,17 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   comprobación porque happy-dom no hace `rangeOverflow` con `datetime-local`. Los datos del espacio
   se ocultan y se desactivan (el `fieldset` y cada campo) si la categoría no es `espacio`, y al
   ocultarse se borran sus errores. La categoría se lee con la propiedad `checked` de cada botón, no
-  con `:checked` (happy-dom lo devuelve desactualizado). Al enviar sin errores, de momento solo
-  avisa «Todos los datos son correctos.»: guardar y editar es la tarjeta siguiente.
+  con `:checked` (happy-dom lo devuelve desactualizado). `iniciarFicha` recibe además `sesion`,
+  `almacenCapturas`, `almacenSesion`, `busqueda` (`location.search`), `navegar` y `reemplazar`.
+  **Imágenes** (0–3, `MIN_IMAGENES`/`MAX_IMAGENES`): desde `#plantilla-imagen`, con campos
+  `imagen-url` (obligatoria, `data-validar="urlImagen"`) e `imagen-pie` (opcional), `id`
+  `ficha-imagen-<n>-url` con un número que nunca se repite, y un solo oyente `click` en
+  `#ficha-imagenes` (delegación con `closest('[data-accion]')`). **Guardar:** `datosDeCaptura(new
+  FormData(formulario))` normaliza (textos con `trim`, `altitud` número, `gps` «lat, lon»,
+  `observatorio` vacío → `null`, `espacio` → `null` si no es del espacio, `imagenes` →
+  `[{ url, pie }]` con `getAll`); se guarda con `crearCaptura` o `actualizarCaptura`, se deja un
+  aviso pendiente y se va al listado. **Editar** con `?id=…`: rellena el formulario; con un `id`
+  que no existe o es de otro usuario, aviso pendiente de error y `reemplazar('listado.html')`.
 - **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
   («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
   da el foco.
@@ -181,9 +190,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
 - **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
   cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
-  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha tiene sus
-  campos y el campo condicional.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: ficha (imágenes, guardar y editar), listado, administración, tests de integración
+  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
+  campos, campo condicional, imágenes, guardar y editar.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: listado, administración, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
