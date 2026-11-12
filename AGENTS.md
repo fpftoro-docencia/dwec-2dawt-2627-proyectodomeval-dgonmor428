@@ -57,7 +57,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Doble testeo** en todas las tarjetas: después de los tests, una segunda pasada que repasa cada
   punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
   encontrar lo que falte por probar, y lo añade.
-- Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores.
+- Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores. El «doble testeo»
+  es una condición de la Definición de Hecho del README.
 - **JSDoc:** los tipos de función se escriben como `function(string): void` (no `(x: string) => void`,
   que es sintaxis de TypeScript y rompe `npm run docs`). Si se cambia un comentario JSDoc, comprobar que
   `npm run docs` sigue sin errores.
@@ -142,7 +143,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - También hecho: el workflow de integración continua, paso 1 (`ci.yml` con `Calidad` y `Tests`).
 - También hechas: la entrada del sprint 1 en el blog y las secciones del README «Cómo ejecutarlo» y
   «Almacenamiento y sesión».
-- **Siguiente:** el cierre del sprint 1: reflexión en el README, repaso de la Definición de Hecho y
-  tag `v0.1` (15 de noviembre).
+- **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
+- **Siguiente: sprint 2** (16–26 de noviembre, tag `v0.2`): validadores de la captura, `paginar`,
+  módulo de capturas, ficha, listado, administración, validación en tiempo real, tests de integración
+  y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
   real que encuentre con el depurador de las DevTools. No se inventa.

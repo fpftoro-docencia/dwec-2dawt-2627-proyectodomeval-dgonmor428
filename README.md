@@ -320,7 +320,16 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 - [ ] **Probada a mano:** si la tarea cambia lo que se ve o se hace en la web, se ha probado en el navegador, en una ventana privada para empezar con el almacenamiento vacío.
 - [ ] **Documentada:** si la tarea cambia el comportamiento o la estructura, el README (y el JSDoc, desde el sprint 3) está al día. Los *commits* son pequeños y con mensajes que dicen qué cambia.
 
-*Cambios en la Definición de Hecho:* ninguno todavía. Si la cambio en algún sprint, lo anotaré aquí con qué cambio y por qué.
+- [ ] **Doble testeo:** después de los tests, una segunda pasada repasa cada punto de la tarjeta
+  frente a los tests y mira la cobertura del módulo (`npx vitest run --coverage`): no quedan líneas
+  sin probar, o lo que queda está justificado.
+
+*Cambios en la Definición de Hecho:*
+
+- **Cierre del sprint 1 (12/11/2026):** añadida la condición «Doble testeo». La aplicaba desde la
+  mitad del sprint y encontró fallos reales que la primera pasada no vio (una contraseña repetida
+  vacía que se daba por buena, `npm run docs` roto). Si la uso siempre, tiene que estar en la lista.
+  La condición del *workflow* en verde ya se cumple de verdad desde la *pull request* 18.
 
 ### Sprints
 
@@ -329,7 +338,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 | Sprint | *Tag* | Qué incluye | Reflexión |
 |--------|-------|-------------|-----------|
-| 1 | `v0.1` | Usuarios, sesión y roles, avisos, ESLint, tests unitarios y `ci.yml` (calidad y tests) | *(al cerrar el sprint)* |
+| 1 | `v0.1` | Las cinco páginas con su diseño; usuarios, sesión y roles; registro e inicio de sesión; cabecera común y protección de páginas; avisos; ESLint con cuatro reglas propias; 191 tests (unitarios y de integración); `ci.yml` con `Calidad` y `Tests` | **Bien:** módulos pequeños, cada uno con sus tests desde el principio (100 % de cobertura), y probar en el navegador además de con tests, que encontró fallos que los tests no veían. **Mal:** empecé tarde (las primeras tarjetas de código se pasaron de fecha), deseché el primer diseño entero y dos tarjetas de documentación se quedaron olvidadas hasta el cierre. **Cambio para el sprint 2:** repasar el tablero completo al empezar cada día, ir por orden de fecha y hacer la documentación de cada parte junto a su código, no al final. |
 | 2 | `v0.2` | Validadores de la captura, `paginar`, CRUD (ficha y listado), administración, validación en tiempo real, tests de integración y e2e, cobertura y `ci.yml` completo | *(al cerrar el sprint)* |
 | 3 | `v1.0` | Vercel, Deployment Checks, `despliegue.yml`, prueba de humo, `release.yml`, evidencias, JSDoc y entrega | *(al cerrar el sprint)* |
 
@@ -360,6 +369,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `blog-sprint-1` | Entrada del sprint 1 en el blog | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/19) |
 | `readme-como-ejecutarlo` | Sección «Cómo ejecutarlo» del README y tipos JSDoc para `npm run docs` | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/20) |
 | `readme-almacenamiento` | Sección «Almacenamiento y sesión» del README | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/21) |
+| `cierre-sprint-1` | Cierre del sprint 1: reflexión y repaso de la Definición de Hecho | [#22](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/22) |
 
 #### *Merge* o *rebase*
 
