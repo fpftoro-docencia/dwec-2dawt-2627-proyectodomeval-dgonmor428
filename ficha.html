@@ -52,7 +52,7 @@
         <div class="pagina__cabeza">
           <div>
             <p class="seccion__marca">Cuaderno de campo</p>
-            <h1 class="pagina__titulo">Nueva captura</h1>
+            <h1 class="pagina__titulo" id="ficha-encabezado">Nueva captura</h1>
           </div>
           <a class="volver" href="listado.html">Volver a mis capturas</a>
         </div>
@@ -318,10 +318,71 @@
                   </div>
                 </div>
               </fieldset>
+
+              <!--
+                Grupo dinámico: de 0 a 3 imágenes. Cada una se crea desde la plantilla
+                #plantilla-imagen; js/paginas/ficha.js le pone ids únicos y la añade a la lista.
+                «Añadir» y «Quitar» los atiende un solo oyente en el fieldset (delegación).
+              -->
+              <fieldset class="campo imagenes rejilla-ficha__ancho" id="ficha-imagenes">
+                <legend class="form-label">Imágenes <span class="opcional">(hasta 3)</span></legend>
+                <p class="form-text imagenes__ayuda">
+                  Pega la dirección de cada imagen: se guarda el enlace, no el archivo.
+                  <span id="ficha-imagenes-cuenta" class="imagenes__cuenta">0 de 3</span>
+                </p>
+                <ol class="imagenes__lista" id="ficha-imagenes-lista"></ol>
+                <button class="btn btn-luz btn-sm" type="button" data-accion="anadir-imagen">
+                  Añadir imagen
+                </button>
+              </fieldset>
             </div>
 
-            <button class="btn btn-amanecer" type="submit">Guardar captura</button>
+            <button class="btn btn-amanecer" id="ficha-guardar" type="submit">
+              Guardar captura
+            </button>
           </form>
+
+          <!-- Plantilla de una imagen: no se ve ni se envía hasta que el código la copia -->
+          <template id="plantilla-imagen">
+            <li class="imagen">
+              <div class="imagen__cabeza">
+                <span class="imagen__numero">Imagen</span>
+                <button class="btn-quitar" type="button" data-accion="quitar-imagen">Quitar</button>
+              </div>
+              <div class="imagen__campos">
+                <div>
+                  <label class="form-label" data-parte="url">Dirección (URL)</label>
+                  <input
+                    class="form-control dato"
+                    name="imagen-url"
+                    type="text"
+                    inputmode="url"
+                    spellcheck="false"
+                    placeholder="https://"
+                    data-parte="url"
+                    required
+                    data-validar="urlImagen"
+                    data-vacio="Escribe la dirección de la imagen."
+                  />
+                  <p class="invalid-feedback" data-parte="url-error"></p>
+                </div>
+                <div>
+                  <label class="form-label" data-parte="pie">
+                    Pie de foto <span class="opcional">(opcional)</span>
+                  </label>
+                  <input
+                    class="form-control"
+                    name="imagen-pie"
+                    type="text"
+                    maxlength="120"
+                    data-parte="pie"
+                    data-invalido="Usa 120 caracteres como mucho."
+                  />
+                  <p class="invalid-feedback" data-parte="pie-error"></p>
+                </div>
+              </div>
+            </li>
+          </template>
         </section>
       </div>
     </main>
@@ -336,7 +397,15 @@
         reemplazar: (url) => location.replace(url),
       });
       if (sesion !== null) {
-        iniciarFicha({ documento: document });
+        iniciarFicha({
+          documento: document,
+          sesion,
+          almacenCapturas: localStorage,
+          almacenSesion: sessionStorage,
+          busqueda: location.search,
+          navegar: (url) => location.assign(url),
+          reemplazar: (url) => location.replace(url),
+        });
       }
     </script>
   </body>

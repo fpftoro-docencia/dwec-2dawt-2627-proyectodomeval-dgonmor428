@@ -1867,3 +1867,85 @@ input[type='datetime-local'] {
     grid-column: 1 / -1;
   }
 }
+
+/* El grupo de imágenes: cada una en su tarjeta, con su número y su botón «Quitar» */
+.imagenes__ayuda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.imagenes__cuenta {
+  color: var(--texto-suave);
+  font-family: var(--letra-datos);
+}
+
+.imagenes__lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.imagenes__lista:empty {
+  margin: 0;
+}
+
+.imagen {
+  padding: 1rem 1rem 0;
+  border: 1px solid var(--cristal-borde);
+  border-radius: var(--radio-peque);
+  background: var(--cristal-brillo);
+}
+
+.imagen__cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.imagen__numero {
+  color: var(--ambar);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.imagen__campos {
+  display: grid;
+  gap: 0 1rem;
+}
+
+.imagen__campos > div {
+  margin-bottom: 1rem;
+}
+
+.btn-quitar {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgb(255 107 91 / 45%);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffa69c;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-quitar:hover,
+.btn-quitar:focus-visible {
+  background: rgb(255 107 91 / 14%);
+}
+
+.imagenes .btn:disabled {
+  cursor: not-allowed;
+}
+
+@media (min-width: 48rem) {
+  .imagen__campos {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}
