@@ -135,7 +135,7 @@ export function nombreOcupado(almacen, nombre) {
  *
  * @param {Storage} almacen - Dónde se guardan los usuarios.
  * @param {{ nombre: string, correo: string, clave: string }} datos - Los datos del formulario.
- * @param {(clave: string) => Promise<string>} [resumir] - Cómo calcular el resumen de la
+ * @param {function(string): Promise<string>} [resumir] - Cómo calcular el resumen de la
  *   contraseña. Por defecto, `resumirClave`.
  * @returns {Promise<Usuario>} El usuario registrado, sin el resumen.
  * @throws {Error} Si el nombre ya está ocupado o si no se ha podido guardar.
@@ -177,7 +177,7 @@ export async function registrarUsuario(almacen, { nombre, correo, clave }, resum
  * @param {Storage} almacen - Dónde están los usuarios.
  * @param {string} nombre - El nombre escrito (sin distinguir mayúsculas).
  * @param {string} clave - La contraseña escrita.
- * @param {(clave: string) => Promise<string>} [resumir] - Cómo calcular el resumen. Por defecto,
+ * @param {function(string): Promise<string>} [resumir] - Cómo calcular el resumen. Por defecto,
  *   `resumirClave`.
  * @returns {Promise<Usuario|null>} El usuario si la contraseña es correcta; `null` si el usuario no
  *   existe o la contraseña no coincide.

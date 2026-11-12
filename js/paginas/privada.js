@@ -44,11 +44,11 @@ const NOMBRES_ROL = Object.freeze({
  * @param {Document} dependencias.documento - El documento de la página.
  * @param {Storage} dependencias.almacenSesion - Dónde están la sesión y los avisos pendientes
  *   (`sessionStorage`).
- * @param {(url: string) => void} dependencias.reemplazar - Cómo ir a otra página sustituyendo la
+ * @param {function(string): void} dependencias.reemplazar - Cómo ir a otra página sustituyendo la
  *   actual en el historial (`location.replace`).
  * @param {boolean} [dependencias.soloAdministradores] - `true` en las páginas solo para
  *   administradores. Por defecto, `false`.
- * @returns {import('../sesion.js').Sesion|null} La sesión si la persona puede quedarse en la página;
+ * @returns {module:sesion~Sesion|null} La sesión si la persona puede quedarse en la página;
  *   `null` si se la ha llevado a otra.
  * @listens click
  * @fires aviso
