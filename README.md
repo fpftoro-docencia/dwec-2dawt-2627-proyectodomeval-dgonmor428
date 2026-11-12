@@ -108,12 +108,68 @@ docker rm -f $(docker ps -aq --filter label=devcontainer.local_folder)
 
 ## Almacenamiento y sesión
 
-<!-- 1. Tabla con cada clave que usas: dónde está (localStorage o sessionStorage), qué guarda y un
-        ejemplo de su contenido.
-     2. Por qué cada dato va donde va.
-     3. Cómo guardas el rol y cómo proteges las páginas por sesión y por rol.
-     4. Por qué este inicio de sesión NO es seguro: qué podría hacer alguien con las DevTools y cómo
-        se hace en una aplicación real. -->
+Horizonte no tiene servidor: todo se guarda en el navegador, siempre como texto JSON y siempre a
+través de `js/almacen.js`, cuyas lecturas nunca fallan (si lo guardado está estropeado, devuelven un
+valor por defecto).
+
+### Las claves
+
+| Clave | Dónde | Qué guarda | Ejemplo |
+|-------|-------|------------|---------|
+| `horizonte.usuarios` | `localStorage` | La lista de usuarios: nombre, correo, **resumen** SHA-256 de la contraseña (nunca la contraseña) y rol. | `[{"nombre":"ana","correo":"ana@ejemplo.es","resumen":"4f7e57cc…47e5","rol":"administrador"}]` |
+| `horizonte.sesion` | `sessionStorage` | Quién ha entrado y con qué rol. Nada más: ni correo ni contraseña. | `{"nombre":"ana","rol":"administrador"}` |
+| `horizonte.aviso` | `sessionStorage` | Un aviso que espera a la página siguiente («Te has registrado»). Se borra al mostrarse. | `{"mensaje":"Te has registrado…","tipo":"exito"}` |
+
+En el sprint 2 se añadirán las capturas de cada usuario, en `localStorage` y en una clave propia de
+ese usuario.
+
+### Por qué cada dato va donde va
+
+- **`localStorage` dura para siempre** (hasta que se borra). Los usuarios tienen que seguir ahí
+  mañana, así que van en `localStorage`. Las capturas, igual.
+- **`sessionStorage` dura lo que dura la pestaña.** La sesión tiene que acabarse al cerrarla: si
+  vuelves a abrir la web, tienes que entrar otra vez. El aviso pendiente solo tiene sentido al pasar
+  de una página a la siguiente, así que también va aquí.
+
+### El rol y la protección de las páginas
+
+- **El rol se decide al registrarse:** el primer usuario de la lista es `administrador` y los demás,
+  `usuario` (`js/usuarios.js`). Al entrar, el rol se copia a la sesión.
+- **Por sesión:** cada página privada (listado, ficha y usuarios) llama al empezar a
+  `iniciarPaginaPrivada` (`js/paginas/privada.js`). Si no hay sesión, o está estropeada, lleva a
+  `index.html` con `location.replace`, que sustituye la página en el historial: el botón «Atrás» no
+  devuelve a la página privada.
+- **Por rol:** `usuarios.html` se inicia con `soloAdministradores: true`. Si la sesión no es de un
+  administrador, la página lleva al listado y deja el aviso «La página de usuarios es solo para
+  administradores.». Además, el enlace «Usuarios» del menú solo se muestra a los administradores.
+- **Al revés:** si ya hay sesión, `index.html` lleva directamente al listado.
+
+### Por qué este inicio de sesión no es seguro
+
+Toda la comprobación ocurre **en el navegador de quien usa la web**, y ese navegador lo controla esa
+persona. Con las DevTools (pestaña **Aplicación** o la consola) puede leer y cambiar
+`localStorage` y `sessionStorage` a su gusto. Lo comprobé: sin ningún usuario registrado, escribí
+esto en la consola y abrí `usuarios.html`:
+
+```js
+sessionStorage.setItem('horizonte.sesion', JSON.stringify({ nombre: 'intruso', rol: 'administrador' }));
+```
+
+La página me dejó entrar y la cabecera decía «intruso · Administrador». Con las DevTools también se
+puede:
+
+- ver los resúmenes de las contraseñas en `localStorage` e intentar adivinarlas probando contraseñas
+  típicas (el resumen SHA-256 no se puede «deshacer», pero sí comparar con el de contraseñas comunes);
+- cambiarse el rol a `administrador` en la lista de usuarios;
+- leer o borrar los datos de cualquier usuario de ese navegador.
+
+**Cómo se hace en una aplicación real:** los usuarios y las contraseñas están en un **servidor**, que
+es quien comprueba la contraseña (guardada con un resumen lento y con «sal», como bcrypt o Argon2) y
+entrega una sesión firmada (una cookie `HttpOnly` o un token) que el navegador no puede inventar. El
+servidor comprueba esa sesión y el rol **en cada petición**: aunque alguien cambie la página en su
+navegador, el servidor no le da los datos. La conexión va siempre por HTTPS. Aquí el inicio de sesión
+es una simulación para practicar el DOM y el almacenamiento, y por eso el repositorio insiste en no
+usar datos reales.
 
 ## Funcionalidad y formularios
 
@@ -303,6 +359,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `ci-paso-1` | Integración continua, paso 1 (`ci.yml`) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/18) |
 | `blog-sprint-1` | Entrada del sprint 1 en el blog | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/19) |
 | `readme-como-ejecutarlo` | Sección «Cómo ejecutarlo» del README y tipos JSDoc para `npm run docs` | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/20) |
+| `readme-almacenamiento` | Sección «Almacenamiento y sesión» del README | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/21) |
 
 #### *Merge* o *rebase*
 

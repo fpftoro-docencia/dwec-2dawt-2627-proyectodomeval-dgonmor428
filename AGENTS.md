@@ -140,7 +140,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   de las páginas privadas (`js/paginas/`, con tests de integración): el ciclo de sesión completo
   (registrarse, entrar, ver la cabecera, cerrar sesión) funciona.
 - También hecho: el workflow de integración continua, paso 1 (`ci.yml` con `Calidad` y `Tests`).
-- **Siguiente:** la entrada del sprint 1 en el blog, la reflexión del sprint en el README y el tag
-  `v0.1` (cierre del sprint 1, 15 de noviembre).
+- También hechas: la entrada del sprint 1 en el blog y las secciones del README «Cómo ejecutarlo» y
+  «Almacenamiento y sesión».
+- **Siguiente:** el cierre del sprint 1: reflexión en el README, repaso de la Definición de Hecho y
+  tag `v0.1` (15 de noviembre).
 - **Pendiente del alumno:** en el README («ESLint y Prettier»), contar con sus palabras un problema
   real que encuentre con el depurador de las DevTools. No se inventa.
