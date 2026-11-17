@@ -219,6 +219,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   un único oyente en `document`. Tipos: `exito`, `error`, `advertencia` e `info` (las clases de
   alerta de Bootstrap). El aviso para la página siguiente se guarda en `sessionStorage` con la clave
   `horizonte.aviso` y se borra al mostrarse.
+- **Tests de protección por rol:** leen el script real de cada página (por ejemplo el de
+  `usuarios.html`) para comprobar la opción que pasa (`soloAdministradores: true`), en vez de
+  pasarla a mano en el test: así fallan si alguien la quita del HTML.
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
@@ -313,7 +316,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   «Editar» y «Borrar», con buscador y paginación. Montado el equipo de subagentes de IA (sección 8).
   La zona de administración está hecha (rama `zona-administracion`: lista, buscador, paginación y
   cambio de rol).
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: tests de integración y e2e, cobertura
-  con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
+- Los **tests de integración** de la ficha, el listado y la protección por rol están auditados y
+  completos (721 tests en 24 archivos, `js/` al 100 %).
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: e2e, cobertura con umbral y `ci.yml`
+  completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
