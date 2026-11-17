@@ -62,11 +62,44 @@
         <div id="avisos" class="avisos avisos--listado" role="status"></div>
 
         <!--
+          Buscador y contador. Es un <div role="search">, no un <form>: así Intro no envía nada ni
+          recarga la página. Se oculta mientras el usuario no tiene capturas
+        -->
+        <div class="listado__herramientas" id="listado-herramientas" role="search" hidden>
+          <div class="listado__buscador">
+            <label class="form-label" for="listado-buscar">Buscar en mis capturas</label>
+            <input
+              class="form-control"
+              type="search"
+              id="listado-buscar"
+              name="buscar"
+              placeholder="Título, lugar, categoría, cielo, equipo o catálogo"
+              autocomplete="off"
+            />
+          </div>
+          <!-- aria-live="polite": el lector de pantalla dice cuántas hay al terminar de buscar -->
+          <p class="listado__contador" id="listado-contador" aria-live="polite"></p>
+        </div>
+
+        <!-- La búsqueda no encuentra nada (distinto del estado vacío de más abajo) -->
+        <p class="cristal listado__sin-resultados" id="listado-sin-resultados" hidden>
+          Ninguna captura coincide con tu búsqueda. Prueba con otras palabras.
+        </p>
+
+        <!--
           Las capturas: js/paginas/listado.js crea un <li> por captura desde #plantilla-captura y
           sustituye el contenido de la lista de una vez. Un solo oyente en la lista atiende todos
           los «Borrar» (delegación)
         -->
         <ul class="capturas" id="listado-capturas" hidden></ul>
+
+        <!--
+          Paginación: js/controlesPaginacion.js crea «Anterior», los números y «Siguiente» dentro
+          de la lista. Un solo oyente en la lista atiende todos los botones (delegación)
+        -->
+        <nav class="paginacion" id="listado-paginacion" aria-label="Paginación" hidden>
+          <ul class="pagination" id="listado-controles"></ul>
+        </nav>
 
         <!-- Estado vacío: se ve mientras no haya capturas (el código lo oculta si las hay) -->
         <section class="cristal vacio" id="listado-vacio" aria-labelledby="titulo-vacio">
@@ -163,7 +196,13 @@
         reemplazar: (url) => location.replace(url),
       });
       if (sesion !== null) {
-        iniciarListado({ documento: document, sesion, almacenCapturas: localStorage });
+        iniciarListado({
+          documento: document,
+          sesion,
+          almacenCapturas: localStorage,
+          busqueda: location.search,
+          actualizarDireccion: (url) => history.replaceState(null, '', url),
+        });
       }
     </script>
   </body>

@@ -171,6 +171,18 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   con `closest`) y otro `close` en el diálogo, que solo borra si `returnValue === 'borrar'`;
   después avisa, vuelve a pintar y da el foco al título (`tabindex="-1"`). En el listado la región
   de avisos va debajo del título, para que se vea al recibir este el foco.
+  **Buscador y paginación:** 6 capturas por página (`POR_PAGINA`) y 300 ms de espera del buscador
+  (`ESPERA_BUSQUEDA`). `iniciarListado` recibe además `busqueda` (`location.search`, de donde se
+  lee `?pagina=`), `actualizarDireccion` (`(url) => history.replaceState(null, '', url)`, sin
+  añadir entradas al historial), `porPagina` y `esperaBusqueda` (para los tests). Módulos comunes,
+  reutilizables en `usuarios.html`: `js/buscar.js` (`normalizar`, sin tildes y en minúsculas con
+  `normalize('NFD')` y `\p{M}`; y `retardar`, el _debounce_) y `js/controlesPaginacion.js`
+  (`pintarControles` y `escucharControles`, este último una sola vez, con delegación). El buscador
+  es un `<div role="search">` (sin formulario: Intro no envía nada) y busca por los **textos
+  visibles** (`textoBuscable`: título, lugar, categoría, condiciones, equipo y catálogo, no por
+  los valores guardados). El texto buscado **no va a la dirección**; solo `?pagina=`, y la
+  página 1 sin parámetro (`listado.html`). Al buscar se vuelve a la página 1. Con una sola página
+  los controles se ocultan. Tras cambiar de página el foco va a `#listado-titulo`.
 - **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
   («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
   da el foco.
@@ -275,8 +287,8 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
   real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
   campos, campo condicional, imágenes, guardar y editar. El listado pinta las capturas con
-  «Editar» y «Borrar». Montado el equipo de subagentes de IA (sección 8).
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: buscador y paginación del listado,
+  «Editar» y «Borrar», con buscador y paginación. Montado el equipo de subagentes de IA (sección 8).
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer:
   administración, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
