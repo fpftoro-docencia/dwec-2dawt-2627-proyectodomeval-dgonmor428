@@ -48,7 +48,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Una tarjeta de Trello cada vez.** Al empezarla, a «Haciendo»; al terminarla, a «Hecho». Una
   tarjeta solo está «Hecha» cuando cumple la Definición de Hecho del README (sobre todo: ha llegado a
   `main` por pull request).
-- **«Haz la siguiente tarjeta»** significa seguir el orden del tablero sin preguntar antes de empezar.
+- **«Haz la siguiente tarjeta»** significa seguir el orden del tablero sin preguntar antes de empezar
+  (con Claude Code, con el flujo del equipo de la sección 8).
 - **Cada tarjeta en su rama**, commits pequeños con mensajes claros, `push` y **pull request** hacia
   `main`. Nunca se empuja directamente a `main`.
 - Las PRs se fusionan con **merge commit** (no squash ni rebase) y **las ramas no se borran**. A veces
@@ -186,7 +187,78 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
-## 8. Estado
+## 8. Equipo de IA
+
+Con Claude Code, el trabajo de cada tarjeta lo hace un equipo con forma de orquesta: un **director**
+que piensa y dirige, y **subagentes** especializados que trabajan, prueban y revisan. Los subagentes
+están en `.claude/agents/`, uno por archivo, cada uno con su papel, sus herramientas y su modelo.
+
+### Quién es quién
+
+| Papel | Dónde está | Modelo | Qué hace |
+|-------|------------|--------|----------|
+| **Director** | La conversación principal (no es un archivo) | Opus | Lee la tarjeta y el ENUNCIADO, hace el plan, crea la rama, reparte el trabajo, decide cuando algo falla y hace los commits y la PR. No escribe el código de la funcionalidad: lo delega |
+| **implementador** | `.claude/agents/implementador.md` | Sonnet | El código de la tarjeta (HTML, CSS, `js/`, `js/paginas/`) según el plan |
+| **tester** | `.claude/agents/tester.md` | Sonnet | Los tests (unitarios, de integración y e2e) y el **doble testeo**. Si el fallo es del código, lo cuenta y no lo cambia |
+| **revisor** | `.claude/agents/revisor.md` | Opus | Revisión independiente frente al ENUNCIADO, la Definición de Hecho y este archivo: ✅ cumple, ❌ no cumple (archivo:línea), ⚠️ difícil de explicar. No edita |
+| **verificador** | `.claude/agents/verificador.md` | Haiku | Ejecuta las comprobaciones por orden y para en la primera que falla, con el error exacto |
+| **documentador** | `.claude/agents/documentador.md` | Sonnet | README, este archivo y un borrador del blog en `blog/BORRADOR.md` |
+
+El director es la conversación principal porque en Claude Code **un subagente no puede lanzar otros
+subagentes**: quien reparte el trabajo tiene que ser la sesión principal.
+
+### Por qué cada modelo
+
+- **Opus** donde hay que **pensar y juzgar**: el director decide el plan y qué hacer cuando algo
+  falla, y el revisor tiene que encontrar lo que nadie ha visto. Es el modelo más capaz y el más caro,
+  así que solo se usa donde cambia el resultado.
+- **Sonnet** donde hay que **producir**: escribir código, tests y documentación con un plan ya
+  decidido. Es rápido y bueno programando, y cuesta menos que Opus.
+- **Haiku** donde la tarea es **mecánica**: ejecutar seis órdenes y copiar el resultado. No hace falta
+  pensar, así que se usa el modelo más barato.
+
+### Reglas comunes a todos los subagentes
+
+- Empiezan leyendo este archivo. **El ENUNCIADO manda sobre todo.**
+- Ante cualquier cosa rara (el entorno, un permiso, algo que no cuadra), **paran y lo cuentan** en
+  lugar de improvisar. Si Docker no responde, no lo arrancan: avisan.
+- No tocan los archivos protegidos (sección 3) y no ponen datos reales de nadie.
+- **No hacen commits, push ni pull requests**: eso es del director.
+- Terminan con un informe breve para el director.
+- El revisor tiene `Bash` para ejecutar comprobaciones (`git diff`, los tests); que no edite lo
+  garantiza su prompt, no la herramienta. No tiene `Edit` ni `Write`.
+
+### El flujo de una tarjeta
+
+1. **Director:** lee la tarjeta de Trello y la pasa a «Haciendo», localiza el requisito en el
+   ENUNCIADO, escribe un plan corto (archivos, funciones, decisiones) y crea la rama.
+2. **implementador:** hace el código según el plan.
+3. **tester:** escribe los tests y hace el doble testeo.
+4. **verificador:** ejecuta `format:check`, `lint`, `test`, `coverage`, `docs` y, si la tarjeta toca
+   páginas, `e2e`. Si algo falla, el director decide a quién se lo devuelve (implementador o tester).
+   Como mucho **dos vueltas**: a la tercera, el director para y se lo cuenta al alumno.
+5. **revisor:** revisión independiente. Los ❌ vuelven al implementador o al tester; los ⚠️ los decide
+   el director.
+6. **documentador:** README, AGENTS.md y el borrador del blog.
+7. **Director:** commits pequeños, push y PR con las comprobaciones en verde; la tarjeta a «Hecho»
+   cuando llegue a `main`; y el resumen para el alumno: qué se ha hecho, para qué sirve ahora y para
+   qué servirá en el futuro, explicado paso a paso para que pueda defenderlo.
+
+Con **«haz la siguiente tarjeta»**, el director sigue este flujo con la siguiente del tablero sin
+preguntar antes de empezar.
+
+### El blog
+
+El documentador solo escribe un **borrador** en `blog/BORRADOR.md`, que no se sube (está en el
+`.gitignore`). El blog de verdad, `blog/README.md`, es el diario de aprendizaje del alumno: lo escribe
+él con sus palabras, porque le pueden preguntar por él en la exposición.
+
+### Con otra IA
+
+`.claude/agents/` solo lo entiende Claude Code. Otra IA (Codex, Gemini, Copilot…) puede seguir el
+mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas reglas.
+
+## 9. Estado
 
 - **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
   Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
@@ -203,7 +275,7 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
   real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
   campos, campo condicional, imágenes, guardar y editar. El listado pinta las capturas con
-  «Editar» y «Borrar».
+  «Editar» y «Borrar». Montado el equipo de subagentes de IA (sección 8).
 - **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: buscador y paginación del listado,
   administración, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
