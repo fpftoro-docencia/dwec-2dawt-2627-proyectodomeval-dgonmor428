@@ -183,6 +183,29 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   los valores guardados). El texto buscado **no va a la dirección**; solo `?pagina=`, y la
   página 1 sin parámetro (`listado.html`). Al buscar se vuelve a la página 1. Con una sola página
   los controles se ocultan. Tras cambiar de página el foco va a `#listado-titulo`.
+- **Zona de administración** (`usuarios.html`, `js/paginas/usuarios.js`):
+  - `js/usuarios.js` exporta `cambiarRol(almacen, nombre, rol)` (`RangeError` si el rol no está en
+    `ROLES`, antes de leer nada; `null` si el usuario no existe; devuelve el usuario sin el resumen
+    de la contraseña y conserva su posición), `mismoNombre(a, b)` y `TEXTOS_ROL` («Usuario»,
+    «Administrador»; los usan la cabecera y la administración).
+  - **Los nombres se comparan sin distinguir mayúsculas pero con tildes:** «José» ≠ «Jose».
+    `normalizar` de `js/buscar.js` (quita tildes) es solo para buscar y ordenar. Lección: no
+    comparar nombres de usuario con `normalizar`; se usa `mismoNombre`.
+  - `js/direccion.js` (`leerPagina`, `escribirPagina`) guarda la página en `?pagina=` y es común al
+    listado y a la administración.
+  - `iniciarUsuarios({ documento, sesion, almacenUsuarios, busqueda, actualizarDireccion, porPagina,
+    esperaBusqueda })`: lista ordenada por nombre, buscador con _debounce_ (nombre, correo y rol tal
+    como se ve) y paginación de 6 en 6 con los controles de `controlesPaginacion.js`.
+  - Un único oyente `click` delegado en `#usuarios-lista` (`closest`); el `<li>` guarda `data-nombre`
+    y `data-rol`.
+  - **Un administrador no se quita el rol a sí mismo** (siempre debe quedar uno): su botón va
+    desactivado y con la explicación visible (`aria-describedby`), y el oyente repite la
+    comprobación (defensa en profundidad) por si se fuerza el clic.
+  - Tras cambiar un rol se vuelve a pintar con el mismo filtro y página, y el foco va al botón de esa
+    fila o, si ya no se ve o es el propio, al título. Los avisos van debajo del título.
+  - **Limitación conocida:** la sesión no se refresca si otro administrador cambia el rol de quien
+    la tiene abierta (el enunciado no lo pide). Si el profesor lo pide, se comprobaría el rol
+    guardado al entrar en `usuarios.html`.
 - **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
   («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
   da el foco.
@@ -288,8 +311,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
   campos, campo condicional, imágenes, guardar y editar. El listado pinta las capturas con
   «Editar» y «Borrar», con buscador y paginación. Montado el equipo de subagentes de IA (sección 8).
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer:
-  administración, tests de integración
-  y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
+  La zona de administración está hecha (rama `zona-administracion`: lista, buscador, paginación y
+  cambio de rol).
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: tests de integración y e2e, cobertura
+  con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).

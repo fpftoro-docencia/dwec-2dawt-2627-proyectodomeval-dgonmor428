@@ -379,6 +379,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `listado-elementos` | Listado: un elemento por captura desde un `<template>`, «Editar» y «Borrar» con `<dialog>` | [#30](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/30) |
 | `subagentes-ia` | Equipo de subagentes de IA en `.claude/agents/` y su flujo en `AGENTS.md` | [#31](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/31) |
 | `listado-buscador-paginacion` | Listado: buscador con pausa (sin tildes ni mayúsculas), paginación de 6 en 6 con `?pagina=` y controles reutilizables (`js/buscar.js`, `js/controlesPaginacion.js`) | [#32](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/32) |
+| `zona-administracion` | Administración (`usuarios.html`): lista, buscador y paginación de usuarios, dar o quitar el rol de administrador (`cambiarRol`) y `js/direccion.js` común con el listado | PR pendiente |
 
 #### *Merge* o *rebase*
 
