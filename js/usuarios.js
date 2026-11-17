@@ -25,6 +25,12 @@ export const ROLES = Object.freeze({
   ADMINISTRADOR: 'administrador',
 });
 
+/** Cómo se muestra cada rol («Usuario», «Administrador»): lo usan la cabecera y la administración. */
+export const TEXTOS_ROL = Object.freeze({
+  [ROLES.USUARIO]: 'Usuario',
+  [ROLES.ADMINISTRADOR]: 'Administrador',
+});
+
 /**
  * Un usuario tal como se guarda.
  *
@@ -70,6 +76,21 @@ function esUsuarioValido(dato) {
  */
 function normalizar(nombre) {
   return nombre.toLocaleLowerCase('es');
+}
+
+/**
+ * Comprueba si dos nombres de usuario son el mismo, con la misma regla que el resto del módulo:
+ * solo se ignoran las mayúsculas. Las tildes cuentan: «José» y «Jose» son usuarios distintos.
+ *
+ * @param {string} a - Un nombre.
+ * @param {string} b - Otro nombre.
+ * @returns {boolean} `true` si son el mismo usuario.
+ * @example
+ * mismoNombre('Ana', 'ANA'); // → true
+ * mismoNombre('José', 'Jose'); // → false
+ */
+export function mismoNombre(a, b) {
+  return normalizar(a) === normalizar(b);
 }
 
 /**
@@ -169,6 +190,41 @@ export async function registrarUsuario(almacen, { nombre, correo, clave }, resum
     );
   }
   return sinResumen(nuevo);
+}
+
+/**
+ * Cambia el rol de un usuario (dar o quitar el de administrador). El resto de sus datos, incluido
+ * el resumen de la contraseña, se queda igual, y también su posición en la lista.
+ *
+ * @param {Storage} almacen - Dónde están los usuarios.
+ * @param {string} nombre - El nombre del usuario (sin distinguir mayúsculas).
+ * @param {'usuario'|'administrador'} rol - El rol nuevo: uno de los valores de `ROLES`.
+ * @returns {Usuario|null} El usuario actualizado, sin el resumen; `null` si no existe.
+ * @throws {RangeError} Si el rol no es uno de `ROLES`.
+ * @throws {Error} Si no se ha podido guardar.
+ * @example
+ * cambiarRol(localStorage, 'ANA', ROLES.ADMINISTRADOR); // → { nombre: 'ana', …, rol: 'administrador' }
+ */
+export function cambiarRol(almacen, nombre, rol) {
+  // Se comprueba antes de leer nada: un rol inventado nunca llega a guardarse
+  if (!Object.values(ROLES).includes(rol)) {
+    throw new RangeError(`El rol «${rol}» no existe.`);
+  }
+
+  const usuarios = leerUsuarios(almacen);
+  const actual = buscar(usuarios, nombre);
+  if (actual === undefined) {
+    return null;
+  }
+
+  const actualizado = { ...actual, rol };
+  const nuevos = usuarios.map((usuario) => (usuario === actual ? actualizado : usuario));
+  if (!guardarJSON(almacen, CLAVE_USUARIOS, nuevos)) {
+    throw new Error(
+      'No se ha podido guardar el cambio de rol: el almacenamiento está lleno o bloqueado.',
+    );
+  }
+  return sinResumen(actualizado);
 }
 
 /**

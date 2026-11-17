@@ -23,19 +23,13 @@
 
 import { leerSesion, cerrarSesion, esAdministrador } from '../sesion.js';
 import { escucharAvisos, guardarAvisoPendiente, mostrarAvisoPendiente } from '../avisos.js';
-import { ROLES } from '../usuarios.js';
+import { TEXTOS_ROL } from '../usuarios.js';
 
 /** Página a la que se va sin sesión o al cerrarla. */
 export const PAGINA_DE_ENTRADA = 'index.html';
 
 /** Página a la que se va si no se tiene permiso para estar en una página de administradores. */
 export const PAGINA_SIN_PERMISO = 'listado.html';
-
-/** Cómo se muestra cada rol en la cabecera. */
-const NOMBRES_ROL = Object.freeze({
-  [ROLES.USUARIO]: 'Usuario',
-  [ROLES.ADMINISTRADOR]: 'Administrador',
-});
 
 /**
  * Protege una página privada y prepara su cabecera.
@@ -86,7 +80,7 @@ export function iniciarPaginaPrivada({
 
   // La cabecera: quién ha entrado, con qué rol y, si es administrador, el enlace a «Usuarios»
   documento.querySelector('#sesion-nombre').textContent = sesion.nombre;
-  documento.querySelector('#sesion-rol').textContent = NOMBRES_ROL[sesion.rol];
+  documento.querySelector('#sesion-rol').textContent = TEXTOS_ROL[sesion.rol];
   documento.querySelector('a[href="usuarios.html"]').closest('li').hidden = !administrador;
 
   escucharAvisos(documento, documento.querySelector('#avisos'));
