@@ -377,6 +377,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `ficha-campos` | Ficha: los campos de la captura, el campo condicional del espacio y el `max` de la fecha | [#28](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/28) |
 | `ficha-guardar` | Ficha: grupo dinámico de imágenes, guardar con `FormData` y editar con `?id=…` | [#29](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/29) |
 | `listado-elementos` | Listado: un elemento por captura desde un `<template>`, «Editar» y «Borrar» con `<dialog>` | [#30](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/30) |
+| `subagentes-ia` | Equipo de subagentes de IA en `.claude/agents/` y su flujo en `AGENTS.md` | [#31](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/31) |
 
 #### *Merge* o *rebase*
 
@@ -399,6 +400,8 @@ Integro con ***merge***: cada *pull request* se fusiona con el botón «Merge» 
 | `*.log` | Registros de errores de npm y de las herramientas |
 | `.DS_Store` y `Thumbs.db` | Ficheros que crea el sistema operativo |
 | `.env` y `.env.*` | Por si algún día hubiera claves: el repositorio es público |
+| `.claude/settings.local.json` | Los permisos que Claude Code guarda en cada equipo: son de quien trabaja, no del proyecto |
+| `blog/BORRADOR.md` | El borrador del blog que escribe el subagente documentador: el blog de verdad lo escribe el alumno |
 
 `package-lock.json` **sí** se sube: sin él, `npm ci` falla en el *workflow*.
 

@@ -25,3 +25,9 @@ Thumbs.db
 # Variables de entorno: si algún día hubiera claves, no deben subirse (el repositorio es público).
 .env
 .env.*
+
+# Ajustes locales de Claude Code (permisos de este equipo): no son del proyecto.
+.claude/settings.local.json
+
+# Borrador del blog que escribe el documentador: el blog de verdad lo escribe el alumno.
+blog/BORRADOR.md
