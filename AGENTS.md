@@ -159,6 +159,17 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   `[{ url, pie }]` con `getAll`); se guarda con `crearCaptura` o `actualizarCaptura`, se deja un
   aviso pendiente y se va al listado. **Editar** con `?id=…`: rellena el formulario; con un `id`
   que no existe o es de otro usuario, aviso pendiente de error y `reemplazar('listado.html')`.
+- **Listado** (`js/paginas/listado.js`): `iniciarListado({ documento, sesion, almacenCapturas })`,
+  llamada desde `listado.html` después de `iniciarPaginaPrivada`. Cada captura es una copia de
+  `#plantilla-captura` rellenada con `textContent` y atributos (`[data-parte="…"]`); todas entran
+  de una vez con `replaceChildren` de un fragmento. Orden: de la fecha más reciente a la más
+  antigua (`ordenarPorFecha`). Los textos de cada valor guardado están en `TEXTOS`. La imagen solo
+  se carga si su URL pasa `validarUrlImagen`; la categoría solo añade su clase `chapa--…` si es
+  conocida. «Editar» es un enlace a `ficha.html?id=…` (`encodeURIComponent`). «Borrar» abre
+  `#dialogo-borrar` (un `<form method="dialog">`): un solo oyente `click` en la lista (delegación
+  con `closest`) y otro `close` en el diálogo, que solo borra si `returnValue === 'borrar'`;
+  después avisa, vuelve a pintar y da el foco al título (`tabindex="-1"`). En el listado la región
+  de avisos va debajo del título, para que se vea al recibir este el foco.
 - **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
   («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
   da el foco.
@@ -191,8 +202,10 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
   cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
   real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
-  campos, campo condicional, imágenes, guardar y editar.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: listado, administración, tests de integración
+  campos, campo condicional, imágenes, guardar y editar. El listado pinta las capturas con
+  «Editar» y «Borrar».
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: buscador y paginación del listado,
+  administración, tests de integración
   y e2e, cobertura con umbral y `ci.yml` completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).

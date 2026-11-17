@@ -49,18 +49,27 @@
 
     <main id="contenido" class="pagina">
       <div class="envoltorio">
-        <div id="avisos" class="avisos" role="status"></div>
-
         <div class="pagina__cabeza">
           <div>
             <p class="seccion__marca">Tu cuaderno</p>
-            <h1 class="pagina__titulo">Mis capturas</h1>
+            <!-- tabindex="-1": el código le da el foco después de borrar, sin meterlo en el Tab -->
+            <h1 class="pagina__titulo" id="listado-titulo" tabindex="-1">Mis capturas</h1>
           </div>
           <a class="btn btn-amanecer" href="ficha.html">Nueva captura</a>
         </div>
 
-        <!-- Estado vacío: se verá mientras no haya capturas -->
-        <section class="cristal vacio" aria-labelledby="titulo-vacio">
+        <!-- Los avisos, debajo del título: después de borrar, el foco va al título y se ven -->
+        <div id="avisos" class="avisos avisos--listado" role="status"></div>
+
+        <!--
+          Las capturas: js/paginas/listado.js crea un <li> por captura desde #plantilla-captura y
+          sustituye el contenido de la lista de una vez. Un solo oyente en la lista atiende todos
+          los «Borrar» (delegación)
+        -->
+        <ul class="capturas" id="listado-capturas" hidden></ul>
+
+        <!-- Estado vacío: se ve mientras no haya capturas (el código lo oculta si las hay) -->
+        <section class="cristal vacio" id="listado-vacio" aria-labelledby="titulo-vacio">
           <div class="cielo vacio__escena" aria-hidden="true">
             <div class="estrellas"></div>
             <div class="luna"></div>
@@ -86,16 +95,76 @@
           </div>
         </section>
       </div>
+
+      <!-- Plantilla de una captura: no se ve hasta que el código la copia y la rellena -->
+      <template id="plantilla-captura">
+        <li class="captura">
+          <article class="cristal captura__tarjeta">
+            <img class="captura__imagen" data-parte="imagen" alt="" loading="lazy" hidden />
+            <div class="captura__cuerpo">
+              <p class="chapa" data-parte="categoria"></p>
+              <h2 class="captura__titulo" data-parte="titulo"></h2>
+              <p class="captura__lugar">
+                <span data-parte="lugar"></span> ·
+                <time data-parte="fecha"></time>
+              </p>
+              <dl class="captura__datos">
+                <div>
+                  <dt>Altitud</dt>
+                  <dd data-parte="altitud"></dd>
+                </div>
+                <div>
+                  <dt>Cielo</dt>
+                  <dd data-parte="condiciones"></dd>
+                </div>
+                <div>
+                  <dt>Equipo</dt>
+                  <dd data-parte="equipo"></dd>
+                </div>
+                <div data-parte="bloque-catalogo" hidden>
+                  <dt>Catálogo</dt>
+                  <dd data-parte="catalogo"></dd>
+                </div>
+              </dl>
+              <div class="captura__acciones">
+                <a class="btn btn-luz btn-sm" data-parte="editar">Editar</a>
+                <button class="btn-quitar" type="button" data-accion="borrar">Borrar</button>
+              </div>
+            </div>
+          </article>
+        </li>
+      </template>
+
+      <!--
+        Confirmación antes de borrar. method="dialog": al pulsar un botón, el formulario cierra el
+        diálogo y deja su value en dialogo.returnValue, sin escribir ningún oyente para los botones
+      -->
+      <dialog class="dialogo" id="dialogo-borrar" aria-labelledby="dialogo-borrar-titulo">
+        <form method="dialog">
+          <h2 class="dialogo__titulo" id="dialogo-borrar-titulo">
+            ¿Borrar «<span data-parte="titulo"></span>»?
+          </h2>
+          <p class="dialogo__texto">Se borrará de tu cuaderno y no se puede deshacer.</p>
+          <div class="dialogo__acciones">
+            <button class="btn btn-luz" type="submit" value="cancelar" autofocus>Cancelar</button>
+            <button class="btn btn-borrar" type="submit" value="borrar">Borrar</button>
+          </div>
+        </form>
+      </dialog>
     </main>
-    <!-- Protege la página (sesión) y prepara la cabecera común -->
+    <!-- Protege la página (sesión), prepara la cabecera común y, si hay sesión, el listado -->
     <script type="module">
       import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+      import { iniciarListado } from './js/paginas/listado.js';
 
-      iniciarPaginaPrivada({
+      const sesion = iniciarPaginaPrivada({
         documento: document,
         almacenSesion: sessionStorage,
         reemplazar: (url) => location.replace(url),
       });
+      if (sesion !== null) {
+        iniciarListado({ documento: document, sesion, almacenCapturas: localStorage });
+      }
     </script>
   </body>
 </html>
