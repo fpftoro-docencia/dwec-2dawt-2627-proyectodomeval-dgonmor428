@@ -2,6 +2,7 @@
 // y por rol y la cabecera común, con el HTML real en happy-dom. Solo se sustituyen el
 // almacenamiento (AlmacenFalso) y la navegación (vi.fn()).
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { cargarPagina } from '../pagina.js';
 import { AlmacenFalso } from '../AlmacenFalso.js';
 import {
@@ -105,6 +106,22 @@ describe('páginas privadas', () => {
       });
       expect(texto('#sesion-nombre')).toBe('');
       expect(leerSesion(almacenSesion)).toEqual(LUIS); // no se le cierra la sesión
+    });
+
+    it('el script real de usuarios.html pide soloAdministradores: true (y listado y ficha no)', () => {
+      // Se lee el HTML porque cargarPagina no ejecuta los <script type="module">: los tests de arriba
+      // pasan la opción a mano y este comprueba que la página la pasa de verdad. `[^}]*` toma las
+      // opciones de la llamada, desde `({` hasta el primer `}`.
+      const llamada = (pagina) => {
+        const coincidencia = readFileSync(pagina, 'utf8').match(
+          /iniciarPaginaPrivada\(\{[^}]*\}\)/,
+        );
+        expect(coincidencia, `${pagina} no llama a iniciarPaginaPrivada({ … })`).not.toBeNull();
+        return coincidencia[0];
+      };
+      expect(llamada('usuarios.html')).toMatch(/soloAdministradores:\s*true/);
+      expect(llamada('listado.html')).not.toMatch(/soloAdministradores/);
+      expect(llamada('ficha.html')).not.toMatch(/soloAdministradores/);
     });
 
     it('un administrador se queda', () => {

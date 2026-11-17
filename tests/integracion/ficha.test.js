@@ -110,6 +110,7 @@ describe('ficha', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers(); // por si un test con la hora falsa falla antes de restaurarla
     document.body.innerHTML = '';
   });
 
@@ -249,6 +250,38 @@ describe('ficha', () => {
       expect(errorDe('observatorio')).toBe(''); // opcional
       expect(textoAvisos()).toContain('Revisa los campos marcados en rojo.');
       expect(document.activeElement).toBe(campos.titulo);
+    });
+
+    describe('cuándo se valida un campo', () => {
+      it('al escribir por primera vez, sin haber salido, todavía no avisa', () => {
+        escribir(campos.lugar, 'a');
+        escribir(campos.lugar, '');
+        expect(errorDe('lugar')).toBe('');
+        expect(marcado(campos.lugar)).toBe(false);
+      });
+
+      it('al salir (blur) de un campo vacío, avisa', () => {
+        salir(campos.lugar);
+        expect(errorDe('lugar')).toBe('Escribe el lugar.');
+        expect(marcado(campos.lugar)).toBe(true);
+      });
+
+      it('después de salir, valida con cada tecla: el error aparece y desaparece al escribir', () => {
+        salir(campos.gps);
+        expect(errorDe('gps')).toBe('Escribe las coordenadas.');
+        escribir(campos.gps, '36');
+        expect(errorDe('gps')).toBe('Usa el formato 36.7213, -4.4214.');
+        escribir(campos.gps, '36.6833, -5.0167');
+        expect(errorDe('gps')).toBe('');
+        escribir(campos.gps, '');
+        expect(errorDe('gps')).toBe('Escribe las coordenadas.');
+      });
+
+      it('salir de un campo no avisa de los demás', () => {
+        salir(campos.titulo);
+        expect(errorDe('titulo')).toBe('Escribe un título.');
+        expect(errorDe('lugar')).toBe('');
+      });
     });
 
     it('los tres botones de categoría se marcan juntos', () => {
@@ -486,6 +519,22 @@ describe('ficha', () => {
       expect(navegar).toHaveBeenCalledWith(PAGINA_LISTADO);
     });
 
+    it('el id lo pone el módulo (UUID): distinto en cada captura y el mismo que se busca después', () => {
+      // expect.any(String) arriba porque el id sale de crypto.randomUUID(): aquí se comprueba su forma
+      rellenarValida();
+      formulario.requestSubmit();
+      iniciar();
+      rellenarValida();
+      formulario.requestSubmit();
+
+      const [primera, segunda] = listarCapturas(almacenCapturas, 'ana');
+      const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+      expect(primera.id).toMatch(uuid);
+      expect(segunda.id).toMatch(uuid);
+      expect(primera.id).not.toBe(segunda.id);
+      expect(buscarCaptura(almacenCapturas, 'ana', primera.id)).toEqual(primera);
+    });
+
     it('con «Espacio», guarda sus datos; con imágenes, las guarda en orden', () => {
       rellenarValida();
       elegir('espacio');
@@ -625,6 +674,18 @@ describe('ficha', () => {
         'Has guardado los cambios de «Orión desde el Teide».',
       );
       expect(navegar).toHaveBeenCalledWith(PAGINA_LISTADO);
+    });
+
+    it('al guardar conserva la posición en la lista y no toca las demás capturas', () => {
+      const otra = crearCaptura(almacenCapturas, 'ana', { ...TEIDE, titulo: 'Otra captura' });
+      iniciar(`?id=${id}`);
+      escribir(campos.titulo, 'Orión editada');
+      formulario.requestSubmit();
+
+      const capturas = listarCapturas(almacenCapturas, 'ana');
+      expect(capturas.map((captura) => captura.id)).toEqual([id, otra.id]); // la editada sigue primera
+      expect(capturas[0].titulo).toBe('Orión editada');
+      expect(capturas[1]).toEqual({ ...TEIDE, titulo: 'Otra captura', id: otra.id });
     });
 
     it('una captura de paisaje se edita con los datos del espacio ocultos', () => {
