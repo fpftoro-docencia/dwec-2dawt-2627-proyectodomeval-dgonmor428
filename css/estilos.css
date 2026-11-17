@@ -1949,3 +1949,142 @@ input[type='datetime-local'] {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 }
+
+/* El listado de capturas ------------------------------------------------------- */
+
+.capturas {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.captura__tarjeta {
+  display: grid;
+  overflow: hidden;
+  height: 100%;
+}
+
+.captura__imagen {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--cristal-borde);
+  background: var(--noche-2);
+}
+
+.captura__cuerpo {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.captura__cuerpo .chapa {
+  justify-self: start;
+  margin: 0;
+}
+
+.captura__titulo {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.captura__lugar {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.captura__datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.captura__datos dt {
+  color: var(--texto-tenue);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.captura__datos dd {
+  margin: 0;
+  font-family: var(--letra-datos);
+  font-size: 0.95rem;
+}
+
+.captura__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* El título recibe el foco desde el código después de borrar: sin el contorno del navegador */
+#listado-titulo:focus {
+  outline: none;
+}
+
+/* El diálogo de confirmación, con el cielo oscurecido detrás */
+.dialogo {
+  width: min(28rem, calc(100% - 2rem));
+  padding: 1.75rem;
+  border: 1px solid var(--cristal-borde);
+  border-radius: var(--radio);
+  background: var(--noche-2);
+  box-shadow: var(--sombra);
+  color: var(--texto);
+}
+
+.dialogo::backdrop {
+  background: rgb(5 8 22 / 75%);
+  backdrop-filter: blur(3px);
+}
+
+.dialogo__titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.dialogo__texto {
+  margin: 0 0 1.5rem;
+  color: var(--texto-suave);
+}
+
+.dialogo__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-borrar {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #c0392b;
+  --bs-btn-border-color: #c0392b;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--coral);
+  --bs-btn-hover-border-color: var(--coral);
+  --bs-btn-active-bg: var(--coral);
+}
+
+@media (min-width: 48rem) {
+  .capturas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 75rem) {
+  .capturas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* En el listado, el aviso va entre el título y las capturas */
+.avisos--listado:not(:empty) {
+  margin-bottom: 1.25rem;
+}
