@@ -376,6 +376,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `validacion-tiempo-real` | Componente común de validación en tiempo real, usado en el registro y el inicio de sesión | [#27](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/27) |
 | `ficha-campos` | Ficha: los campos de la captura, el campo condicional del espacio y el `max` de la fecha | [#28](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/28) |
 | `ficha-guardar` | Ficha: grupo dinámico de imágenes, guardar con `FormData` y editar con `?id=…` | [#29](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/29) |
+| `listado-elementos` | Listado: un elemento por captura desde un `<template>`, «Editar» y «Borrar» con `<dialog>` | [#30](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/30) |
 
 #### *Merge* o *rebase*
 
