@@ -2122,6 +2122,69 @@ input[type='datetime-local'] {
   margin-top: 1.75rem;
 }
 
+/* La lista de usuarios de la administración ------------------------------------- */
+
+.usuarios {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.usuario__tarjeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.usuario__datos {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.usuario__datos .chapa {
+  justify-self: start;
+  margin: 0;
+}
+
+.usuario__nombre {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.usuario__correo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-family: var(--letra-datos);
+  font-size: 0.95rem;
+}
+
+.usuario__acciones {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  max-width: 20rem;
+}
+
+.usuario__explicacion {
+  margin: 0;
+  color: var(--texto-tenue);
+  font-size: 0.85rem;
+}
+
+.usuario__acciones .btn:disabled {
+  cursor: not-allowed;
+}
+
+/* El título recibe el foco desde el código: sin el contorno del navegador */
+#usuarios-titulo:focus {
+  outline: none;
+}
+
 /* Los controles de Bootstrap, con los colores de la noche (solo variables de su CSS) */
 .paginacion .pagination {
   --bs-pagination-color: var(--texto);

@@ -41,6 +41,7 @@ import { validarUrlImagen } from '../validadores.js';
 import { paginar } from '../paginar.js';
 import { normalizar, retardar } from '../buscar.js';
 import { pintarControles, escucharControles } from '../controlesPaginacion.js';
+import { leerPagina, escribirPagina } from '../direccion.js';
 
 /** Cuántas capturas caben en cada página del listado. */
 const POR_PAGINA = 6;
@@ -164,7 +165,7 @@ export function iniciarListado({
   // Lo que se está viendo. La página se lee de la dirección: Number(null) es 0 y Number('abc') es
   // NaN, y `paginar` corrige las dos a la página 1 (y una pasada del total, a la última)
   let textoBusqueda = '';
-  let paginaActual = Number(new URLSearchParams(busqueda).get('pagina'));
+  let paginaActual = leerPagina(busqueda);
 
   /**
    * Crea el `<li>` de una captura desde la plantilla.
@@ -216,22 +217,6 @@ export function iniciarListado({
     return elemento;
   }
 
-  /**
-   * Escribe la página en la dirección (`?pagina=2`) sin añadir una entrada al historial. En la
-   * página 1 se quita el parámetro para que la dirección quede limpia.
-   *
-   * @param {number} pagina - La página que se está viendo.
-   */
-  function escribirDireccion(pagina) {
-    const parametros = new URLSearchParams();
-    if (pagina > 1) {
-      parametros.set('pagina', String(pagina));
-    }
-    const consulta = parametros.toString();
-    // Una dirección vacía ('') no quitaría el `?pagina=` anterior: se escribe el nombre de la página
-    actualizarDireccion(consulta === '' ? 'listado.html' : `listado.html?${consulta}`);
-  }
-
   /** Pinta las capturas del usuario filtradas, de la más reciente a la más antigua, por páginas. */
   function pintar() {
     // El orden va antes del filtro y de la paginación: así cada página sale ya ordenada
@@ -267,7 +252,7 @@ export function iniciarListado({
       pagina: resultado.pagina,
       totalPaginas: resultado.totalPaginas,
     });
-    escribirDireccion(resultado.pagina);
+    escribirPagina(actualizarDireccion, 'listado.html', resultado.pagina);
   }
 
   // El buscador escucha `input` (cada cambio del texto, también al pegar o borrar) y no `change`
