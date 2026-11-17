@@ -4,6 +4,10 @@
  *
  * HTML que necesita:
  * - la lista `#listado-capturas` y el estado vacío `#listado-vacio`;
+ * - el bloque `#listado-herramientas` con el buscador `#listado-buscar` (`<input type="search">`)
+ *   y el contador `#listado-contador`;
+ * - el mensaje `#listado-sin-resultados` (la búsqueda no encuentra nada) y la paginación: el
+ *   `<nav id="listado-paginacion">` con la lista `#listado-controles`;
  * - la plantilla `#plantilla-captura`, con un elemento `[data-parte="…"]` por dato (`titulo`,
  *   `categoria`, `lugar`, `fecha`, `altitud`, `condiciones`, `equipo`, `catalogo`, `imagen`…), el
  *   enlace `[data-parte="editar"]` y el botón `[data-accion="borrar"]`;
@@ -19,7 +23,14 @@
  * - «Editar» es un enlace normal a `ficha.html?id=…`: no necesita JavaScript;
  * - «Borrar» abre el diálogo de confirmación. Un solo oyente en la lista atiende los «Borrar» de
  *   todas las capturas (delegación con `closest`), también las que se pintan después;
- * - al cerrarse el diálogo con «Borrar», borra la captura, avisa y vuelve a pintar la lista.
+ * - al cerrarse el diálogo con «Borrar», borra la captura, avisa y vuelve a pintar la lista;
+ * - el buscador filtra con cada `input`, pero con una pausa (_debounce_), sin distinguir
+ *   mayúsculas ni tildes; el contador dice cuántas capturas hay y, si no hay ninguna que coincida,
+ *   se ve un mensaje distinto del estado vacío (que es solo cuando no hay capturas guardadas);
+ * - la paginación usa `paginar` y los controles de `controlesPaginacion.js`. La página va en la
+ *   dirección (`?pagina=2`) y se lee al cargar, así que al recargar sigues en la misma página.
+ *   En la página 1 se quita el parámetro (la dirección limpia). El texto del buscador no va a la
+ *   dirección. Al buscar se vuelve a la página 1.
  *
  * @module paginas/listado
  */
@@ -27,6 +38,15 @@
 import { listarCapturas, borrarCaptura } from '../capturas.js';
 import { lanzarAviso } from '../avisos.js';
 import { validarUrlImagen } from '../validadores.js';
+import { paginar } from '../paginar.js';
+import { normalizar, retardar } from '../buscar.js';
+import { pintarControles, escucharControles } from '../controlesPaginacion.js';
+
+/** Cuántas capturas caben en cada página del listado. */
+const POR_PAGINA = 6;
+
+/** Los milisegundos de pausa del buscador antes de filtrar. */
+const ESPERA_BUSQUEDA = 300;
 
 /** Los textos que se ven de cada valor guardado (en la ficha son las opciones de cada lista). */
 export const TEXTOS = Object.freeze({
@@ -77,6 +97,27 @@ export function ordenarPorFecha(capturas) {
 }
 
 /**
+ * Junta en un solo texto normalizado todo lo que el buscador mira de una captura: título, lugar,
+ * categoría y condiciones (como se ven, no como se guardan), equipo y código de catálogo.
+ *
+ * @param {object} captura - La captura.
+ * @returns {string} El texto normalizado (sin tildes y en minúsculas).
+ */
+export function textoBuscable(captura) {
+  const visible = (tipo, valor) => TEXTOS[tipo][valor] ?? '';
+  return normalizar(
+    [
+      captura.titulo,
+      captura.lugar,
+      visible('categoria', captura.categoria),
+      visible('condiciones', captura.condiciones),
+      visible('equipo', captura.equipo),
+      captura.espacio?.catalogo,
+    ].join(' '),
+  );
+}
+
+/**
  * Inicia el listado. Se llama después de `iniciarPaginaPrivada`, solo si hay sesión.
  *
  * @param {object} dependencias - Lo que necesita la página.
@@ -84,20 +125,46 @@ export function ordenarPorFecha(capturas) {
  * @param {module:sesion~Sesion} dependencias.sesion - La sesión: se ven las capturas de este
  *   usuario.
  * @param {Storage} dependencias.almacenCapturas - Dónde están las capturas (`localStorage`).
+ * @param {string} [dependencias.busqueda] - La parte `?…` de la dirección (`location.search`),
+ *   de donde se lee `?pagina=`.
+ * @param {function(string): void} [dependencias.actualizarDireccion] - Cambia la dirección sin
+ *   añadir una entrada al historial (`(url) => history.replaceState(null, '', url)`).
+ * @param {number} [dependencias.porPagina] - Capturas por página (por defecto 6).
+ * @param {number} [dependencias.esperaBusqueda] - Pausa del buscador en ms (por defecto 300).
  * @returns {void}
+ * @listens input
  * @listens click
  * @listens close
  * @fires aviso
  */
-export function iniciarListado({ documento, sesion, almacenCapturas }) {
+export function iniciarListado({
+  documento,
+  sesion,
+  almacenCapturas,
+  busqueda = '',
+  actualizarDireccion = () => {},
+  porPagina = POR_PAGINA,
+  esperaBusqueda = ESPERA_BUSQUEDA,
+}) {
   const lista = documento.querySelector('#listado-capturas');
   const vacio = documento.querySelector('#listado-vacio');
   const plantilla = documento.querySelector('#plantilla-captura');
   const dialogo = documento.querySelector('#dialogo-borrar');
   const titulo = documento.querySelector('#listado-titulo');
+  const herramientas = documento.querySelector('#listado-herramientas');
+  const campoBuscar = documento.querySelector('#listado-buscar');
+  const contador = documento.querySelector('#listado-contador');
+  const sinResultados = documento.querySelector('#listado-sin-resultados');
+  const paginacion = documento.querySelector('#listado-paginacion');
+  const controles = documento.querySelector('#listado-controles');
 
   // La captura que se va a borrar mientras el diálogo está abierto
   let pendiente = null;
+
+  // Lo que se está viendo. La página se lee de la dirección: Number(null) es 0 y Number('abc') es
+  // NaN, y `paginar` corrige las dos a la página 1 (y una pasada del total, a la última)
+  let textoBusqueda = '';
+  let paginaActual = Number(new URLSearchParams(busqueda).get('pagina'));
 
   /**
    * Crea el `<li>` de una captura desde la plantilla.
@@ -149,20 +216,78 @@ export function iniciarListado({ documento, sesion, almacenCapturas }) {
     return elemento;
   }
 
-  /** Pinta las capturas del usuario, de la más reciente a la más antigua. */
+  /**
+   * Escribe la página en la dirección (`?pagina=2`) sin añadir una entrada al historial. En la
+   * página 1 se quita el parámetro para que la dirección quede limpia.
+   *
+   * @param {number} pagina - La página que se está viendo.
+   */
+  function escribirDireccion(pagina) {
+    const parametros = new URLSearchParams();
+    if (pagina > 1) {
+      parametros.set('pagina', String(pagina));
+    }
+    const consulta = parametros.toString();
+    // Una dirección vacía ('') no quitaría el `?pagina=` anterior: se escribe el nombre de la página
+    actualizarDireccion(consulta === '' ? 'listado.html' : `listado.html?${consulta}`);
+  }
+
+  /** Pinta las capturas del usuario filtradas, de la más reciente a la más antigua, por páginas. */
   function pintar() {
-    const capturas = ordenarPorFecha(listarCapturas(almacenCapturas, sesion.nombre));
+    // El orden va antes del filtro y de la paginación: así cada página sale ya ordenada
+    const todas = ordenarPorFecha(listarCapturas(almacenCapturas, sesion.nombre));
+    const buscado = normalizar(textoBusqueda.trim());
+    const filtradas = todas.filter((captura) => textoBuscable(captura).includes(buscado));
+    const resultado = paginar(filtradas, paginaActual, porPagina);
+    // Se guarda la página ya corregida: tras borrar la última de una página, se retrocede sola
+    paginaActual = resultado.pagina;
 
     // Todo se prepara fuera de la página, en un fragmento, y entra de una vez
     const fragmento = documento.createDocumentFragment();
-    for (const captura of capturas) {
+    for (const captura of resultado.elementos) {
       fragmento.append(crearElemento(captura));
     }
     lista.replaceChildren(fragmento);
 
-    lista.hidden = capturas.length === 0;
-    vacio.hidden = capturas.length > 0;
+    const hayCapturas = todas.length > 0;
+    const hayResultados = filtradas.length > 0;
+    // El estado vacío (sin capturas guardadas) oculta el buscador, el contador y la paginación
+    vacio.hidden = hayCapturas;
+    herramientas.hidden = !hayCapturas;
+    lista.hidden = !hayResultados;
+    sinResultados.hidden = !hayCapturas || hayResultados;
+    const total = filtradas.length;
+    contador.textContent = `${total} ${total === 1 ? 'captura' : 'capturas'}`;
+
+    // Con una sola página los controles no hacen falta: se ocultan
+    paginacion.hidden = resultado.totalPaginas <= 1;
+    pintarControles({
+      documento,
+      contenedor: controles,
+      pagina: resultado.pagina,
+      totalPaginas: resultado.totalPaginas,
+    });
+    escribirDireccion(resultado.pagina);
   }
+
+  // El buscador escucha `input` (cada cambio del texto, también al pegar o borrar) y no `change`
+  // (que solo salta al salir del campo). El debounce espera a que se haga una pausa al escribir
+  campoBuscar.addEventListener(
+    'input',
+    retardar(() => {
+      textoBusqueda = campoBuscar.value;
+      paginaActual = 1; // al buscar se vuelve a la primera página
+      pintar();
+    }, esperaBusqueda),
+  );
+
+  // Delegación: un único oyente en la lista de controles atiende todos los botones
+  escucharControles(controles, (pagina) => {
+    paginaActual = pagina;
+    pintar();
+    // El botón pulsado ya no existe (se han vuelto a crear): el foco va al título
+    titulo.focus();
+  });
 
   // Delegación: un solo oyente en la lista para todos los «Borrar». closest() sube desde lo
   // pulsado hasta el botón, y desde el botón hasta su <li>, que guarda el id de la captura
