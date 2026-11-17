@@ -49,40 +49,95 @@
 
     <main id="contenido" class="pagina">
       <div class="envoltorio">
-        <div id="avisos" class="avisos" role="status"></div>
-
         <div class="pagina__cabeza">
           <div>
             <p class="seccion__marca">Administración</p>
-            <h1 class="pagina__titulo">Usuarios</h1>
+            <!-- tabindex="-1": el código le da el foco después de cambiar de página, sin meterlo en el Tab -->
+            <h1 class="pagina__titulo" id="usuarios-titulo" tabindex="-1">Usuarios</h1>
           </div>
         </div>
 
-        <!-- La lista de usuarios llegará en el sprint 2 -->
-        <section class="cristal preparacion" aria-labelledby="titulo-preparacion">
-          <h2 id="titulo-preparacion" class="vacio__titulo">Las personas de Horizonte</h2>
-          <p class="pagina__texto">
-            Aquí verás a todas las personas registradas, con su correo y su rol, y podrás dar o
-            quitar el rol de administrador.
-          </p>
-          <ul>
-            <li class="chapa chapa--sin-punto">Nombre</li>
-            <li class="chapa chapa--sin-punto">Correo</li>
-            <li class="chapa chapa--paisaje">Rol</li>
-          </ul>
-        </section>
+        <!-- Los avisos, debajo del título: después de un cambio, el foco va al título y se ven -->
+        <div id="avisos" class="avisos avisos--listado" role="status"></div>
+
+        <!-- Buscador y contador. Es un <div role="search">, no un <form>: Intro no recarga la página -->
+        <div class="listado__herramientas" id="usuarios-herramientas" role="search">
+          <div class="listado__buscador">
+            <label class="form-label" for="usuarios-buscar">Buscar usuarios</label>
+            <input
+              class="form-control"
+              type="search"
+              id="usuarios-buscar"
+              name="buscar"
+              placeholder="Nombre, correo o rol"
+              autocomplete="off"
+            />
+          </div>
+          <!-- aria-live="polite": el lector de pantalla dice cuántos hay al terminar de buscar -->
+          <p class="listado__contador" id="usuarios-contador" aria-live="polite"></p>
+        </div>
+
+        <!-- La búsqueda no encuentra nada -->
+        <p class="cristal listado__sin-resultados" id="usuarios-sin-resultados" hidden>
+          Ningún usuario coincide con tu búsqueda. Prueba con otras palabras.
+        </p>
+
+        <!--
+          Los usuarios: js/paginas/usuarios.js crea un <li> por usuario desde #plantilla-usuario y
+          sustituye el contenido de la lista de una vez. Un solo oyente en la lista atiende todos
+          los botones de rol (delegación)
+        -->
+        <ul class="usuarios" id="usuarios-lista" hidden></ul>
+
+        <!-- Paginación: js/controlesPaginacion.js crea los botones dentro de la lista -->
+        <nav class="paginacion" id="usuarios-paginacion" aria-label="Paginación" hidden>
+          <ul class="pagination" id="usuarios-controles"></ul>
+        </nav>
       </div>
+
+      <!-- Plantilla de un usuario: no se ve hasta que el código la copia y la rellena -->
+      <template id="plantilla-usuario">
+        <li class="usuario">
+          <article class="cristal usuario__tarjeta">
+            <div class="usuario__datos">
+              <h2 class="usuario__nombre" data-parte="nombre"></h2>
+              <p class="usuario__correo" data-parte="correo"></p>
+              <p class="chapa" data-parte="rol"></p>
+            </div>
+            <div class="usuario__acciones">
+              <button class="btn btn-luz btn-sm" type="button" data-accion="cambiar-rol"></button>
+              <!--
+                Solo se ve en la fila de quien tiene la sesión abierta (el código la muestra).
+                Este texto es el mismo del aviso de error de js/paginas/usuarios.js: deben coincidir
+              -->
+              <p class="usuario__explicacion" data-parte="explicacion" hidden>
+                No puedes quitarte el rol a ti mismo: siempre tiene que quedar un administrador.
+              </p>
+            </div>
+          </article>
+        </li>
+      </template>
     </main>
-    <!-- Protege la página (sesión y rol) y prepara la cabecera común -->
+    <!-- Protege la página (sesión y rol), prepara la cabecera común y, si hay sesión, la lista -->
     <script type="module">
       import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+      import { iniciarUsuarios } from './js/paginas/usuarios.js';
 
-      iniciarPaginaPrivada({
+      const sesion = iniciarPaginaPrivada({
         documento: document,
         almacenSesion: sessionStorage,
         reemplazar: (url) => location.replace(url),
         soloAdministradores: true,
       });
+      if (sesion !== null) {
+        iniciarUsuarios({
+          documento: document,
+          sesion,
+          almacenUsuarios: localStorage,
+          busqueda: location.search,
+          actualizarDireccion: (url) => history.replaceState(null, '', url),
+        });
+      }
     </script>
   </body>
 </html>
