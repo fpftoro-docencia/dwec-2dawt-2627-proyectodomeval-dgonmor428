@@ -1147,8 +1147,10 @@ All files       |     100 |      100 |     100 |     100 |
 
 **El umbral.** En `vitest.config.js` está `thresholds: { lines: 90 }`: al menos el **90 % de las
 líneas**, que es lo que pide el enunciado. Si no se llega, `npm run coverage` termina con error.
-Hoy el trabajo `Tests` de `ci.yml` ejecuta `npm test`, no `npm run coverage`; cuando pase a
-ejecutarlo (paso 2 de la integración continua), un umbral incumplido pondrá el trabajo en rojo.
+El trabajo `Tests` de `ci.yml` ejecuta `npm run coverage` (paso 2 de la integración continua), así
+que un umbral incumplido hace fallar el trabajo `Tests`. GitHub no impide fusionar por sí solo (la
+rama `main` no tiene protección); la norma del proyecto es no fusionar una *pull request* con una
+comprobación en rojo, y en el sprint 3 Vercel también usará `Tests` como comprobación.
 
 Comprobé que el umbral funciona: con `--coverage.thresholds.lines=101` la orden falla con «Coverage
 for lines (100%) does not meet global threshold (101%)».
@@ -1269,18 +1271,49 @@ versiones exactas de `package-lock.json`.
 
 | Trabajo | Espera a | Pasos | Artefacto |
 |---------|----------|-------|-----------|
-| `Calidad` | — | Descargar el código, Node.js 24, `npm ci`, `npm run lint` y `npm run format:check` | — |
-| `Tests` | `Calidad` | Descargar el código, Node.js 24, `npm ci` y `npm test` | — (sprint 2: informe de cobertura) |
-| `E2E` | `Tests` | Sprint 2 | Sprint 2: informe de Playwright si falla |
+| `Calidad` | — | 1. Descargar el código. 2. Instalar Node.js 24 con la caché de npm. 3. `npm ci`. 4. `npm run lint` (ESLint). 5. `npm run format:check` (Prettier). | — |
+| `Tests` | `Calidad` | 1. Descargar el código. 2. Node.js 24 con caché. 3. `npm ci`. 4. `npm run coverage`: pasa los tests y mide la cobertura con su umbral. 5. Subir `coverage/` (siempre, `if: always()`). | `cobertura` (la carpeta `coverage/`) |
+| `E2E` | `Tests` | 1. Descargar el código. 2. Node.js 24 con caché. 3. `npm ci`. 4. `npx playwright install --with-deps chromium`. 5. `npm run e2e`: Playwright arranca la web en el puerto 3901 y pasa las pruebas. 6. Subir `playwright-report/` solo si algo ha fallado (`if: failure()`). | `informe-playwright` (solo si falla; se guarda 7 días) |
 
-**Por qué en ese orden:** `Calidad` es lo más rápido y lo que más a menudo falla (un `if` sin llaves,
-un archivo sin formatear). `Tests` espera a `Calidad` con `needs`: si el código ni siquiera pasa
-ESLint, no tiene sentido gastar minutos en los tests. En el sprint 2, `E2E` esperará a `Tests` por la
-misma razón, porque instalar el navegador es lo más lento.
+**Por qué en ese orden:** cada trabajo es más caro que el anterior y solo empieza si el anterior ha
+salido bien (`needs`).
 
-<!-- Sprint 2: los artefactos (cobertura e informe de Playwright), concurrency y la insignia. -->
+- `Calidad` es lo más barato y lo que más a menudo falla (un `if` sin llaves, un archivo sin
+  formatear). Si el código ni siquiera pasa ESLint, no se gastan minutos en los tests.
+- `Tests` va después: si fallan, no tiene sentido instalar un navegador.
+- `E2E` va el último porque instalar Chromium y arrancar la web es lo más lento.
 
-**Ejecución en verde con sus artefactos:** <!-- enlace -->
+**Qué hace cada ajuste del workflow:**
+
+| Ajuste | Para qué sirve |
+|--------|----------------|
+| `permissions: contents: read` | El workflow solo puede leer el código del repositorio: si algo fallara o se manipulara, no podría escribir en él. |
+| `concurrency` con `cancel-in-progress: true` | Una sola ejecución por rama (el grupo es el workflow más la rama, `github.ref`). Si subo dos commits seguidos, la ejecución del primero se cancela y solo termina la del último, y no se gastan minutos en un código que ya está viejo. También cancela en `main`: si se fusionan dos PRs seguidas, la ejecución del primer *merge* se cancela y solo termina la última. En una PR, `github.ref` vale `refs/pull/<n>/merge`, así que en la práctica es «una ejecución por PR o rama». |
+| `if: always()` en el artefacto `cobertura` | El informe se sube aunque `npm run coverage` falle por no llegar al umbral, que es justo cuando hace falta verlo. Sin esto, un paso que falla haría que se omitieran los siguientes. Si el trabajo falla antes de crear `coverage/` (por ejemplo, en `npm ci`), la subida también falla y salen dos errores: el que importa es el primero. `always()` también se ejecuta cuando se cancela la ejecución. |
+| `if-no-files-found: error` | Si no existe la carpeta `coverage/`, el paso falla en lugar de dar el trabajo por bueno sin subir nada: algo iría mal y debe notarse. |
+| `if: failure()` en el informe de Playwright | Solo se sube si un paso anterior del trabajo ha fallado: el informe ayuda a ver qué pasó, y si todo va bien no hay nada que guardar. |
+
+**El umbral de cobertura ahora cuenta.** `Tests` ejecuta `npm run coverage` en lugar de
+`npm test`, así que el umbral del 90 % de líneas de `vitest.config.js` pone el trabajo en rojo si no
+se alcanza. `main` no tiene protección de rama en GitHub: que una *pull request* con una
+comprobación en rojo no se fusione es una norma del proyecto (`AGENTS.md`, sección 4), y en el
+sprint 3 Vercel también usará estas comprobaciones. Con la salvedad de la subsección
+[«Cobertura»](#cobertura) de «Pruebas y cobertura»: el umbral solo mide `js/validadores.js` y `js/paginar.js`, no
+todo `js/`.
+
+**La insignia.** Justo debajo del título del README está la insignia del workflow
+(`.../actions/workflows/ci.yml/badge.svg`). GitHub la genera sola: se ve verde si la última ejecución
+de `ci.yml` en `main` ha pasado, y roja si ha fallado.
+
+**Los nombres de los trabajos no se cambian** (`Calidad`, `Tests` y `E2E`). En el sprint 3 Vercel
+los usará como comprobaciones obligatorias antes de publicar, y los busca por su nombre.
+
+**Ejecución en verde con sus artefactos:**
+[ejecución 44555654063](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/44555654063),
+de la *pull request* #42. Los tres trabajos salen en verde: `Calidad` en 18 s, `Tests` en 22 s y
+`E2E` en 41 s. En su página aparece un artefacto, `cobertura` (unos 63 KB), que es el informe
+descargable. **No hay artefacto `informe-playwright`**: ese paso lleva `if: failure()` y `E2E` no
+falló, así que se omitió. Que no esté es lo esperado.
 
 ## Despliegue continuo
 
@@ -1311,7 +1344,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 - [ ] **Rama y pull request:** el trabajo está en su propia rama, ha llegado a `main` por *pull request* y la rama no se ha borrado.
 - [ ] **Calidad:** `npm run lint` y `npm run format:check` terminan sin errores.
 - [ ] **Tests:** `npm test` pasa. Si la tarea añade lógica (validadores, módulos de datos, `paginar`…), incluye sus tests en `tests/unitarios/` o `tests/integracion/`.
-- [ ] **Workflow en verde:** desde que existe `ci.yml`, todos los trabajos de la *pull request* (`Calidad`, `Tests` y, después, `E2E`) salen en verde antes de fusionar.
+- [ ] **Workflow en verde:** desde que existe `ci.yml`, todos los trabajos de la *pull request* (`Calidad`, `Tests` y `E2E`) salen en verde antes de fusionar.
 - [ ] **Reglas del proyecto:** no hay librerías (solo el CSS de Bootstrap), ni APIs remotas, ni `innerHTML` con datos, ni estilos en el JavaScript. Se comprueba buscando `innerHTML` y `style` en `js/`.
 - [ ] **Probada a mano:** si la tarea cambia lo que se ve o se hace en la web, se ha probado en el navegador, en una ventana privada para empezar con el almacenamiento vacío.
 - [ ] **Documentada:** si la tarea cambia el comportamiento o la estructura, el README (y el JSDoc, desde el sprint 3) está al día. Los *commits* son pequeños y con mensajes que dicen qué cambia.
@@ -1389,6 +1422,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/38) |
 | `readme-pruebas` | Sección «Pruebas y cobertura» del README: pirámide, simulación, e2e, umbral y salidas reales | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/40) |
 | `readme-arquitectura` | Sección «Arquitectura y módulos» del README: diagrama, tabla de módulos, patrones, dependencias inyectadas y JSDoc | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/41) |
+| `ci-paso-2` | Integración continua, paso 2: `Tests` con cobertura y artefacto, trabajo `E2E`, `concurrency` y `permissions` | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/42) |
 
 #### *Merge* o *rebase*
 

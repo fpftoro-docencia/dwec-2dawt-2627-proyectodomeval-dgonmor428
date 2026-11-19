@@ -64,9 +64,13 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **JSDoc:** los tipos de función se escriben como `function(string): void` (no `(x: string) => void`,
   que es sintaxis de TypeScript y rompe `npm run docs`). Si se cambia un comentario JSDoc, comprobar que
   `npm run docs` sigue sin errores.
-- **Integración continua:** `.github/workflows/ci.yml` ejecuta `Calidad` (lint y formato) y, si pasa,
-  `Tests` en cada `push` y cada PR a `main`. Una PR solo se fusiona con sus comprobaciones en verde.
-  No se cambian los nombres de los trabajos: Vercel los usará como comprobaciones en el sprint 3.
+- **Integración continua:** `.github/workflows/ci.yml` ejecuta tres trabajos en cada `push` y cada PR
+  a `main`: `Calidad` (lint y formato), `Tests` (`npm run coverage`: tests y umbral del 90 %; sube la
+  carpeta `coverage/` como artefacto `cobertura`, aunque falle) y `E2E` (Playwright con Chromium; sube
+  `playwright-report/` solo si falla). Cada uno espera al anterior (`needs`). Lleva
+  `permissions: contents: read` y `concurrency` (una ejecución por rama, cancela la anterior). Una PR
+  solo se fusiona con sus comprobaciones en verde. No se cambian los nombres de los trabajos: Vercel
+  los usará como comprobaciones en el sprint 3.
 - ESLint tiene, además de `no-var`, `prefer-const` y `eqeqeq`: `no-console` (salvo en `scripts/`),
   `curly`, `no-implicit-coercion` y `camelcase`. El código nuevo tiene que cumplirlas.
 - Al terminar cada tarea, un resumen breve: **qué se ha hecho, para qué sirve ahora y para qué
@@ -352,8 +356,10 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   actualizar esa tabla.
 - Hechas las **pruebas e2e** (sesión y CRUD de capturas) y la **cobertura con umbral** del 90 %
   (rama `e2e-cobertura`).
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: `ci.yml` completo (paso 2) y cierre del
-  sprint. Por orden de fecha en el tablero.
+- Hecha la **integración continua, paso 2** (rama `ci-paso-2`, PR #42): `Tests` con cobertura y
+  artefacto, trabajo `E2E`, `concurrency` y `permissions`; explicada en el README.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: solo el cierre del sprint. Por orden de
+  fecha en el tablero.
 - La sección «Pruebas y cobertura» del README está escrita (rama `readme-pruebas`). **Aviso:** la
   cobertura cuenta todos los tests juntos, así que quitar un caso de los tests de un validador no
   baja del 90 % (los tests de integración de la ficha ejecutan los mismos validadores).
