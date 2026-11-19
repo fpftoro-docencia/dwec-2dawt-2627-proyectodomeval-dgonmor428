@@ -57,7 +57,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - Cada rama nueva se añade a la tabla «Ramas y versiones» del README, con su PR.
 - **Doble testeo** en todas las tarjetas: después de los tests, una segunda pasada que repasa cada
   punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
-  encontrar lo que falte por probar, y lo añade.
+  encontrar lo que falte por probar, y lo añade. Como `vitest.config.js` solo mide validadores y
+  `paginar`, el módulo se indica con `npm run coverage -- --coverage.include=js/<módulo>.js`.
 - Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores. El «doble testeo»
   es una condición de la Definición de Hecho del README.
 - **JSDoc:** los tipos de función se escriben como `function(string): void` (no `(x: string) => void`,
@@ -222,6 +223,26 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
 - **Tests de protección por rol:** leen el script real de cada página (por ejemplo el de
   `usuarios.html`) para comprobar la opción que pasa (`soloAdministradores: true`), en vez de
   pasarla a mano en el test: así fallan si alguien la quita del HTML.
+- **Pruebas e2e y cobertura:**
+  - Las pruebas de extremo a extremo (Playwright) están en `e2e/`, con los pasos que se repiten en
+    `e2e/ayudas.js` (`registrarse`, `iniciarSesion`, `cerrarSesion`, `darDeAltaCaptura`,
+    `editarCaptura`, `capturaDelListado`, y los datos ficticios `USUARIO` y `CAPTURA`).
+  - `e2e/sesion.spec.js` (5 tests): registrarse como primer usuario, cerrar sesión y volver a
+    entrar, contraseña incorrecta y protección del listado sin sesión. `e2e/capturas.spec.js`
+    (5 tests): alta, ficha incompleta, edición, cancelar el borrado y borrar con confirmación,
+    comprobando siempre tras `reload` que lo guardado sigue ahí. Se borró `e2e/ejemplo.spec.js`
+    (la plantilla, cuyo comentario decía sustituirlo).
+  - **Reglas:** localizadores como los vería un usuario (`getByRole`, `getByLabel`, `getByText`),
+    nunca selectores de CSS; rutas relativas (`/registro.html`) para que valgan con `BASE_URL`;
+    sin `waitForTimeout` (se espera con las comprobaciones `expect`, que reintentan solas); cada
+    test tiene un contexto nuevo, o sea, el almacenamiento vacío; datos ficticios.
+  - **El primer usuario registrado es administrador** (`js/usuarios.js`): con el almacenamiento
+    vacío, quien se registra en cada test ve «Usuarios».
+  - **Cobertura** (`vitest.config.js`): mide solo `js/validadores.js` y `js/paginar.js` (las
+    funciones puras) con un umbral del 90 % de líneas. Si no se llega, `npm run coverage` falla.
+    El resto de `js/` se prueba con los tests de integración, pero no cuenta para el umbral.
+    Para el doble testeo de otro módulo se pasa en la orden, por ejemplo
+    `npm run coverage -- --coverage.include=js/capturas.js` (el script es `vitest run --coverage`).
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
@@ -321,7 +342,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - La sección «Eventos» del README está escrita (rama `readme-eventos`): eventos en el HTML, tipos de
   eventos y la tabla de los 18 oyentes de `js/`. Si se añade o quita un `addEventListener`, hay que
   actualizar esa tabla.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: e2e, cobertura con umbral y `ci.yml`
-  completo. Por orden de fecha en el tablero.
+- Hechas las **pruebas e2e** (sesión y CRUD de capturas) y la **cobertura con umbral** del 90 %
+  (rama `e2e-cobertura`).
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: `ci.yml` completo (paso 2), README
+  (sección «Pruebas y cobertura») y cierre del sprint. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
