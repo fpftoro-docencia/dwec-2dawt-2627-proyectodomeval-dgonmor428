@@ -662,14 +662,257 @@ rompería la delegación (por ejemplo, el `aviso` tiene que llegar a `document`)
 
 ## Pruebas y cobertura
 
-<!-- 1. Tabla de la pirámide: tipo (unitario, de integración o de extremo a extremo), fichero,
-        qué prueba y cuántos tests tiene. Por qué cada cosa se prueba en ese nivel y no en otro.
-     2. Cómo simulas al usuario (eventos, requestSubmit), los servicios (AlmacenFalso, el resumen
-        de la contraseña, la navegación) y el tiempo (temporizadores falsos).
-     3. Cómo se ejecutan las mismas pruebas de extremo a extremo con serve y contra la web
-        desplegada (BASE_URL).
-     4. Pega la salida de `npm run coverage` (con el resumen de la cobertura) y de `npm run e2e`.
-        Explica qué umbral has puesto, a qué ficheros y qué queda sin probar y por qué. -->
+Hay tres niveles de prueba, de más pequeño a más grande: **unitarios** (una función o un módulo
+solo), de **integración** (una página real con sus módulos, en un navegador simulado) y de
+**extremo a extremo** o e2e (la web de verdad, en un navegador de verdad). Cuanto más abajo, más
+rápidas y precisas son las pruebas; cuanto más arriba, más se parecen a lo que hace una persona.
+En total hay **733 tests de Vitest en 24 archivos** (378 unitarios y 355 de integración) y **10 e2e**
+de Playwright.
+
+### La pirámide
+
+| Tipo | Fichero | Qué prueba | Tests |
+|------|---------|------------|------:|
+| Unitario | `tests/unitarios/validadores.test.js` | Validadores del registro (nombre, correo, contraseña, repetir) | 38 |
+| Unitario | `tests/unitarios/validadores-captura.test.js` | Validadores de la captura (GPS, URL, catálogo, ascensión, declinación, observatorio) | 97 |
+| Unitario | `tests/unitarios/paginar.test.js` | `paginar`: páginas, límites y `RangeError` | 20 |
+| Unitario | `tests/unitarios/almacen.test.js` | Lectura y escritura segura del almacenamiento | 20 |
+| Unitario | `tests/unitarios/usuarios.test.js` | Alta y búsqueda de usuarios, rol del primero | 27 |
+| Unitario | `tests/unitarios/usuarios-rol.test.js` | `cambiarRol` | 25 |
+| Unitario | `tests/unitarios/usuarios-nombre.test.js` | `mismoNombre` y `TEXTOS_ROL` | 15 |
+| Unitario | `tests/unitarios/sesion.test.js` | Abrir, leer y cerrar la sesión | 21 |
+| Unitario | `tests/unitarios/capturas.test.js` | Crear, listar, buscar, actualizar y borrar capturas | 35 |
+| Unitario | `tests/unitarios/buscar.test.js` | `normalizar` (sin tildes) y `retardar` (_debounce_) | 14 |
+| Unitario | `tests/unitarios/direccion.test.js` | `?pagina=` en la dirección | 20 |
+| Unitario | `tests/unitarios/avisos.test.js` | El sistema de avisos (necesita el DOM de happy-dom) | 27 |
+| Unitario | `tests/unitarios/controlesPaginacion.test.js` | Los botones de paginación (sobre un `<ul>` creado en el test) | 16 |
+| Unitario | `tests/unitarios/ejemplo.test.js` | `resumirClave` (ejemplo de la plantilla, ver abajo) | 3 |
+| Integración | `tests/integracion/entrar.test.js` | `index.html`: iniciar sesión | 18 |
+| Integración | `tests/integracion/registro.test.js` | `registro.html`: crear la cuenta | 26 |
+| Integración | `tests/integracion/validacion.test.js` | `js/validacion.js` sobre un formulario de prueba con un campo de cada tipo | 35 |
+| Integración | `tests/integracion/privadas.test.js` | Protección por sesión y por rol, y cabecera común | 23 |
+| Integración | `tests/integracion/ficha.test.js` | `ficha.html`: campos, campo condicional, imágenes, guardar, editar y doble envío | 97 |
+| Integración | `tests/integracion/listado.test.js` | `listado.html`: pintar, editar y borrar con el diálogo | 30 |
+| Integración | `tests/integracion/listado-busqueda.test.js` | Buscador y paginación del listado | 44 |
+| Integración | `tests/integracion/usuarios-lista.test.js` | `usuarios.html`: lista, buscador y paginación | 51 |
+| Integración | `tests/integracion/usuarios-roles.test.js` | `usuarios.html`: dar y quitar el rol de administrador | 29 |
+| Integración | `tests/integracion/ejemplo.test.js` | Un formulario mínimo (ejemplo de la plantilla, ver abajo) | 2 |
+| e2e | `e2e/sesion.spec.js` | Registrarse, cerrar sesión y volver a entrar, contraseña incorrecta, protección del listado | 5 |
+| e2e | `e2e/capturas.spec.js` | Alta, ficha incompleta, edición, cancelar el borrado y borrar | 5 |
+
+**Los dos ejemplos de la plantilla.** `tests/unitarios/ejemplo.test.js` comprueba `resumirClave`
+(`js/clave.js`, que no se puede modificar) con una tabla `it.each` y comprueba que la misma
+contraseña da siempre el mismo resumen y otra, uno distinto. `tests/integracion/ejemplo.test.js`
+prueba un formulario mínimo escrito dentro del propio test (no es ninguna página de Horizonte): la
+validación al salir del campo (`salir`) y el envío con el valor recortado (`escribir` y
+`requestSubmit`). Los dejé porque siguen
+pasando y enseñan la técnica, pero no los cuento como pruebas de mis páginas: las pruebas de
+verdad son las demás.
+
+Los archivos `avisos.test.js` y `controlesPaginacion.test.js` están en `unitarios/` porque prueban
+un solo módulo, aunque ese módulo necesita el DOM de happy-dom.
+
+#### Por qué cada cosa en su nivel
+
+- **Unitario: lo que es una función pura o un módulo que recibe el almacenamiento.** Los
+  validadores, `paginar`, `buscar`, `direccion` y los módulos de datos (`usuarios`, `sesion`,
+  `capturas`, `almacen`) no necesitan una página. Se prueban con muchísimos casos (`it.each`, con los
+  límites de cada regla) en milisegundos, y cuando falla uno se sabe qué función es. Hacerlo desde
+  la página sería más lento y no diría cuál de las reglas ha fallado.
+- **Integración: lo que depende de que las piezas estén juntas.** Que `ficha.js` lea bien un
+  `FormData`, que el campo del espacio se oculte y se desactive, que el diálogo de borrado solo borre
+  con `returnValue === 'borrar'`, que la protección por rol siga en el HTML... Aquí se carga el
+  `<body>` real de la página y se usan sus módulos reales; solo se sustituye lo que viene de fuera
+  (almacenamiento, navegación, resumen de la contraseña, hora). Así se prueban muchos casos
+  (errores, límites, avisos) sin abrir un navegador.
+- **e2e: lo que solo se ve en un navegador real.** Que `localStorage` sobreviva a una recarga
+  (`reload`), que el `<dialog>` y los `<template>` funcionen de verdad, que `location.replace` lleve
+  a otra página o que las rutas y los módulos de `<script type="module">` carguen desde un servidor.
+  Son lentas (unos segundos cada una), así que solo hay 10: los recorridos principales, y no cada
+  regla de validación.
+
+### Cómo se simula el usuario, los servicios y el tiempo
+
+**El usuario.** En los tests de integración, `tests/pagina.js` carga el título y el `<body>` de un
+HTML real (`cargarPagina('ficha.html')`) sin ejecutar sus scripts (los `<script>` pasarían
+`localStorage` y `location` reales, y el test necesita pasar los dobles); el test inicia la página llamando
+a su función (`iniciarFicha`, `iniciarListado`…) con los dobles de prueba. Después actúa como
+una persona, con los mismos eventos que lanza el navegador:
+
+- **Escribir:** `escribir(campo, valor)` de `tests/pagina.js` cambia `campo.value` y lanza un
+  evento `input` con `bubbles: true`, que sube hasta el formulario, donde está el oyente.
+- **Salir de un campo:** `salir(campo)` lanza un `FocusEvent('blur')`. `blur` no sube, y por eso
+  `js/validacion.js` lo escucha en la fase de captura (ver «Propagación» en [Eventos](#eventos)).
+- **Cambiar una opción:** `dispatchEvent(new Event('change', { bubbles: true }))`, por ejemplo en
+  los botones de categoría de la ficha.
+- **Enviar:** `formulario.requestSubmit()`. Lanza el evento `submit` igual que el botón o Intro, y es lo
+  que escucha la página: el test no llama a ninguna función interna.
+- **Pulsar:** `boton.click()` (paginación, «Borrar», «Hacer administrador»…). Para el diálogo de
+  borrado se pulsa el botón del `<dialog>` con el `value` que toque, o se llama a `close()` sin
+  valor, que es lo que pasa con Escape.
+
+**Los servicios.** Lo que la página recibe de fuera se sustituye por dobles; no se toca nunca
+`localStorage` ni `location`:
+
+| Servicio | Doble en los tests | Para qué |
+|----------|--------------------|----------|
+| Almacenamiento (`localStorage` y `sessionStorage`) | `new AlmacenFalso()` (`tests/AlmacenFalso.js`): un `Map` en memoria con `getItem`, `setItem`, `removeItem`, `clear` y `length`, y que guarda todo como texto como el real | Que cada test empiece con el almacenamiento vacío y que no se mezclen unos con otros |
+| Resumen de la contraseña | Una función asíncrona que devuelve una promesa: `async (clave) => \`resumen-${clave}\`` (en `entrar.test.js` y `registro.test.js`) | Es la misma interfaz que `resumirClave` (que usa `crypto.subtle` y devuelve una promesa), pero predecible y sin cálculo. En `registro.test.js` y `entrar.test.js` hay además un resumen que devuelve una promesa que no se resuelve hasta que el test llama a `terminarResumen`: así el test controla cuándo termina y puede probar el doble envío |
+| Navegación | `vi.fn()` en lugar de `(url) => location.assign(url)` (o `reemplazar` en lugar de `location.replace`) | Comprobar a qué dirección se va con `toHaveBeenCalledWith`, sin salir de la página del test |
+| Dirección (`?pagina=`) | `vi.fn()` en lugar de `history.replaceState` | Igual: se comprueba la URL que se habría escrito |
+
+Por eso las páginas **reciben** el almacenamiento, el resumen y la navegación como parámetros: en
+una prueba se pasan los dobles y en el navegador, los reales (ver «Cómo reciben las páginas lo que
+necesitan» en «Arquitectura y módulos»).
+
+**El tiempo.** Hay dos casos:
+
+- **El _debounce_ del buscador** (300 ms): los tests de `listado-busqueda`, `usuarios-lista`,
+  `usuarios-roles` y `buscar` usan `vi.useFakeTimers()` y avanzan el reloj con
+  `vi.advanceTimersByTime(…)`. Así se comprueba que a los 299 ms no ha buscado y al milisegundo
+  siguiente sí, sin esperar de verdad.
+- **«Ahora» en la ficha:** `iniciarFicha` recibe `ahora` (`() => new Date()` por defecto) para poner
+  el `max` de la fecha. Los tests pasan `ahora: () => AHORA`, una hora fija, y saben qué `max`
+  saldrá. Un test aparte usa `vi.useFakeTimers()` y `vi.setSystemTime(new Date(2027, 2, 1, 8, 0))`
+  para probar que, sin `ahora`, se usa la hora del sistema (con el reloj falsificado con
+  `setSystemTime`).
+
+### Cómo se ejecutan las pruebas e2e
+
+`npm run e2e` ejecuta Playwright (`playwright.config.js`, que no se modifica) en Chromium. Hay dos
+formas de apuntar a la web, y son **las mismas pruebas** en las dos:
+
+- **Con `serve` (local).** Sin ninguna variable, la configuración **arranca sola** la web con
+  `npx serve` en el puerto 3901 (`webServer`) y espera a que responda. Con
+  `reuseExistingServer: true`, si ya hay una en ese puerto (la del Dev Container), usa esa y no
+  arranca otra. Las pruebas usan `baseURL: 'http://localhost:3901'`.
+- **Contra la web desplegada.** Con `BASE_URL` (por ejemplo, `BASE_URL=https://mi-web.vercel.app npm run
+  e2e`; la dirección es un ejemplo) no se arranca ningún servidor y las pruebas van a esa dirección.
+  Por eso todas las rutas son **relativas** (`page.goto('/registro.html')`) y no llevan el
+  dominio escrito, y los elementos se buscan como los vería una persona (`getByRole`, `getByLabel`,
+  `getByText`), no por selectores de CSS que pueden cambiar.
+
+**Todavía no hay web desplegada:** se publicará con Vercel en el sprint 3, así que de momento solo
+se han ejecutado las e2e con `serve`.
+
+Los pasos que se repiten están en `e2e/ayudas.js` (`registrarse`, `iniciarSesion`, `cerrarSesion`,
+`darDeAltaCaptura`, `editarCaptura` y `capturaDelListado`), con los datos ficticios `USUARIO` y
+`CAPTURA`.
+
+Cada test de Playwright empieza con un contexto de navegador nuevo, o sea, con el almacenamiento
+vacío. Por eso quien se registra en cada test es el primer usuario y es administrador. No se usa
+`waitForTimeout`: se espera con `expect`, que reintenta solo hasta que se cumple.
+
+### Cobertura
+
+**La orden:** `npm run coverage` pasa los mismos tests de Vitest y mide qué líneas de los ficheros
+elegidos se ejecutan. Salida real (quitando los colores y las líneas de tiempos y de ayuda):
+
+```text
+ ✓ tests/integracion/ejemplo.test.js (2 tests) 13ms
+ ✓ tests/unitarios/validadores-captura.test.js (97 tests) 12ms
+ ✓ tests/unitarios/sesion.test.js (21 tests) 9ms
+ ✓ tests/unitarios/validadores.test.js (38 tests) 9ms
+ ✓ tests/unitarios/usuarios.test.js (27 tests) 25ms
+ ✓ tests/unitarios/avisos.test.js (27 tests) 50ms
+ ✓ tests/integracion/validacion.test.js (35 tests) 166ms
+ ✓ tests/integracion/privadas.test.js (23 tests) 260ms
+ ✓ tests/integracion/listado.test.js (30 tests) 411ms
+ ✓ tests/integracion/registro.test.js (26 tests) 534ms
+ ✓ tests/integracion/usuarios-roles.test.js (29 tests) 466ms
+ ✓ tests/integracion/entrar.test.js (18 tests) 667ms
+ ✓ tests/integracion/usuarios-lista.test.js (51 tests) 592ms
+ ✓ tests/integracion/listado-busqueda.test.js (44 tests) 650ms
+ ✓ tests/unitarios/controlesPaginacion.test.js (16 tests) 29ms
+ ✓ tests/unitarios/capturas.test.js (35 tests) 13ms
+ ✓ tests/unitarios/buscar.test.js (14 tests) 9ms
+ ✓ tests/integracion/ficha.test.js (97 tests) 1587ms
+ ✓ tests/unitarios/usuarios-rol.test.js (25 tests) 9ms
+ ✓ tests/unitarios/paginar.test.js (20 tests) 6ms
+ ✓ tests/unitarios/almacen.test.js (20 tests) 7ms
+ ✓ tests/unitarios/ejemplo.test.js (3 tests) 6ms
+ ✓ tests/unitarios/direccion.test.js (20 tests) 6ms
+ ✓ tests/unitarios/usuarios-nombre.test.js (15 tests) 5ms
+ Test Files  24 passed (24)
+      Tests  733 passed (733)
+----------------|---------|----------|---------|---------|-------------------
+File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+----------------|---------|----------|---------|---------|-------------------
+All files       |     100 |      100 |     100 |     100 |
+ paginar.js     |     100 |      100 |     100 |     100 |
+ validadores.js |     100 |      100 |     100 |     100 |
+----------------|---------|----------|---------|---------|-------------------
+```
+
+**El umbral.** En `vitest.config.js` está `thresholds: { lines: 90 }`: al menos el **90 % de las
+líneas**, que es lo que pide el enunciado. Si no se llega, `npm run coverage` termina con error.
+Hoy el trabajo `Tests` de `ci.yml` ejecuta `npm test`, no `npm run coverage`; cuando pase a
+ejecutarlo (paso 2 de la integración continua), un umbral incumplido pondrá el trabajo en rojo.
+
+Comprobé que el umbral funciona: con `--coverage.thresholds.lines=101` la orden falla con «Coverage
+for lines (100%) does not meet global threshold (101%)».
+
+**Una limitación.** El umbral detecta una caída grande de cobertura, no la falta de un caso
+concreto. Quitando entero `tests/unitarios/validadores-captura.test.js` (97 tests), `coverage`
+sigue pasando (97,72 % de líneas en `validadores.js`), porque los tests de integración de la ficha
+también ejecutan esos validadores: la cobertura cuenta todos los tests juntos.
+
+**A qué ficheros se aplica y por qué solo a ellos.** El `include` es
+`['js/validadores.js', 'js/paginar.js']`: las **funciones puras** (reciben un valor y devuelven
+otro, sin DOM ni almacenamiento). Ahí el 100 % de líneas tiene sentido y es fácil de conseguir: cada
+rama es un caso que se puede escribir en una tabla. En los módulos que usan el DOM, la cobertura
+dice qué líneas se han ejecutado, pero no si la página se comporta bien (el foco, el aviso, el orden
+de los eventos), así que no la uso como medida de calidad.
+
+**Qué queda sin medir con ese `include`:** el resto de `js/` (`almacen.js`, `usuarios.js`,
+`sesion.js`, `capturas.js`, `avisos.js`, `buscar.js`, `validacion.js`…) y todo `js/paginas/`. No es
+que no se pruebe: se prueba con los tests unitarios y de integración de la tabla de arriba, y las
+páginas además con los e2e. Simplemente no cuenta para el umbral.
+
+**Cómo medir otro módulo.** Para ver qué le falta a uno concreto, se cambia el `include` en la propia
+orden, sin tocar la configuración:
+
+```bash
+npm run coverage -- --coverage.include=js/capturas.js
+```
+
+### El doble testeo
+
+Es una condición de la Definición de Hecho: después de escribir los tests de una tarjeta, una
+**segunda pasada** repasa cada punto de la tarjeta frente a los tests y mide la cobertura **del
+módulo de la tarjeta** con la orden de arriba. Lo que quede sin cubrir se prueba o se justifica.
+Una técnica que se aplicó en el doble testeo del equipo de IA son las **mutaciones temporales**:
+se rompe a propósito un trozo del código y se comprueba que algún test falla; después se restaura.
+Si todos siguen en verde, el test no comprobaba eso y hay que reforzarlo. La cobertura solo dice
+que una línea se ejecutó; la mutación dice que algún test se daría cuenta si estuviera mal.
+
+Al escribir esto medí todo `js/` con `npm run coverage -- --coverage.include='js/**'` y está al
+100 % (puede cambiar al añadir código). La orden `npm run coverage`, tal como está configurada,
+solo mide los dos ficheros de la tabla.
+
+### Pruebas e2e: salida real
+
+Salida de `npm run e2e` (Chromium, 2 trabajadores en paralelo, con `serve` en el puerto 3901):
+
+```text
+> mi-aplicacion@1.0.0 e2e
+> playwright test
+
+Running 10 tests using 2 workers
+
+  ✓   1 [chromium] › e2e/sesion.spec.js:8:3 › Sesión › la primera persona que se registra es administradora y ve «Usuarios» (398ms)
+  ✓   3 [chromium] › e2e/sesion.spec.js:18:3 › Sesión › se cierra la sesión y se vuelve a entrar con los mismos datos (679ms)
+  ✓   4 [chromium] › e2e/sesion.spec.js:29:3 › Sesión › con una contraseña incorrecta no se entra y se avisa sin decir cuál falla (483ms)
+  ✓   2 [chromium] › e2e/capturas.spec.js:17:3 › Capturas (CRUD) › una captura nueva aparece en el listado y sigue ahí al recargar (1.6s)
+  ✓   5 [chromium] › e2e/sesion.spec.js:43:3 › Sesión › sin sesión, el listado lleva a la página de inicio de sesión (175ms)
+  ✓   6 [chromium] › e2e/capturas.spec.js:33:3 › Capturas (CRUD) › una ficha incompleta no se guarda y marca los errores (497ms)
+  ✓   7 [chromium] › e2e/sesion.spec.js:50:3 › Sesión › tras cerrar la sesión, el listado vuelve a estar protegido (507ms)
+  ✓   8 [chromium] › e2e/capturas.spec.js:42:3 › Capturas (CRUD) › al editar una captura se ven los cambios, también tras recargar (2.6s)
+  ✓   9 [chromium] › e2e/capturas.spec.js:58:3 › Capturas (CRUD) › cancelar el diálogo de borrado conserva la captura (1.5s)
+  ✓  10 [chromium] › e2e/capturas.spec.js:74:3 › Capturas (CRUD) › al borrar con confirmación la captura desaparece, también tras recargar (1.5s)
+
+  10 passed (11.4s)
+```
 
 ## Integración continua
 
@@ -843,6 +1086,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `subir-agentes-ia` | Revisión de `.claude/agents/` frente a `AGENTS.md`, regla de no usar `-u root` en los agentes y sección «Equipo de IA» del README | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/36) |
 | `e2e-cobertura` | Pruebas de extremo a extremo (`e2e/`: sesión y CRUD de capturas) y cobertura con umbral del 90 % de líneas en `js/validadores.js` y `js/paginar.js` | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/37) |
 | `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/38) |
+| `readme-pruebas` | Sección «Pruebas y cobertura» del README: pirámide, simulación, e2e, umbral y salidas reales | PR pendiente |
 
 #### *Merge* o *rebase*
 
