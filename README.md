@@ -175,17 +175,343 @@ usar datos reales.
 
 ## Funcionalidad y formularios
 
-<!-- Una subsección por parte de la aplicación (sesión y registro, listado y paginación, ficha,
-     zona de administración): qué hace y cómo lo has resuelto. Incluye:
-     - cómo lees los datos (FormData: get, getAll), cómo creas y numeras el grupo dinámico, cómo
-       funciona el campo condicional, qué atributos pones desde el código y cómo rellenas el
-       formulario al editar;
-     - la validación: cuándo validas cada campo, de dónde salen los mensajes (validity,
-       setCustomValidity y tus validadores), qué haces para que los errores sean accesibles y cómo
-       evitas el doble envío;
-     - las expresiones regulares: tabla con cada una, en qué validador está, qué acepta (un ejemplo)
-       y qué significan sus partes y sus flags; qué parte de la validación hace la expresión y qué
-       parte el código. -->
+Cada página tiene su módulo en `js/paginas/` y recibe lo que necesita (el documento, los
+almacenamientos, la navegación) en lugar de usar `localStorage` o `location` directamente. Aquí
+cuento qué hace cada parte y cómo lo resolví; los campos y sus mensajes están en «Mi proyecto», los
+oyentes en [Eventos](#eventos) y las claves del almacenamiento en
+[Almacenamiento y sesión](#almacenamiento-y-sesión).
+
+### Sesión y registro
+
+- **Inicio de sesión** (`index.html`, `js/paginas/entrar.js`). Si ya hay sesión, lleva al listado.
+  Si no, valida los dos campos y comprueba las credenciales con `comprobarCredenciales`. Con datos
+  incorrectos sale un **único** mensaje («El usuario o la contraseña no son correctos.») que no dice
+  cuál de los dos falla, para no dar pistas a quien pruebe nombres. Después vacía la contraseña y le
+  da el foco. `required` da por bueno un nombre de solo espacios, así que una regla de la página
+  (`campo.value.trim() === ''`) lo rechaza.
+- **Registro** (`registro.html`, `js/paginas/registro.js`). El formato de cada campo lo dice su
+  `data-validar` (ver «La validación»). Lo que necesita algo más que el valor del campo es una
+  **regla de la página**: «nombre ya en uso» (necesita los usuarios guardados, y los validadores son
+  funciones puras que no los leen) y «repetir contraseña» (necesita el otro campo). Como «repetir»
+  depende de la contraseña, el registro declara `dependencias: { clave: ['repetir'] }`. Mientras se
+  escribe la contraseña, un oyente `input` marca con `data-cumple` los requisitos que cumple
+  (`requisitosClave`).
+- **Al terminar:** se registra al usuario (el primero será administrador), se abre su sesión, se deja
+  un aviso pendiente y se va al listado. Si el nombre se ocupó entretanto o el almacenamiento está
+  lleno, sale un aviso de error y el formulario vuelve a estar activo.
+- **Páginas privadas** (`js/paginas/privada.js`). Sin sesión se va a `index.html` con
+  `location.replace`; `usuarios.html` exige además ser administrador. Cómo funciona y por qué no es
+  seguro está en «Almacenamiento y sesión».
+
+### Listado y paginación
+
+`pintar()` (en `js/paginas/listado.js`) hace siempre lo mismo, en este orden: lee las capturas del
+usuario, las **ordena** de la fecha más reciente a la más antigua, las **filtra** con el buscador y
+las **pagina**. Ordenar antes de filtrar y paginar hace que cada página salga ya ordenada.
+
+- **Un elemento por captura.** Se copia `#plantilla-captura` y se rellena con `textContent` y
+  atributos, nunca con `innerHTML`. Todos los `<li>` se preparan en un fragmento y sustituyen a la
+  lista de una vez con `replaceChildren`. La imagen solo se carga si su URL pasa `validarUrlImagen`
+  (lo guardado se puede haber cambiado a mano en las DevTools).
+- **Buscador.** Es un `<div role="search">` (sin `<form>`: Intro no envía nada) con `input` y una
+  pausa de 300 ms (`retardar`, el _debounce_). Busca en los textos **tal como se ven** (título, lugar,
+  categoría, condiciones, equipo y catálogo) con `normalizar`, que quita las tildes y pasa a
+  minúsculas. El contador (`aria-live="polite"`) dice cuántas hay, y hay mensajes distintos para
+  «no tienes capturas» y «ninguna coincide».
+- **Paginación.** `paginar(lista, pagina, porPagina)` (`js/paginar.js`) es una función pura que
+  devuelve `{ elementos, pagina, totalPaginas }`. Corrige la página pedida a la más cercana que
+  existe: la 0, una negativa o `NaN` (de `?pagina=abc`) van a la 1, una pasada del total va a la
+  última y los decimales se truncan. Una lista vacía tiene 1 página. Si `porPagina` no es un entero
+  mayor que 0, lanza `RangeError`.
+- **La página va en la dirección** (`?pagina=2`), con `URLSearchParams` (`js/direccion.js`) y
+  `history.replaceState` (que no añade entradas al historial). La página 1 se escribe sin parámetro
+  (`listado.html`). Al buscar se vuelve a la 1. El texto buscado **no** va a la dirección.
+- **Controles** (`js/controlesPaginacion.js`): «Anterior», un botón por página y «Siguiente», creados
+  con el DOM. «Anterior» y «Siguiente» se desactivan en los extremos y la página actual lleva
+  `aria-current="page"`. Con una sola página se ocultan.
+- **Borrar.** «Borrar» abre un `<dialog>` de confirmación (un `<form method="dialog">`). Un solo
+  oyente `close` mira `returnValue`: solo borra si es `'borrar'`; con «Cancelar» o Escape no hace
+  nada. «Editar» es un enlace normal a `ficha.html?id=…`.
+
+### Ficha
+
+`iniciarFicha` (`js/paginas/ficha.js`) sirve para dar de alta (`ficha.html`) y para editar
+(`ficha.html?id=…`). Se apoya en `js/validacion.js` para validar y en `js/capturas.js` para guardar
+(`crearCaptura` o `actualizarCaptura`). Al guardar deja un aviso pendiente y va al listado. Las
+cuatro piezas que la hacen especial (leer los datos, el grupo dinámico, el campo condicional y
+rellenar al editar) están explicadas justo debajo.
+
+### Zona de administración
+
+`iniciarUsuarios` (`js/paginas/usuarios.js`) pinta la lista de usuarios con la misma receta que el
+listado: plantilla, `replaceChildren`, buscador con pausa (nombre, correo y rol tal como se ve) y
+paginación de 6 en 6 con los mismos controles y `js/direccion.js`. La lista va ordenada por nombre.
+
+- **Cambiar el rol.** Un solo oyente `click` en la lista (delegación con `closest`); cada `<li>`
+  guarda `data-nombre` y `data-rol`. `cambiarRol` (`js/usuarios.js`) lanza `RangeError` si el rol no
+  existe, devuelve `null` si el usuario ya no existe y conserva su posición. Después se vuelve a
+  pintar con el mismo filtro y página, y el foco va al botón de esa fila o, si ya no se ve o es la fila del propio
+  administrador (su botón está desactivado), al título.
+- **Un administrador no se quita el rol a sí mismo,** para que siempre quede uno. Su botón está
+  desactivado y la explicación se ve en la fila (enlazada con `aria-describedby`). Además, el
+  oyente repite la comprobación por si alguien fuerza el clic.
+- **Comparar nombres.** Para saber «quién soy yo» uso `mismoNombre`, que ignora las mayúsculas pero
+  **no** las tildes («José» ≠ «Jose»), igual que el registro. El `normalizar` del buscador quita las
+  tildes y solo lo uso para buscar y ordenar. Lección: no comparar nombres de usuario con él. Ojo:
+  hay **dos** funciones `normalizar` distintas: la de `js/usuarios.js` (l. 77) solo pasa a minúsculas
+  y sirve para comparar nombres; la de `js/buscar.js` también quita las tildes y sirve solo para
+  buscar y ordenar.
+- **Limitación conocida:** si otro administrador cambia el rol de quien tiene la sesión abierta, esa
+  sesión no se entera hasta volver a entrar (el enunciado no lo pide).
+
+### Cómo leo y guardo los datos
+
+Al enviar, `new FormData(formulario)` recoge los campos **activos** que tienen `name`
+(los `disabled` quedan fuera). Con `datos.get(nombre)` leo un valor (`null` si no existe) y con
+`datos.getAll(nombre)` todos los valores de varios campos con el mismo nombre, en el orden del
+formulario: es lo que necesito para las imágenes, que se repiten (`imagen-url` e `imagen-pie`).
+`datosDeCaptura` convierte ese `FormData` en la captura que se guarda, **normalizada**:
+
+```js
+const texto = (nombre) => (datos.get(nombre) ?? '').trim();
+// …
+gps: texto('gps').replace(/,\s*/u, ', '),
+altitud: Number(texto('altitud')),
+observatorio: texto('observatorio') === '' ? null : texto('observatorio'),
+imagenes: datos.getAll('imagen-url').map((url, posicion) => ({
+  url: url.trim(),
+  pie: (pies[posicion] ?? '').trim(),
+})),
+```
+
+| Dato | Cómo se normaliza | Por qué |
+|------|-------------------|---------|
+| Los textos | `trim()` (y `?? ''` si no existe) | Guardar `«  Aurora »` y `«Aurora»` como lo mismo |
+| `gps` | La coma y lo que la sigue se sustituyen por `', '` | `36.7213,-4.4214` y `36.7213, -4.4214` se guardan igual |
+| `altitud` | `Number(...)`, no `+...` (regla `no-implicit-coercion`) | `FormData` solo da texto; el listado necesita un número |
+| `observatorio` | Vacío → `null` | Es opcional: `null` dice «no hay», un texto vacío no |
+| `espacio` | `{ catalogo, ascension, declinacion }` solo si la categoría es `espacio`; si no, `null` | Una captura de paisaje no debe llevar datos astronómicos |
+| `imagenes` | `[{ url, pie }]`, emparejando por posición | `getAll` devuelve las dos listas en el mismo orden |
+
+El `id` no viene del formulario: lo pone `crearCaptura` (con `crypto.randomUUID()`), y
+`actualizarCaptura` lo conserva.
+
+### El grupo dinámico: las imágenes
+
+Una captura puede tener de **0 a 3** imágenes (`MIN_IMAGENES` y `MAX_IMAGENES` en `ficha.js`). El
+HTML trae una `<template id="plantilla-imagen">` con la imagen vacía y la lista `#ficha-imagenes-lista`.
+
+- **Crear.** `anadirImagen` copia la plantilla (`content.firstElementChild.cloneNode(true)`) y le
+  pone ids únicos: `ficha-imagen-<n>-url` y `ficha-imagen-<n>-pie`. Su `<label>` se enlaza con
+  `htmlFor` y la caja de error (`...-error`) con `aria-describedby` del campo.
+- **El número nunca se repite.** `siguienteNumero` solo crece: si hay tres imágenes, quito la 2 y
+  añado otra, la nueva es la 4 (`ficha-imagen-4-url`) y no otra vez la 2. Así dos campos nunca
+  comparten `id`, y la etiqueta y el error de uno no apuntan al de otro. El texto visible («Imagen 1», «Imagen 2»…) sí se renumera por
+  posición en `actualizarImagenes`.
+- **Los límites.** `actualizarImagenes` desactiva «Añadir imagen» con 3 y «Quitar» con el mínimo (con
+  un mínimo de 0 nunca llega a pasar), y escribe el contador («2 de 3»). Un botón `disabled` no recibe
+  clics, así que `anadirImagen` y `quitarImagen` no repiten la comprobación del mínimo; `anadirImagen`
+  sí devuelve `null` si ya hay 3, por si acaso.
+- **Un solo oyente.** `click` en `#ficha-imagenes`, con delegación (`closest('[data-accion]')`): sirve
+  para «Añadir» y para los «Quitar» de imágenes que aún no existían al cargar la página. El foco va
+  a la imagen nueva o, al quitar, a «Añadir» (el botón pulsado ya no existe).
+
+### El campo condicional: los datos del espacio
+
+Código de catálogo, ascensión recta y declinación están en `<fieldset id="ficha-espacio" hidden
+disabled>`. `actualizarEspacio` se ejecuta al cargar y cada vez que cambia un botón de categoría
+(delegación de `change` en el formulario):
+
+- **`hidden`** lo oculta. **`disabled`** hace que no se valide ni se envíe. Necesito las dos cosas:
+  un campo oculto pero activo seguiría siendo `required` y no me dejaría guardar un paisaje.
+- Se desactiva el `fieldset` y también cada campo: el navegador ya lo hace por el `fieldset`, pero
+  happy-dom (el entorno de los tests) no, y así se ve en el propio campo.
+- **Al ocultarlos se borran sus errores** (`mostrarEstadoCampo` con mensaje vacío y se quita
+  `aria-invalid`), para que al volver a mostrarlos empiecen limpios.
+- La categoría se lee con la propiedad `checked` de cada botón y no con el selector `:checked`,
+  porque happy-dom lo devuelve desactualizado justo después de un cambio.
+- Al guardar, `espacio` es `null` si la categoría no es «Espacio» (ver la tabla de arriba).
+
+### Atributos que pone el código
+
+- **`max` de la fecha.** El HTML no sabe qué día es hoy, así que `iniciarFicha` hace
+  `campos.fecha.max = fechaLocal(ahora())`. `fechaLocal` escribe `AAAA-MM-DDTHH:MM` con la **hora
+  local** (no la de Greenwich, que es lo que daría `toISOString()`). Con ese `max`, el navegador
+  marca `rangeOverflow` en una fecha futura y sale el mensaje de `data-invalido`.
+- **Una regla repite la comprobación** (`campo.value > campo.max`), porque happy-dom no calcula
+  `rangeOverflow` con `datetime-local` y los tests de integración no la verían. Un texto
+  `AAAA-MM-DDTHH:MM` se compara bien como cadena porque va del año a los minutos.
+- **`ahora` es una dependencia** (`() => new Date()` por defecto): los tests pasan una hora fija y
+  saben qué `max` saldrá.
+- **Se pone desde el código**, además: el título y el texto del botón al editar («Editar captura»,
+  «Guardar cambios»), `document.title`, el número y el `aria-label` de cada imagen y el contador.
+- **No** pongo estilos desde el JavaScript: el color de la validación lo ponen las clases de
+  Bootstrap (`is-invalid`) y el de cada categoría, el CSS.
+
+### Editar: rellenar la ficha
+
+1. `iniciarFicha` lee `?id=` con `new URLSearchParams(busqueda).get('id')` y lo busca con
+   `buscarCaptura(almacen, sesion.nombre, id)`. Solo busca entre las capturas **del usuario de la
+   sesión**: con el `id` de otro usuario no la encuentra.
+2. **Si el `id` no existe (o es de otro usuario)**, se guarda un aviso pendiente de error («No hemos
+   encontrado esa captura en tu cuaderno.») y se va al listado con `reemplazar` (`location.replace`),
+   para que «Atrás» no vuelva a una ficha que no existe. `iniciarFicha` devuelve `false`.
+3. **Si existe**, `rellenar` escribe cada valor en su campo, marca el botón de la categoría
+   (buscándolo entre los botones, sin armar un selector con el valor guardado) y añade las imágenes
+   con `anadirImagen`. Después `actualizarEspacio` muestra los datos del espacio si hacía falta.
+4. Si, mientras se edita, la captura se borra en otra pestaña, `actualizarCaptura` devuelve `null` y
+   se deja el mismo aviso de error que en el paso 2 y se va al listado.
+
+### La validación
+
+El componente común es `js/validacion.js`: `activarValidacion(formulario, { reglas, dependencias,
+avisoErrores })` devuelve `{ validarCampo, validarFormulario }`. Lo usan los tres formularios
+(inicio de sesión, registro y ficha), así que no repito la lógica en cada página. Todos los
+formularios llevan `novalidate`: no quiero los globos del navegador, los mensajes los pongo yo.
+
+#### Cuándo se valida cada campo
+
+- **La primera vez, al salir del campo** (`blur`). Así no sale «obligatorio» mientras alguien aún está
+  empezando a escribir.
+- **Desde entonces, con cada cambio** (`input` y `change`), para que el error desaparezca en cuanto
+  se corrige. Se lleva la cuenta de los campos ya tocados con un `WeakSet`.
+- **Las reglas que dependen de otro campo se revalidan** cuando cambia el otro: `{ clave: ['repetir'] }`
+  hace que al cambiar la contraseña se vuelva a validar «repetir» (si ya se había tocado).
+- **Al enviar, todos** (`validarFormulario`): si hay errores, se avisa y el foco va al primero.
+- Los tres oyentes (`blur` en la fase de captura, `input` y `change`) están en el **formulario**, no
+  en cada campo, así valen también para los campos que se crean después (las imágenes). Por qué `blur`
+  va en captura está en «Propagación», dentro de [Eventos](#eventos).
+- Los campos `disabled` no se validan (`willValidate` es `false`): por eso el campo condicional oculto
+  no molesta.
+
+#### De dónde sale cada mensaje
+
+`mensajeDeError` calcula el mensaje con este orden; el primero que falla gana:
+
+1. **`validity`** (la validación del propio navegador, calculada con los atributos del HTML:
+   `required`, `type="email"`, `min`, `max`, `maxlength`…). Si falta un valor obligatorio
+   (`valueMissing`), el texto es el `data-vacio` del campo; si es otro error (`typeMismatch`,
+   `rangeOverflow`, `tooLong`…), el `data-invalido`. Así los mensajes están en el HTML, junto a su
+   campo, y no en el JavaScript.
+2. **El validador de `data-validar`**, buscado por nombre en el objeto `validadores`
+   (`js/validadores.js`): `validadores[campo.dataset.validar](campo.value)`. Se salta si el campo
+   está vacío: así un campo opcional vacío es válido (el código de observatorio) y uno obligatorio
+   vacío ya lo dijo el paso 1. Para añadir un validador, se escribe y se pone en el objeto.
+3. **La regla de la página**, por el nombre del campo (`reglas[campo.name]`): «nombre ya en uso»,
+   «repetir contraseña», «fecha no futura».
+
+**`setCustomValidity`.** `mensajeDeError` empieza con `setCustomValidity('')`, para que el error de la
+vez anterior no siga marcando el campo, y `mostrarEstadoCampo` (`js/formularios.js`) le pone el
+mensaje nuevo (un texto vacío significa «sin error»). Así lo que se ve y lo que dice el navegador
+(`validity`, `checkValidity()`) coinciden.
+
+#### Que los errores sean accesibles
+
+- **Cada campo tiene su caja de error** (`<p class="invalid-feedback">`) enlazada con
+  `aria-describedby`. Un campo puede estar descrito por más cosas (una ayuda, la lista de requisitos
+  de la contraseña), así que `cajaDeError` busca entre sus ids la que tiene la clase
+  `invalid-feedback`. Si no la hay, lanza un error: es un fallo del HTML y se ve enseguida.
+- **`aria-invalid`** vale `true` o `false` según el estado, y la clase `is-invalid` de Bootstrap
+  (puesta por el código) pinta el campo y muestra la caja. El mensaje se escribe con `textContent`.
+- **Los botones de opción se validan como grupo:** un solo mensaje para la categoría, que se marca en
+  todos los botones. Lleva `required` y sus mensajes el primero.
+- **Al enviar con errores, el foco va al primer campo con error** y sale un aviso en la región
+  `#avisos`, que es un `role="status"` en las cinco páginas (el lector de pantalla lo lee sin mover
+  el foco).
+- Otros detalles: el contador de resultados tiene `aria-live="polite"`, cada «Quitar» tiene un
+  `aria-label` con su número de imagen y la explicación del administrador que no puede quitarse el
+  rol está enlazada con `aria-describedby`.
+
+#### Evitar el doble envío
+
+En el inicio de sesión y el registro, enviar tarda un momento: el resumen de la contraseña se calcula
+con `await`. Para que un segundo envío no haga nada hay **dos** protecciones:
+
+- `ponerEnviando(formulario, boton, true, textos)` (`js/formularios.js`) **desactiva el botón**, le
+  cambia el texto («Entrando…», «Creando tu cuenta…») y pone **`aria-busy`** en el formulario. Al
+  terminar con error, lo deja como estaba.
+- Una variable `enviando`: si llega otro `submit` mientras vale `true`, el oyente sale sin hacer
+  nada. Es la red de seguridad para los envíos que no dependen del botón desactivado (por ejemplo,
+  `requestSubmit()`).
+
+**Pendiente:** la ficha todavía **no** bloquea el doble envío. Guardar es síncrono (no hay `await`),
+pero salir de la página no es instantáneo, así que dos envíos seguidos podrían guardar la captura dos
+veces. Lo resolveré en una tarjeta aparte («S2 · Ficha: evitar el doble envío»), reutilizando
+`ponerEnviando`. Hoy lo usan solo `entrar.js` y `registro.js`.
+
+### Expresiones regulares
+
+En `js/` hay **14 expresiones regulares** (las busqué con `/…/`, `RegExp`, `.test(`, `.match(`,
+`.replace(` y `.split(` en `js/` y los HTML; ningún HTML usa el atributo `pattern`). **Once** están en
+`js/validadores.js` (el requisito 13 pide al menos tres, con una regla de control por código) y tres
+más hacen tareas pequeñas en otros módulos.
+
+**Los flags.** Todas llevan **`u`** (Unicode): es imprescindible en las que usan `\p{…}` (`\p{L}`
+letra, `\p{Ll}` minúscula, `\p{Lu}` mayúscula, `\p{M}` marca de acento) y en el resto la pongo por
+uniformidad (con `u`, un escape mal escrito da error en lugar de ignorarse). **`i`** (da igual
+mayúsculas) solo está en la URL, para que `HTTPS://` valga. **`g`** (todas las coincidencias) solo en
+la de `buscar.js`. `^` y `$` anclan al principio y al final: la regla se aplica a **todo** el texto y
+no a un trozo (las tres de la contraseña no los llevan, porque buscan algo en cualquier parte, ni las de otros
+módulos).
+
+#### En `js/validadores.js`
+
+| N.º | Validador (función, línea) y regex | Qué comprueba | Sí pasa | No pasa | Partes |
+|-----|------------------------------------|---------------|---------|---------|--------|
+| 1 | `validarNombreUsuario` (l. 56), regex en l. 30: `/^[\p{L}\d_]{3,20}$/u` | Nombre de usuario | `Iñaki` | `ana-lopez` | `[\p{L}\d_]`: una letra de cualquier alfabeto (con tildes y ñ), una cifra o `_`. `{3,20}`: de 3 a 20 |
+| 2 | `validarCorreo` (l. 69), l. 36: `/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/u` | Un correo con forma de correo | `ana@ejemplo.es` | `ana@ejemplo` | `[^\s@]+`: uno o más caracteres que no son espacio ni `@`. `@`. Otra vez `[^\s@]+` (el dominio). `\.`: un punto de verdad. `[^\s@.]{2,}`: al menos dos caracteres sin punto (`es`, `com`) |
+| 3 | `requisitosClave` (l. 89), l. 39: `/\p{Ll}/u` | La contraseña tiene una minúscula | `Orion42` | `NEBULOSA42` | `\p{Ll}`: *letter, lowercase*. Sin anclas: vale en cualquier posición |
+| 4 | `requisitosClave`, l. 42: `/\p{Lu}/u` | La contraseña tiene una mayúscula | `Orion42` | `nebulosa42` | `\p{Lu}`: *letter, uppercase* |
+| 5 | `requisitosClave`, l. 45: `/\d/u` | La contraseña tiene una cifra | `Orion42` | `Nebulosas` | `\d`: una cifra del 0 al 9 |
+| 6 | `validarGps` (l. 203), l. 144: `/^(-?\d{1,3}(?:\.\d+)?), ?(-?\d{1,3}(?:\.\d+)?)$/u` | El formato de las coordenadas | `36.7213, -4.4214` | `36,7213 -4,4214` | `-?`: signo menos opcional. `\d{1,3}`: de 1 a 3 cifras. `(?:\.\d+)?`: opcionalmente un punto y una o más cifras (el `?:` no captura). `, ?`: una coma y, si se quiere, un espacio. Los dos paréntesis **capturan** latitud y longitud |
+| 7 | `validarUrlImagen` (l. 225), l. 154: `/^https?:\/\/[^\s/?#]+\.[^\s/?#]+(?:[/?#]\S*)?$/iu` | La dirección de una imagen | `https://ejemplo.es/aurora.jpg` | `ejemplo.es/aurora.jpg` | `https?`: la `s` es opcional. `:\/\/`: `://` (las `/` se escapan en una regex literal). `[^\s/?#]+\.[^\s/?#]+`: el dominio, con al menos un punto, hasta donde empieza la ruta. `(?:[/?#]\S*)?`: ruta, consulta o fragmento, opcionales y sin espacios. `i` |
+| 8 | `validarCatalogo` (l. 238), l. 162: `/^(?:M[1-9]\d{0,2}\|(?:NGC\|IC) [1-9]\d{0,3})$/u` | Un código de catálogo | `NGC 1976` | `NGC1976` | Dos opciones con `\|`: `M` y un número de 1 a 3 cifras sin cero delante (`M42`), o `NGC` o `IC`, un espacio y un número de 1 a 4 cifras (`IC 434`). `[1-9]\d{0,2}`: la primera cifra no es 0 y detrás hay de 0 a 2 más |
+| 9 | `validarAscensionRecta` (l. 251), l. 170: `/^(?:[01]\d\|2[0-3])h [0-5]\dm [0-5]\d(?:\.\d+)?s$/u` | Ascensión recta en horas, minutos y segundos | `05h 35m 17s` | `24h 00m 00s` | `(?:[01]\d\|2[0-3])h`: horas de 00 a 19 o de 20 a 23. `[0-5]\dm`: minutos de 00 a 59. `[0-5]\d(?:\.\d+)?s`: segundos de 00 a 59, con decimales opcionales (`17.3s`) |
+| 10 | `validarDeclinacion` (l. 264), l. 180-181: `/^[+-]?(?:[0-8]\d° [0-5]\d[′'] [0-5]\d(?:\.\d+)?[″"]\|90° 00[′'] 00[″"])$/u` | Declinación en grados, minutos y segundos de arco | `-05° 23′ 28″` (y `-05° 23' 28"`) | `-95° 00′ 00″` | `[+-]?`: signo opcional. Primera opción: grados de 00 a 89 (`[0-8]\d`) con sus minutos y segundos. Segunda: exactamente `90° 00′ 00″` (el polo). `[′']` y `[″"]`: valen el símbolo de minuto o segundo **y** el apóstrofo y las comillas del teclado |
+| 11 | `validarObservatorio` (l. 298), l. 187: `/^OBS-(\d{4})-(\d)$/u` | El formato del código de observatorio | `OBS-4821-7` | `OBS-482-7` | `OBS-`: texto fijo (en mayúsculas). `(\d{4})`: exactamente cuatro cifras, **capturadas**. `-`. `(\d)`: el dígito de control, capturado |
+
+(En las filas 8, 9 y 10, en el archivo `.md` está escrito `\|` para que la barra no rompa la tabla;
+GitHub lo muestra como `|`. En el código es `|`, sin barra invertida.)
+
+#### En otros módulos
+
+| N.º | Dónde y regex | Para qué | Cómo funciona |
+|-----|---------------|----------|---------------|
+| 12 | `js/buscar.js`, `normalizar` (l. 26): `/\p{M}/gu` | Quitar las tildes para buscar sin distinguirlas | `normalize('NFD')` separa cada letra de su acento («é» → «e» + marca) y esta regex borra todas las marcas (`\p{M}`, con `g` para todas). `Cámara` → `camara` |
+| 13 | `js/paginas/ficha.js`, `datosDeCaptura` (l. 94): `/,\s*/u` | Normalizar las coordenadas | La coma y los espacios que la siguen (`\s*`, cero o más) se sustituyen por `', '`. Sin `g`: solo la primera coma, y solo hay una |
+| 14 | `js/validacion.js`, `cajaDeError` (l. 77): `/\s+/u` | Separar los ids de `aria-describedby` | `aria-describedby` guarda varios ids separados por espacios; `split` los parte por uno o más espacios |
+
+#### Qué hace la regex y qué hace el código
+
+Una regex solo mira la **forma** del texto. Lo que necesita calcular, o comparar con otra cosa, lo
+hace el código:
+
+- **GPS** (`validarGps`). La regex solo comprueba el formato, y `120, 300` lo cumple. Después, con
+  código, `Number(partes[1])` y `Number(partes[2])` (los textos que capturaron los paréntesis) se
+  comparan con los límites: `Math.abs(latitud) <= 90` y `Math.abs(longitud) <= 180`. Hay **dos
+  mensajes distintos**: «Usa el formato 36.7213, -4.4214.» (falla la regex) y «La latitud va de −90
+  a 90 y la longitud de −180 a 180.» (falla el rango). `91, 0` pasa la regex y falla el rango.
+- **Código de observatorio** (`validarObservatorio`), la regla de control del requisito 13. Un
+  código vacío es válido (el campo es opcional). Si no, la regex comprueba la forma y captura las
+  cuatro cifras y el dígito. Después, `digitoControlObservatorio` (l. 279) multiplica cada cifra por
+  su peso `[3, 1, 3, 1]`, suma y se queda con el resto de dividir entre 10 (`suma % 10`), y el
+  código lo compara con el dígito escrito. Para `OBS-4821-7`: 4·3 + 8·1 + 2·3 + 1·1 = 12 + 8 + 6 + 1
+  = 27, y 27 % 10 = 7, que es el dígito escrito: válido. `OBS-4821-3` tiene la forma correcta, pero
+  el dígito debería ser 7, así que sale «El dígito de control no es correcto.». Funciona como la
+  letra del DNI: si alguien se equivoca en una cifra al copiar el código, deja de cuadrar. Si
+  cambio de orden las dos últimas cifras (`OBS-4812-7`), la suma es 12 + 8 + 3 + 2 = 25 y el dígito
+  debería ser 5.
+- **Contraseña** (`requisitosClave`). Tres de los cuatro requisitos son las regex 3, 4 y 5. La
+  longitud no: `[...clave].length >= 8` cuenta caracteres reales (un emoji cuenta como
+  uno, no como los dos de `.length`). `validarClave` exige que se cumplan los cuatro.
+- **Correo.** El navegador comprueba además `type="email"` (`typeMismatch`, con el `data-invalido`
+  del HTML), antes que mi regex en el orden de «De dónde sale cada mensaje».
+- **Declinación y ascensión recta.** Los rangos (horas 00–23, minutos 00–59, grados hasta 90) están
+  **dentro de la regex**, con clases y alternativas (`[01]\d|2[0-3]`), porque son rangos de
+  dígitos y se escriben bien así. Por eso aquí no hace falta código.
+- **Lo que no es de ninguna regex:** que el nombre de usuario no esté ocupado (`nombreOcupado`, en la
+  regla del registro), que las contraseñas coincidan (`validarRepetirClave`, que compara con `===`),
+  y que un campo obligatorio no quede vacío (`required` y `validity.valueMissing`).
 
 ## Eventos
 
@@ -510,6 +836,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `readme-eventos` | Sección «Eventos» del README: eventos en el HTML, tipos de eventos y tabla de todos los oyentes | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/35) |
 | `subir-agentes-ia` | Revisión de `.claude/agents/` frente a `AGENTS.md`, regla de no usar `-u root` en los agentes y sección «Equipo de IA» del README | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/36) |
 | `e2e-cobertura` | Pruebas de extremo a extremo (`e2e/`: sesión y CRUD de capturas) y cobertura con umbral del 90 % de líneas en `js/validadores.js` y `js/paginar.js` | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/37) |
+| `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | PR pendiente |
 
 #### *Merge* o *rebase*
 
