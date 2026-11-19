@@ -57,13 +57,314 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 
 ## Arquitectura y módulos
 
-<!-- 1. Un diagrama (Mermaid) de tus módulos y de qué usa cada uno.
-     2. Tabla con cada módulo: qué hace, si usa el DOM y qué exporta.
-     3. Cómo están hechos tus objetos (funciones fábrica o clases) y qué patrones de diseño usas
-        (al menos dos): dónde y por qué.
-     4. Cómo reciben las páginas lo que necesitan (almacenamiento, sesión, navegación) y por qué así
-        se pueden probar.
-     5. Qué documenta tu JSDoc y cómo se genera la documentación (`npm run docs`). -->
+La aplicación son **13 módulos comunes** en `js/` y **6 módulos de página** en `js/paginas/`, todos
+módulos de JavaScript (`import` y `export`), sin librerías. Cada HTML carga un solo
+`<script type="module">` que llama a la función `iniciarX` de su página y le pasa lo que necesita.
+
+### Diagrama de módulos
+
+Una flecha `A --> B` significa que `A` hace `import` de `B`. Salen de los `import` reales de cada
+archivo (los listé con `grep` en `js/` y `js/paginas/`). El diagrama se lee de arriba abajo: del HTML
+a las utilidades, y nunca hacia arriba (ningún módulo importa a una página).
+
+```mermaid
+flowchart TD
+  subgraph HTML["HTML (script type=module)"]
+    hIndex["index.html"]
+    hRegistro["registro.html"]
+    hListado["listado.html"]
+    hFicha["ficha.html"]
+    hUsuarios["usuarios.html"]
+  end
+
+  subgraph PAGINAS["Páginas (js/paginas/)"]
+    pEntrar["entrar.js"]
+    pRegistro["registro.js"]
+    pPrivada["privada.js"]
+    pListado["listado.js"]
+    pFicha["ficha.js"]
+    pUsuarios["usuarios.js (página)"]
+  end
+
+  subgraph COMUNES["Componentes comunes"]
+    validacion["validacion.js"]
+    formularios["formularios.js"]
+    avisos["avisos.js"]
+    controles["controlesPaginacion.js"]
+  end
+
+  subgraph DATOS["Módulos de datos"]
+    usuarios["usuarios.js"]
+    sesion["sesion.js"]
+    capturas["capturas.js"]
+    almacen["almacen.js"]
+  end
+
+  subgraph UTILIDADES["Utilidades"]
+    validadores["validadores.js"]
+    paginar["paginar.js"]
+    buscar["buscar.js"]
+    direccion["direccion.js"]
+    clave["clave.js (protegido)"]
+  end
+
+  hIndex --> pEntrar
+  hRegistro --> pRegistro
+  hListado --> pPrivada
+  hListado --> pListado
+  hFicha --> pPrivada
+  hFicha --> pFicha
+  hUsuarios --> pPrivada
+  hUsuarios --> pUsuarios
+
+  pEntrar --> usuarios
+  pEntrar --> sesion
+  pEntrar --> formularios
+  pEntrar --> validacion
+  pEntrar --> clave
+  pRegistro --> usuarios
+  pRegistro --> sesion
+  pRegistro --> formularios
+  pRegistro --> validacion
+  pRegistro --> validadores
+  pRegistro --> clave
+  pPrivada --> sesion
+  pPrivada --> usuarios
+  pListado --> capturas
+  pListado --> validadores
+  pListado --> paginar
+  pListado --> buscar
+  pListado --> controles
+  pListado --> direccion
+  pFicha --> validacion
+  pFicha --> formularios
+  pFicha --> capturas
+  pUsuarios --> usuarios
+  pUsuarios --> paginar
+  pUsuarios --> buscar
+  pUsuarios --> controles
+  pUsuarios --> direccion
+  PAGINAS --> avisos
+
+  validacion --> validadores
+  validacion --> formularios
+  validacion --> avisos
+  sesion --> almacen
+  sesion --> usuarios
+  usuarios --> almacen
+  usuarios --> clave
+  avisos --> almacen
+  capturas --> almacen
+```
+
+(El diagrama se dibuja en GitHub. En la documentación de `docs/`, que toma este README como
+portada, se ve como un bloque de código, porque JSDoc no dibuja Mermaid.)
+
+**Qué he simplificado.** Solo una cosa: las seis páginas importan `avisos.js`, y en lugar de dibujar
+seis flechas hay una sola desde el grupo «Páginas» (`PAGINAS --> avisos`). El resto de flechas
+están todas. Los módulos sin flechas de salida (`almacen.js`, `validadores.js`, `paginar.js`,
+`buscar.js`, `direccion.js`, `controlesPaginacion.js`, `formularios.js` y `clave.js`) no importan
+nada. Hay un detalle que se ve en el diagrama: `sesion.js` importa `usuarios.js` solo para usar
+`ROLES`.
+
+### Tabla de módulos
+
+«Usa el DOM» dice si el módulo toca el documento y **cómo lo recibe**: ninguno lo coge de
+`document`, `localStorage` o `location`; en `js/` no hay un solo uso de esos nombres fuera de los
+comentarios. Lo reciben como parámetro.
+
+| Módulo | Qué hace | Usa el DOM | Exporta |
+|--------|----------|------------|---------|
+| `js/almacen.js` | Lee y escribe JSON en un almacenamiento sin que nunca falle: si no hay nada, está estropeado o tiene otra forma, devuelve el valor por defecto | No. Recibe el almacenamiento como primer parámetro | `leerJSON`, `guardarJSON`, `borrar` |
+| `js/usuarios.js` | Usuarios en `localStorage`: registrar (el primero es administrador), comprobar credenciales, cambiar el rol y comparar nombres | No. Recibe el almacenamiento y la función de resumen (`resumir`) | `CLAVE_USUARIOS`, `ROLES`, `TEXTOS_ROL`, `mismoNombre`, `listarUsuarios`, `nombreOcupado`, `registrarUsuario`, `cambiarRol`, `comprobarCredenciales` |
+| `js/sesion.js` | La sesión en `sessionStorage` (solo nombre y rol) | No. Recibe el almacenamiento | `CLAVE_SESION`, `iniciarSesion`, `leerSesion`, `cerrarSesion`, `esAdministrador` |
+| `js/capturas.js` | Capturas de cada usuario (una clave por usuario): listar, buscar, crear, actualizar y borrar, con `id` único | No. Recibe el almacenamiento, el usuario y, si se quiere, `crearId` | `PREFIJO_CAPTURAS`, `claveCapturas`, `listarCapturas`, `buscarCaptura`, `crearCaptura`, `actualizarCaptura`, `borrarCaptura` |
+| `js/clave.js` (protegido, no se modifica) | Resumen SHA-256 de la contraseña con `crypto.subtle` | No | `resumirClave` |
+| `js/validadores.js` | Validadores de formato: reciben el valor y devuelven el mensaje de error o `''`; el objeto `validadores` los reúne por el nombre de `data-validar` | No (funciones puras) | `LONGITUD_MINIMA_CLAVE`, `LATITUD_MAXIMA`, `LONGITUD_MAXIMA`, `validarNombreUsuario`, `validarCorreo`, `requisitosClave`, `validarClave`, `validarRepetirClave`, `validarGps`, `validarUrlImagen`, `validarCatalogo`, `validarAscensionRecta`, `validarDeclinacion`, `digitoControlObservatorio`, `validarObservatorio`, `validadores` |
+| `js/validacion.js` | Validación en tiempo real de un formulario (cuándo se valida, de dónde sale el mensaje) | Sí. Recibe el `formulario` | `mensajeDeError`, `activarValidacion` |
+| `js/formularios.js` | Mostrar el estado de un campo y poner el formulario «enviando» | Sí. Recibe el campo, su caja, el formulario y el botón | `mostrarEstadoCampo`, `ponerEnviando` |
+| `js/avisos.js` | Sistema de avisos: evento propio `aviso`, único oyente, aviso pendiente entre páginas | Sí. Recibe el `documento` y la región (`escucharAvisos`), el elemento desde el que se lanza (`lanzarAviso`) y el almacenamiento para el aviso pendiente | `EVENTO_AVISO`, `CLAVE_AVISO_PENDIENTE`, `TIPOS_AVISO`, `lanzarAviso`, `escucharAvisos`, `guardarAvisoPendiente`, `mostrarAvisoPendiente` |
+| `js/paginar.js` | Trocea una lista en páginas (función pura) | No | `paginar` |
+| `js/buscar.js` | Texto sin tildes y en minúsculas para buscar, y la pausa del buscador (_debounce_) | No | `normalizar`, `retardar` |
+| `js/direccion.js` | Lee y escribe `?pagina=` en la dirección | No. Recibe el texto de la dirección y la función que la cambia | `leerPagina`, `escribirPagina` |
+| `js/controlesPaginacion.js` | Pinta «Anterior», los números y «Siguiente», y escucha sus clics | Sí. Recibe el `documento` y el `contenedor` | `pintarControles`, `escucharControles` |
+| `js/paginas/privada.js` | Protege las páginas privadas y prepara la cabecera común | Sí. Recibe `documento`, `almacenSesion`, `reemplazar` y `soloAdministradores` (`true` en `usuarios.html`) | `PAGINA_DE_ENTRADA`, `PAGINA_SIN_PERMISO`, `iniciarPaginaPrivada` |
+| `js/paginas/entrar.js` | Inicio de sesión (`index.html`) | Sí. Recibe `documento`, `almacenUsuarios`, `almacenSesion`, `navegar` y `resumir` | `PAGINA_TRAS_ENTRAR`, `MENSAJE_CREDENCIALES`, `iniciarEntrar` |
+| `js/paginas/registro.js` | Registro (`registro.html`) | Sí. Recibe lo mismo que `entrar.js` | `PAGINA_TRAS_REGISTRO`, `iniciarRegistro` |
+| `js/paginas/listado.js` | Listado de capturas, buscador, paginación y borrado (`listado.html`) | Sí. Recibe `documento`, `sesion`, `almacenCapturas`, `busqueda`, `actualizarDireccion`, `porPagina` y `esperaBusqueda` | `TEXTOS`, `fechaLegible`, `ordenarPorFecha`, `textoBuscable`, `iniciarListado` |
+| `js/paginas/ficha.js` | Alta y edición de una captura (`ficha.html`) | Sí. Recibe `documento`, `sesion`, `almacenCapturas`, `almacenSesion`, `busqueda`, `navegar`, `reemplazar` y `ahora` | `CATEGORIA_ESPACIO`, `MIN_IMAGENES`, `MAX_IMAGENES`, `PAGINA_LISTADO`, `MENSAJE_NO_EXISTE`, `fechaLocal`, `datosDeCaptura`, `iniciarFicha` |
+| `js/paginas/usuarios.js` | Administración de usuarios (`usuarios.html`) | Sí. Recibe `documento`, `sesion`, `almacenUsuarios`, `busqueda`, `actualizarDireccion`, `porPagina` y `esperaBusqueda` | `ordenarPorNombre`, `textoBuscable`, `iniciarUsuarios` y, reexportado de `js/usuarios.js`, `TEXTOS_ROL` |
+
+Las páginas HTML (`index.html`, `registro.html`, `listado.html`, `ficha.html` y `usuarios.html`) no
+son módulos, pero son el único sitio donde aparecen `localStorage`, `sessionStorage`, `location` y
+`history` de verdad: ahí se «conectan» los módulos con el navegador.
+
+### Cómo están hechos mis objetos
+
+**No hay clases.** No hay ninguna palabra clave `class` en `js/`. Todo son **funciones** y, cuando
+una función tiene que devolver varias cosas, devuelve un **objeto con funciones**. No he necesitado
+clases porque no hay objetos con estado que se creen muchas veces: el estado vive en los
+almacenamientos y las funciones lo reciben cada vez. Lo que sí hay son **cierres** (funciones que
+recuerdan las variables de la función que las creó):
+
+- **`activarValidacion`** (`js/validacion.js`) es una **función fábrica**: devuelve
+  `{ validarCampo, validarFormulario }`. Ese objeto **es** mi objeto con métodos (el enunciado pide
+  objetos con métodos): `validarCampo` y `validarFormulario` son sus métodos. Recuerdan el
+  `formulario`, las `reglas` y el `WeakSet` `tocados`, que nadie más puede tocar: es lo más parecido
+  a un objeto con atributos privados, sin `class`.
+- **`retardar`** (`js/buscar.js`) devuelve una función nueva que recuerda su `temporizador`. Cada
+  llamada a `retardar` tiene el suyo, así que el buscador del listado y el de usuarios no se pisan.
+- **`escucharAvisos`** (`js/avisos.js`) devuelve una **función de limpieza** que quita los dos
+  oyentes con `removeEventListener`. Los tests la usan para no dejar oyentes de un test a otro.
+- **`iniciarListado`** e **`iniciarUsuarios`** definen dentro `crearElemento` y `pintar`, que
+  comparten las variables de la página (la lista, el campo de búsqueda…) sin tener que pasarlas una
+  y otra vez. `iniciarFicha` hace lo mismo con sus funciones internas.
+
+#### Patrones de diseño
+
+- **Observador (publicador/suscriptor): el evento `aviso`** (`js/avisos.js`). Quien quiere avisar
+  llama a `lanzarAviso(elemento, mensaje, tipo)`, que lanza un `CustomEvent` con `bubbles: true` y
+  `detail: { mensaje, tipo }`. Un **único** oyente en `document`, puesto por `escucharAvisos` desde
+  `iniciarPaginaPrivada`, `iniciarEntrar` e `iniciarRegistro`, lo recoge y lo pinta. **Por qué:**
+  quien avisa (`validacion.js`, el listado, la ficha…) no sabe cómo ni dónde se muestran los avisos,
+  y la región de avisos no sabe quién avisa. Para cambiar el aspecto de los avisos solo toco
+  `avisos.js`.
+- **Inyección de dependencias** (todas las páginas y los módulos de datos). Lo que cambia entre el
+  navegador y los tests se **recibe como parámetro** en vez de coger un valor global:
+  - el almacenamiento (`almacen`, `almacenUsuarios`, `almacenSesion`, `almacenCapturas`);
+  - la navegación (`navegar`, `reemplazar`) y la dirección (`busqueda`, `actualizarDireccion`);
+  - el resumen de la contraseña (`resumir`, por defecto `resumirClave`), la hora (`ahora`, por
+    defecto `() => new Date()`) y el generador de `id` (`crearId` en `crearCaptura`, por defecto
+    `crypto.randomUUID()`).
+
+  **Por qué:** los tests pasan un `AlmacenFalso`, un `vi.fn()` o una hora fija y el código funciona
+  igual. Se explica con un ejemplo en la sección siguiente.
+- **Módulo** (ES modules, en todos los archivos). Cada archivo expone solo lo que lleva `export` y
+  esconde el resto: por ejemplo, `crearAviso` en `avisos.js`, `crearControl` en
+  `controlesPaginacion.js` o `tieneLaFormaEsperada` en `almacen.js` no se exportan. **Por qué:**
+  cada módulo tiene una responsabilidad, se importa solo lo que hace falta (el diagrama de arriba) y
+  no hay variables globales.
+- **Delegación de eventos** (no está en el libro clásico de patrones, pero es una técnica fija
+  en mi código). Un solo oyente en el contenedor atiende a todos sus hijos con
+  `evento.target.closest(…)`: `escucharControles` (`controlesPaginacion.js`), la lista del listado
+  (`[data-accion="borrar"]`), la lista de usuarios (`[data-accion="cambiar-rol"]`), el grupo de
+  imágenes de la ficha (`[data-accion]`) y el botón «Cerrar» de los avisos. **Por qué:** los
+  elementos se vuelven a crear al pintar o al añadir una imagen, y un oyente por botón se perdería
+  o se apilaría. El detalle está en [Eventos](#eventos).
+- **Decorador de funciones (_debounce_): `retardar`** (`js/buscar.js`). Un decorador envuelve una
+  función y le añade un comportamiento sin cambiarla. `retardar` recibe una función y devuelve
+  otra que hace lo mismo pero esperando `ms` milisegundos sin nuevas llamadas. La usan
+  `iniciarListado` y `iniciarUsuarios` para que el buscador no filtre en cada tecla. **Por qué:**
+  `input` salta con cada tecla y no quiero repintar la lista 10 veces para escribir una palabra.
+- **Elementos desde `<template>`** (`listado.js`, `usuarios.js` y `ficha.js`). Es una técnica de la
+  plataforma web, no el patrón «Template Method» de la programación orientada a objetos, así que no
+  la cuento entre los patrones. El HTML trae el molde (`#plantilla-captura`, `#plantilla-usuario`, `#plantilla-imagen`) y el código lo copia con
+  `plantilla.content.firstElementChild.cloneNode(true)` y lo rellena con `textContent`. **Por qué:**
+  el enunciado no permite `innerHTML` con datos, y así la estructura está en el HTML y no en
+  cadenas de texto del JavaScript.
+
+### Cómo reciben las páginas lo que necesitan
+
+Cada página tiene su función `iniciarX({ … })` con **un objeto de dependencias**. El HTML es quien
+las conecta con el navegador real. Esto es el `<script type="module">` de `listado.html`:
+
+```html
+<script type="module">
+  import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+  import { iniciarListado } from './js/paginas/listado.js';
+
+  const sesion = iniciarPaginaPrivada({
+    documento: document,
+    almacenSesion: sessionStorage,
+    reemplazar: (url) => location.replace(url),
+  });
+  if (sesion !== null) {
+    iniciarListado({
+      documento: document,
+      sesion,
+      almacenCapturas: localStorage,
+      busqueda: location.search,
+      actualizarDireccion: (url) => history.replaceState(null, '', url),
+    });
+  }
+</script>
+```
+
+Y esta es la firma de `iniciarListado` en `js/paginas/listado.js`, con los valores por defecto de lo
+que solo cambian los tests:
+
+```js
+export function iniciarListado({
+  documento,
+  sesion,
+  almacenCapturas,
+  busqueda = '',
+  actualizarDireccion = () => {},
+  porPagina = POR_PAGINA,
+  esperaBusqueda = ESPERA_BUSQUEDA,
+}) { … }
+```
+
+Fíjate en que `iniciarListado` no nombra `localStorage`, `location` ni `history`: usa
+`almacenCapturas`, `busqueda` y `actualizarDireccion`. Las demás páginas hacen lo mismo con su
+propia lista de dependencias (la tabla de arriba): `navegar` (`location.assign`) y `reemplazar`
+(`location.replace`) para cambiar de página, `resumir` para la contraseña y `ahora` para la fecha de
+la ficha.
+
+**La regla para los módulos de datos:** `almacen.js`, `usuarios.js`, `sesion.js` y `capturas.js`
+reciben **el almacenamiento como primer parámetro** (`listarCapturas(almacen, usuario)`,
+`registrarUsuario(almacen, { … }, resumir)`, `leerSesion(almacen)`…). `avisos.js` hace lo mismo en
+`guardarAvisoPendiente` y `mostrarAvisoPendiente`.
+
+**Por qué así se puede probar:**
+
+- Los tests de integración (`tests/integracion/`) llaman a `iniciarListado` con un documento de
+  happy-dom, un `AlmacenFalso` (`tests/AlmacenFalso.js`) en lugar de `localStorage`, y `vi.fn()` en
+  lugar de `navegar` o `actualizarDireccion`. Después comprueban qué se pintó y a qué dirección se
+  intentó ir (por ejemplo,
+  `expect(actualizarDireccion).toHaveBeenLastCalledWith('listado.html?pagina=2')`), sin navegador
+  real.
+- Con una dependencia por defecto que se puede sustituir (`ahora`, `resumir`, `crearId`) el test
+  controla lo que no se puede controlar: la hora de hoy, el cálculo asíncrono de un SHA-256 o un
+  `id` aleatorio.
+- Si una página usara `localStorage` o `location` directamente, el test no podría sustituirlos y
+  tendría que tocar los del navegador. Así, cada test crea su propio almacenamiento falso.
+
+### Qué documenta el JSDoc y cómo se genera
+
+Cada archivo de `js/` y `js/paginas/` empieza con un comentario `/** … */` con `@module` y tiene
+JSDoc en sus funciones y constantes exportadas. Además, el comentario de cada módulo de página
+documenta **el HTML que necesita** en un bloque «HTML que necesita:» (por ejemplo, al principio de
+`js/paginas/listado.js`: los `id` y las plantillas que la página tiene que traer). Las etiquetas que
+uso (las busqué con `grep`):
+
+| Etiqueta | Para qué |
+|----------|----------|
+| `@module` | Nombre del módulo (`avisos`, `paginas/privada`…): cada archivo es una página de la documentación |
+| `@param` y `@returns` | Cada parámetro (con su tipo y para qué sirve) y lo que devuelve la función |
+| `@typedef` y `@property` | Tipos de objetos: `DetalleAviso`, `Sesion`, `Captura`, `Usuario`, `Validacion`, `Pagina`… |
+| `@example` | Un ejemplo de uso en las funciones puras y en la mayoría de las demás; las que tocan el DOM o el almacenamiento llevan siempre `@param` y `@returns` y a veces no llevan `@example` |
+| `@throws` | Los errores que lanza una función: `RangeError` en `paginar` y `cambiarRol`; `Error` en `capturas.js` y `registrarUsuario` (nombre ocupado o no se puede guardar); `Error` en `validacion.js` (`cajaDeError` sin caja de error y `mensajeDeError` con un `data-validar` desconocido) |
+| `@listens` y `@fires` | Los eventos que escucha o lanza una función (`click`, `input`, `blur`, `change`, `submit`, `close`, `aviso`) |
+| `@template` | Un tipo genérico: `leerJSON` devuelve el mismo tipo que su valor por defecto |
+| `@type` | El tipo de una constante: el objeto `validadores` |
+| `{@link …}` | Enlaces entre funciones y tipos dentro de los textos |
+
+**Los tipos de función se escriben `function(string): void`**, no `(x: string) => void`: esta
+última es sintaxis de TypeScript y hace fallar `npm run docs`. Por ejemplo,
+`@param {function(string): void} dependencias.reemplazar`.
+
+**Cómo se genera.** `npm run docs` ejecuta `jsdoc -c jsdoc.json`. Ese archivo de configuración dice:
+
+- `source`: incluye la carpeta `js`, y solo los archivos que acaban en `.js` (`includePattern`);
+- `opts.recurse`: entra en las subcarpetas (así entra `js/paginas/`);
+- `opts.destination`: escribe el resultado en **`docs/`**;
+- `opts.readme`: usa este `README.md` como portada;
+- `plugins/markdown`: permite escribir Markdown dentro de los comentarios (negritas, listas…).
+
+El resultado queda en `docs/` (abre `docs/index.html` en el navegador). `docs/` **está en el
+`.gitignore`** (y en `.prettierignore`): no se sube al repositorio, se vuelve a generar con
+`npm run docs`. Solo se documenta `js/`: los HTML, los tests y los scripts no entran.
 
 ## Cómo ejecutarlo
 
@@ -1087,6 +1388,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `e2e-cobertura` | Pruebas de extremo a extremo (`e2e/`: sesión y CRUD de capturas) y cobertura con umbral del 90 % de líneas en `js/validadores.js` y `js/paginar.js` | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/37) |
 | `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/38) |
 | `readme-pruebas` | Sección «Pruebas y cobertura» del README: pirámide, simulación, e2e, umbral y salidas reales | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/40) |
+| `readme-arquitectura` | Sección «Arquitectura y módulos» del README: diagrama, tabla de módulos, patrones, dependencias inyectadas y JSDoc | PR pendiente |
 
 #### *Merge* o *rebase*
 
