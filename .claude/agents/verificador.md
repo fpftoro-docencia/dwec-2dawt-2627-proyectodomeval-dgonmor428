@@ -17,6 +17,8 @@ Lee la sección «Entorno» de `AGENTS.md`.
 - Dentro del Dev Container: `npm run …` directamente.
 - En Windows fuera del contenedor, npm va dentro de Docker:
   `MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W):/workspace" -w /workspace horizonte-dev sh -c "npm run format:check"`
+- Usa el usuario por defecto del contenedor, **nunca `-u root`**: con root, `coverage/` y
+  `playwright-report/` quedan de root y la siguiente ejecución falla con `EACCES`.
 - Si Docker no responde (`error during connect`, `dockerDesktopLinuxEngine`), **no lo arranques**:
   para y avísalo.
 
