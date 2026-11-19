@@ -18,8 +18,9 @@
  * - al enviar, valida todos los campos; si hay errores, los marca, avisa y lleva el foco al primero;
  * - si todo está bien, registra al usuario (el primero será administrador), abre su sesión, deja
  *   un aviso para la página siguiente y va al listado;
- * - mientras se calcula el resumen de la contraseña, el formulario está «enviando» y un segundo
- *   envío (otro clic o Intro) no hace nada.
+ * - mientras se calcula el resumen de la contraseña, el formulario está «enviando»: el botón se
+ *   desactiva (así ni el clic ni Intro envían) y, por si el envío se hace por código
+ *   (`requestSubmit()`), un segundo `submit` se ignora.
  *
  * Recibe lo que necesita en lugar de usar `localStorage`, `sessionStorage` o `location`
  * directamente: así los tests de integración pueden sustituirlo.
