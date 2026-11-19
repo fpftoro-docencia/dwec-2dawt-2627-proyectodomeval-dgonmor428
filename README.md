@@ -191,21 +191,143 @@ usar datos reales.
 
 ### Eventos en el HTML
 
-<!-- Qué consigues con el HTML sin escribir oyentes (envío con Intro, novalidate y los atributos de
-     validación, dialog, label for…) y por qué no usas atributos on…. -->
+Antes de escribir un oyente me pregunto si el HTML ya hace el trabajo. Esto es lo que consigo sin
+JavaScript:
+
+| Qué uso en el HTML | Qué consigo sin escribir un oyente |
+|--------------------|-------------------------------------|
+| `<form>` con un `<button type="submit">` | Que Intro envíe el formulario desde cualquier campo. Solo escucho `submit` (no el `click` del botón), y se dispara con el ratón, con Intro y con `requestSubmit()` |
+| `novalidate` en los formularios | Que el navegador no pare el envío con sus globos de error: los mensajes los pongo yo en `js/validacion.js`. Los **atributos de validación** (`required`, `type="email"`, `minlength`, `max`…) siguen funcionando: el navegador calcula `validity` y mi código solo lo lee |
+| `<label for="…">` | Que pulsar la etiqueta dé el foco al campo (o marque el botón de opción) y que el lector de pantalla lea el nombre del campo. Sin oyente |
+| `<dialog>` con `<form method="dialog">` | Que los botones «Cancelar» y «Borrar» cierren el diálogo solos, que Escape lo cierre y que `returnValue` guarde el `value` del botón pulsado. Solo escucho `close` |
+| `<a href="ficha.html?id=…">` («Editar», «Nueva captura») | Navegar sin oyente: es un enlace de verdad, se abre en otra pestaña y funciona con el teclado |
+| `<input type="search">` | Que el lector de pantalla lo anuncie como cuadro de búsqueda y, según el navegador, que Escape lo vacíe o aparezca un botón para borrar el texto. Con `<div role="search">` y sin `<form>`, Intro no envía nada |
+| `disabled` en los botones | Que un botón desactivado no reciba clics (los límites de las imágenes, el administrador que no puede quitarse el rol) |
+
+Todos estos casos están en el código: `novalidate` en `index.html`, `registro.html` y `ficha.html`,
+y el `<dialog>` en `listado.html`.
+
+**Por qué no uso atributos `on…`** (`onclick="…"`, `onsubmit="…"`):
+
+- **Separo las capas:** el HTML dice qué hay y el JavaScript qué hace. Con `on…` se mezclan.
+- **Todos los oyentes están en un sitio:** si quiero saber qué pasa al hacer clic, busco
+  `addEventListener` en `js/` (la tabla de «Propagación» los lista todos). Con `on…` tendría que
+  mirar también cada HTML.
+- **Seguridad:** una política de seguridad de contenido (CSP) que bloquee el JavaScript escrito en
+  el HTML solo se puede activar si no hay atributos `on…`. Este proyecto aún no tiene CSP, pero así
+  podría tenerla sin cambiar nada.
+- **`addEventListener` es más flexible:** admite varios oyentes del mismo evento en el mismo
+  elemento. `#form-ficha` tiene dos oyentes `change` (`ficha.js`, para la categoría, y
+  `validacion.js`, para validar), cosa que un atributo `on…` no permite. También tiene opciones,
+  como la fase de captura, y se puede quitar con `removeEventListener` (lo hace `escucharAvisos` al
+  devolver su función de limpieza).
+- **Se prueba mejor:** las funciones reciben `documento` y así los tests de integración pueden
+  simular al usuario sin tocar el HTML.
 
 ### Tipos de eventos
 
-<!-- Tabla con los eventos que usas y por qué has elegido cada uno frente a otros parecidos
-     (submit frente a click, input frente a change, blur frente a focusout…). -->
+| Evento | Dónde se usa | Por qué este y no otro parecido |
+|--------|--------------|---------------------------------|
+| `submit` | Formularios de `index.html`, `registro.html` y `ficha.html` | Se dispara siempre que se envía el formulario: con el botón, con Intro o con `requestSubmit()`. `click` en el botón no cubre `requestSubmit()` y mezcla el botón con el envío, que es cosa del formulario. Llamo a `preventDefault()` para que el navegador no recargue la página y hago yo el trabajo |
+| `input` | Buscadores (listado y usuarios), la contraseña del registro y `js/validacion.js` | Salta con **cada cambio** del valor (teclear, pegar, borrar). Es lo que necesito para filtrar mientras se escribe, marcar los requisitos de la contraseña y revalidar un campo ya tocado |
+| `change` | `js/validacion.js` y los botones de categoría de la ficha | Salta al **confirmar** el valor. En los botones de opción, casillas y `datetime-local` no hay un «escribir» que valga: el cambio es el momento. En la validación lo uso junto a `input` como red de seguridad, por si algún control o navegador solo lanza `change`. Validar dos veces no hace daño: `validarCampo` da el mismo resultado si se repite |
+| `blur` | `js/validacion.js` (fase de captura) | Para la **primera** validación de cada campo: no quiero decirle «obligatorio» a alguien que aún no ha empezado a escribir, sino cuando se va del campo. Uso `blur` en la fase de captura (no `focusout`): lo justifico en «Propagación» |
+| `click` | Cerrar sesión, «Cerrar» del aviso, botones de la paginación, «Añadir/Quitar imagen», «Borrar» del listado y «Hacer/Quitar administrador» | Para botones que no envían nada. Los pongo siempre con delegación, salvo «Cerrar sesión» (un botón fijo) |
+| `close` | `<dialog id="dialogo-borrar">` en `listado.js` | El diálogo se cierra con «Cancelar», con «Borrar» **y con Escape**. Si escuchara `click` en «Borrar», no sabría reaccionar al resto y tendría que repetir la lógica en cada botón. Con `close` hay un solo punto de salida, y `returnValue` me dice cuál fue |
+| `aviso` (propio) | Se lanza desde las páginas y la validación, se recoge en `document` (`js/avisos.js`) | Un `CustomEvent` con `bubbles: true` y `detail: { mensaje, tipo }`. Quien avisa no necesita saber dónde está la región de avisos: solo lanza el evento y sube hasta `document` |
+
+**`preventDefault`** lo uso solo en los tres `submit` (`entrar.js`, `registro.js` y `ficha.js`):
+cancela el envío normal del navegador, que recargaría la página y perdería los datos. No lo uso en
+los enlaces ni en el diálogo porque ahí quiero el comportamiento nativo.
+
+**`input` frente a `change`, dónde se usa cada uno:**
+
+- Solo `input`: los dos buscadores y los requisitos de la contraseña. Con `change` no pasaría nada
+  hasta salir del campo.
+- Solo `change`: la categoría de la ficha, para mostrar u ocultar los datos del espacio.
+- Los dos: `js/validacion.js`, con la misma función `alCambiar` para ambos.
 
 ### Propagación
 
-<!-- 1. Tabla con TODOS tus oyentes: evento, dónde lo registras, en qué fase actúa
-        (captura, objetivo o burbuja) y para qué.
-     2. Dónde usas la delegación y qué ganas con ella.
-     3. Tu uso de la captura y por qué no servía la burbuja.
-     4. Si usas stopPropagation, por qué. -->
+Un evento recorre tres fases: **captura** (baja desde `document` hasta el elemento), **objetivo**
+(llega al elemento) y **burbuja** (sube de vuelta hasta `document`). Un oyente normal actúa en la
+burbuja; con `true` (o `{ capture: true }`) actúa en la captura. Si el oyente está en el propio
+elemento que recibe el evento, actúa en el objetivo.
+
+#### Todos los oyentes
+
+Hay **18 llamadas a `addEventListener`** en `js/` (más un evento que se lanza, `aviso`). Todos se
+registran una sola vez al iniciar la página.
+
+| N.º | Evento | Dónde se registra | Fase | Para qué |
+|-----|--------|-------------------|------|----------|
+| 1 | `aviso` | `js/avisos.js` (`escucharAvisos`), en `document` | Burbuja (u objetivo si se lanza sobre `document`, como el aviso pendiente) | Recoger el aviso que sube desde cualquier elemento y pintarlo en la región de avisos |
+| 2 | `click` | `js/avisos.js` (`escucharAvisos`), en la región `#avisos` | Burbuja (delegación) | El botón «Cerrar» de cualquier aviso, también los creados después (`closest('.aviso__cerrar')`) |
+| 3 | `click` | `js/controlesPaginacion.js` (`escucharControles`), en la lista de controles | Burbuja (delegación) | Los botones de página del listado y de la administración (`closest('[data-pagina]')`) |
+| 4 | `submit` | `js/paginas/entrar.js`, en `#form-entrar` | Objetivo | Iniciar sesión (`preventDefault`) |
+| 5 | `change` | `js/paginas/ficha.js`, en `#form-ficha` | Burbuja (delegación) | Mostrar u ocultar los datos del espacio cuando cambia el botón de la categoría |
+| 6 | `click` | `js/paginas/ficha.js`, en `#ficha-imagenes` | Burbuja (delegación) | «Añadir imagen» y «Quitar» de cada imagen (`closest('[data-accion]')`) |
+| 7 | `submit` | `js/paginas/ficha.js`, en `#form-ficha` | Objetivo | Validar y guardar la captura (`preventDefault`) |
+| 8 | `input` | `js/paginas/listado.js`, en el campo de búsqueda | Objetivo | Filtrar las capturas, con una pausa (`retardar`, _debounce_) de 300 ms |
+| 9 | `click` | `js/paginas/listado.js`, en la lista de capturas | Burbuja (delegación) | «Borrar»: guarda la captura pendiente y abre el diálogo (`closest`) |
+| 10 | `close` | `js/paginas/listado.js`, en `#dialogo-borrar` | Objetivo (`close` no sube) | Borrar solo si `returnValue === 'borrar'`; con «Cancelar» o Escape no hace nada |
+| 11 | `click` | `js/paginas/privada.js`, en `#cerrar-sesion` | Objetivo | Cerrar la sesión y volver a `index.html` |
+| 12 | `input` | `js/paginas/registro.js`, en el campo de la contraseña | Objetivo | Marcar los requisitos que cumple la contraseña mientras se escribe |
+| 13 | `submit` | `js/paginas/registro.js`, en `#form-registro` | Objetivo | Crear la cuenta (`preventDefault`) |
+| 14 | `input` | `js/paginas/usuarios.js`, en el campo de búsqueda | Objetivo | Filtrar los usuarios, con la misma pausa |
+| 15 | `click` | `js/paginas/usuarios.js`, en la lista de usuarios | Burbuja (delegación) | «Hacer/Quitar administrador» (`closest('[data-accion="cambiar-rol"]')`) |
+| 16 | `blur` | `js/validacion.js`, en cada formulario | **Captura** (`true`) | La primera validación de un campo al salir de él |
+| 17 | `input` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Revalidar mientras se escribe un campo que ya se ha tocado, y sus dependientes |
+| 18 | `change` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Lo mismo para los cambios que no son escribir (opciones, fecha) |
+
+Los números 16, 17 y 18 están escritos una sola vez en `js/validacion.js`, pero `activarValidacion`
+se llama desde `entrar.js`, `registro.js` y `ficha.js`: en el navegador se registran una vez por
+formulario (nunca dos en la misma página, salvo que se llamara dos veces a la función).
+
+**El evento que se dispara:** `aviso` se lanza con `lanzarAviso` (`js/avisos.js`, `dispatchEvent` de
+un `CustomEvent` con `bubbles: true`) desde `validacion.js` (al enviar con errores), `entrar.js`,
+`registro.js`, `ficha.js`, `listado.js` y `usuarios.js`, y también con `mostrarAvisoPendiente`
+(`js/avisos.js`), que muestra el aviso guardado por la página anterior y se llama desde `entrar.js`,
+`registro.js` y `privada.js`. Los primeros se lanzan sobre un elemento (el formulario o el título) y
+suben hasta `document`, donde los recoge el oyente número 1 en la burbuja. El aviso pendiente se
+lanza **sobre `document`**, así que el mismo oyente lo recibe en la fase de objetivo.
+
+**Lo que no tiene oyente gracias al HTML:** el envío con Intro (solo `submit`), pulsar una etiqueta
+(`label for`), los botones del diálogo (`method="dialog"`), «Editar» y «Nueva captura» (enlaces) y
+los límites de los botones (`disabled`).
+
+#### Delegación
+
+Un oyente en el contenedor atiende a todos sus hijos, incluso los que se crean después, porque el
+clic sube hasta él. `evento.target.closest(selector)` busca desde lo que se pulsó (puede ser el
+texto o un icono dentro del botón) hacia arriba hasta el botón que interesa. Se usa en:
+
+- **Listado:** «Borrar» (número 9).
+- **Paginación:** los botones se vuelven a crear en cada cambio (número 3).
+- **Administración:** los botones de rol (número 15).
+- **Grupo dinámico de imágenes:** «Quitar» de imágenes que no existían al cargar (número 6).
+- **Avisos:** «Cerrar» de cada aviso nuevo (número 2).
+- **Formularios:** `input` y `change` en el formulario en vez de uno por campo (números 5, 17 y 18).
+
+Lo que gano: un oyente en vez de uno por elemento, no tengo que quitarlos ni volverlos a poner al
+repintar la lista, y los elementos nuevos funcionan sin hacer nada más.
+
+#### Mi uso de la captura
+
+`js/validacion.js` escucha `blur` en el formulario con `true`. El motivo: **`blur` no sube** (no hay
+fase de burbuja), así que un oyente normal en el formulario nunca lo recibiría. Sí **baja** (la fase de
+captura lo recorre), y por eso con `true` el formulario lo ve antes de llegar al campo. Así tengo un
+único oyente para todos los campos, incluidos los que se crean después, en vez de uno por campo.
+
+Alternativas que descarté: poner un `blur` en cada campo (muchos oyentes y los campos dinámicos
+quedarían fuera) o usar `focusout`, que sí sube y valdría sin captura. Elegí `blur` con captura
+porque es el ejemplo que propone el enunciado y deja ver las fases: `blur` solo baja, así que hay
+que escuchar en la captura; `focusout` sube y habría sido igual de válido.
+
+#### `stopPropagation`
+
+**No lo uso en ningún sitio.** Ningún oyente necesita que el evento deje de subir, y cortarlo
+rompería la delegación (por ejemplo, el `aviso` tiene que llegar a `document`).
 
 ## Pruebas y cobertura
 
@@ -381,6 +503,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `listado-buscador-paginacion` | Listado: buscador con pausa (sin tildes ni mayúsculas), paginación de 6 en 6 con `?pagina=` y controles reutilizables (`js/buscar.js`, `js/controlesPaginacion.js`) | [#32](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/32) |
 | `zona-administracion` | Administración (`usuarios.html`): lista, buscador y paginación de usuarios, dar o quitar el rol de administrador (`cambiarRol`) y `js/direccion.js` común con el listado | [#33](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/33) |
 | `tests-integracion` | Tests de integración (happy-dom) de la ficha, el listado y la protección por rol, auditados frente al enunciado | [#34](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/34) |
+| `readme-eventos` | Sección «Eventos» del README: eventos en el HTML, tipos de eventos y tabla de todos los oyentes | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/35) |
 
 #### *Merge* o *rebase*
 
