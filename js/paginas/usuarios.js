@@ -55,6 +55,9 @@ const ID_EXPLICACION = 'usuarios-explicacion-propia';
  *
  * @param {module:usuarios~Usuario[]} usuarios - Los usuarios.
  * @returns {module:usuarios~Usuario[]} Una lista nueva, ordenada por nombre.
+ * @example
+ * ordenarPorNombre([{ nombre: 'luna' }, { nombre: 'Ana' }]);
+ * // → [{ nombre: 'Ana' }, { nombre: 'luna' }]
  */
 export function ordenarPorNombre(usuarios) {
   const clave = (usuario) => normalizar(usuario.nombre);
@@ -67,6 +70,9 @@ export function ordenarPorNombre(usuarios) {
  *
  * @param {module:usuarios~Usuario} usuario - El usuario.
  * @returns {string} El texto normalizado (sin tildes y en minúsculas).
+ * @example
+ * textoBuscable({ nombre: 'José', correo: 'jose@ejemplo.org', rol: 'administrador' });
+ * // → 'jose jose@ejemplo.org administrador'
  */
 export function textoBuscable(usuario) {
   return normalizar([usuario.nombre, usuario.correo, TEXTOS_ROL[usuario.rol]].join(' '));

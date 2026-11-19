@@ -90,6 +90,9 @@ export function fechaLegible(fecha) {
  *
  * @param {object[]} capturas - Las capturas.
  * @returns {object[]} Una lista nueva, ordenada por fecha descendente.
+ * @example
+ * ordenarPorFecha([{ fecha: '2026-11-01T10:00' }, { fecha: '2026-11-10T22:40' }]);
+ * // → [{ fecha: '2026-11-10T22:40' }, { fecha: '2026-11-01T10:00' }]
  */
 export function ordenarPorFecha(capturas) {
   // Las fechas «AAAA-MM-DDTHH:MM» se ordenan bien como texto: van del año a los minutos
@@ -103,6 +106,9 @@ export function ordenarPorFecha(capturas) {
  *
  * @param {object} captura - La captura.
  * @returns {string} El texto normalizado (sin tildes y en minúsculas).
+ * @example
+ * textoBuscable({ titulo: 'Amanecer', lugar: 'Ávila', categoria: 'paisaje', condiciones: 'despejado' });
+ * // → 'amanecer avila paisaje despejado  '
  */
 export function textoBuscable(captura) {
   const visible = (tipo, valor) => TEXTOS[tipo][valor] ?? '';
