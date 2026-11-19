@@ -138,7 +138,8 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   `.invalid-feedback` de su `aria-describedby`. Los campos `disabled` no se validan. Los botones de
   opción se validan como grupo, con el que lleva `required`. `validarFormulario` avisa y lleva el
   foco al primer error. Los formularios nuevos (la ficha) lo usan; no se repite la lógica en cada
-  página. Sin doble envío: botón desactivado y `aria-busy` mientras se envía.
+  página. Sin doble envío (botón desactivado y `aria-busy` mientras se envía): lo hacen `entrar` y
+  `registro`; la ficha **aún no** (pendiente, tarjeta aparte «S2 · Ficha: evitar el doble envío»).
   Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
   lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
   avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
@@ -337,6 +338,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   «Editar» y «Borrar», con buscador y paginación. Montado el equipo de subagentes de IA (sección 8).
   La zona de administración está hecha (rama `zona-administracion`: lista, buscador, paginación y
   cambio de rol).
+- La sección del README «Funcionalidad y formularios» (con la tabla de las 14 expresiones regulares) está
+  escrita (rama `readme-funcionalidad`). **Pendiente:** la ficha todavía no evita el doble envío (tarjeta
+  «Ficha: evitar el doble envío»).
 - Los **tests de integración** de la ficha, el listado y la protección por rol están auditados y
   completos (721 tests en 24 archivos, `js/` al 100 %).
 - La sección «Eventos» del README está escrita (rama `readme-eventos`): eventos en el HTML, tipos de
