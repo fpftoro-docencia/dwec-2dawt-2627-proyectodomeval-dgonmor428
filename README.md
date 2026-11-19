@@ -836,7 +836,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `readme-eventos` | Sección «Eventos» del README: eventos en el HTML, tipos de eventos y tabla de todos los oyentes | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/35) |
 | `subir-agentes-ia` | Revisión de `.claude/agents/` frente a `AGENTS.md`, regla de no usar `-u root` en los agentes y sección «Equipo de IA» del README | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/36) |
 | `e2e-cobertura` | Pruebas de extremo a extremo (`e2e/`: sesión y CRUD de capturas) y cobertura con umbral del 90 % de líneas en `js/validadores.js` y `js/paginar.js` | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/37) |
-| `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | PR pendiente |
+| `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/38) |
 
 #### *Merge* o *rebase*
 
