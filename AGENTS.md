@@ -318,6 +318,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   cambio de rol).
 - Los **tests de integración** de la ficha, el listado y la protección por rol están auditados y
   completos (721 tests en 24 archivos, `js/` al 100 %).
+- La sección «Eventos» del README está escrita (rama `readme-eventos`): eventos en el HTML, tipos de
+  eventos y la tabla de los 18 oyentes de `js/`. Si se añade o quita un `addEventListener`, hay que
+  actualizar esa tabla.
 - **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: e2e, cobertura con umbral y `ci.yml`
   completo. Por orden de fecha en el tablero.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
