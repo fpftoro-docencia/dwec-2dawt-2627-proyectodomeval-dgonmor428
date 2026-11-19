@@ -467,6 +467,10 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 **Blog del proyecto:** [blog/README.md](blog/README.md) <!-- dificultades y problemas conceptuales de cada sprint -->
 
+### Equipo de IA
+
+La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (implementador, tester, revisor, verificador y documentador), cada uno con su papel, sus herramientas y su modelo. El flujo con el que trabajan está en `AGENTS.md`, sección «Equipo de IA». Sus ajustes locales (`.claude/settings.local.json`) no se suben.
+
 ### Ramas y versiones
 
 | Rama | Funcionalidad | *Pull request* |
@@ -504,6 +508,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | `zona-administracion` | Administración (`usuarios.html`): lista, buscador y paginación de usuarios, dar o quitar el rol de administrador (`cambiarRol`) y `js/direccion.js` común con el listado | [#33](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/33) |
 | `tests-integracion` | Tests de integración (happy-dom) de la ficha, el listado y la protección por rol, auditados frente al enunciado | [#34](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/34) |
 | `readme-eventos` | Sección «Eventos» del README: eventos en el HTML, tipos de eventos y tabla de todos los oyentes | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/35) |
+| `subir-agentes-ia` | Revisión de `.claude/agents/` frente a `AGENTS.md`, regla de no usar `-u root` en los agentes y sección «Equipo de IA» del README | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/36) |
 
 #### *Merge* o *rebase*
 

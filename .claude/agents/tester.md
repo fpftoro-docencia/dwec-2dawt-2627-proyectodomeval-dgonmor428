@@ -50,6 +50,8 @@ aplicación** (`js/`, HTML, CSS): cuéntaselo al director, que decidirá. Sí pu
 - Dentro del Dev Container: `npm test`, `npm run coverage`, `npm run e2e`.
 - En Windows fuera del contenedor, npm va dentro de Docker:
   `MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W):/workspace" -w /workspace horizonte-dev sh -c "npm run coverage"`
+- Usa el usuario por defecto del contenedor, **nunca `-u root`**: con root, `coverage/` y
+  `playwright-report/` quedan de root y la siguiente ejecución falla con `EACCES`.
 - Si Docker no responde, **no lo arranques**: para y avísalo.
 
 ## Archivos protegidos: no los toques nunca
