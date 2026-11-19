@@ -1,6 +1,7 @@
 # Integración continua de Horizonte.
 # Comprueba cada cambio que llega a main (o que quiere llegar, en una pull request):
-# primero la calidad del código y, solo si pasa, los tests.
+# primero la calidad del código, después los tests con su cobertura y,
+# solo si pasan, las pruebas de extremo a extremo en un navegador.
 name: Integración continua
 
 on:
@@ -12,6 +13,12 @@ on:
 # El workflow solo necesita leer el código
 permissions:
   contents: read
+
+# Una sola ejecución por rama: si subes dos commits seguidos,
+# la ejecución del primero se cancela y solo se termina la del último
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   calidad:
@@ -54,5 +61,50 @@ jobs:
       - name: Instalar las dependencias exactas de package-lock.json
         run: npm ci
 
-      - name: Pasar los tests unitarios y de integración
-        run: npm test
+      # Pasa los mismos tests que npm test y además comprueba el umbral de cobertura
+      - name: Pasar los tests y medir la cobertura
+        run: npm run coverage
+
+      # always(): el informe se sube aunque el umbral falle, que es cuando más hace falta verlo.
+      # if-no-files-found: error, porque si no hay carpeta coverage/ algo va mal y debe notarse.
+      - name: Subir el informe de cobertura
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cobertura
+          path: coverage/
+          if-no-files-found: error
+
+  e2e:
+    name: E2E
+    # Si ya fallan los tests, no se gastan minutos en instalar el navegador
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar las dependencias exactas de package-lock.json
+        run: npm ci
+
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.js arranca solo el servidor de la web en el puerto 3901
+      - name: Pasar las pruebas de extremo a extremo
+        run: npm run e2e
+
+      # Solo si algo ha fallado: el informe de Playwright ayuda a ver qué pasó
+      - name: Subir el informe de Playwright
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-playwright
+          path: playwright-report/
+          retention-days: 7
