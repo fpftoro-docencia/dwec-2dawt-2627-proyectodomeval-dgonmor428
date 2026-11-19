@@ -1,0 +1,370 @@
+# AGENTS.md · Memoria del proyecto Horizonte
+
+Este archivo es la memoria del proyecto para cualquier asistente de IA (Claude, Codex, Copilot,
+Cursor, Gemini…) o persona que trabaje en él. Recoge el contexto, las reglas, la forma de trabajar,
+las libertades y las decisiones ya tomadas, para que todo el que llegue siga las mismas normas.
+
+**Se actualiza en cada commit** si cambia alguna norma, alguna decisión o el estado del proyecto.
+
+## 1. El proyecto
+
+- **Horizonte** es un diario de fotografía y observación de paisajes, del cielo y del espacio. Cada
+  usuario guarda sus capturas (lugar, coordenadas, altitud, condiciones del cielo, equipo, hasta tres
+  imágenes y, si es del espacio, el código de catálogo y las coordenadas celestes). Un administrador
+  gestiona los usuarios.
+- Es el **Proyecto DOM** del módulo DWEC (2.º DAW, curso 2026/27): una aplicación web de gestión con
+  integración y despliegue continuos, en tres sprints con los tags `v0.1`, `v0.2` y `v1.0` (la que se
+  corrige).
+- Quien desarrolla es un alumno que tiene que **entender y explicar todo el código** en una exposición.
+
+## 2. Fuentes de verdad, por orden
+
+1. **`ENUNCIADO.md`** (el enunciado del profesor). Manda sobre todo lo demás: si algo de aquí lo
+   contradice, gana el enunciado. Se sigue al pie de la letra.
+2. **`README.md`**, sección «Mi proyecto»: la entidad, sus campos, validaciones y mensajes.
+3. **El tablero de Trello** del proyecto (enlazado en el README): tareas, dependencias y fechas.
+4. Este archivo.
+
+## 3. Reglas del enunciado que no se pueden saltar
+
+- JavaScript **sin librerías**. Bootstrap solo como **CSS**, enlazado desde `node_modules/`; nunca su
+  JavaScript. Sin APIs remotas ni librerías de mapas.
+- Páginas en la raíz: `index.html` (inicio de sesión), `registro.html`, `listado.html`, `ficha.html`
+  y `usuarios.html`.
+- Usuarios y capturas en `localStorage`; la sesión en `sessionStorage`. Contraseñas **solo** como
+  resumen calculado con `resumirClave` de `js/clave.js`.
+- Nada de `innerHTML` con datos ni estilos escritos desde el JavaScript. Elementos desde `<template>`
+  rellenados con `textContent`.
+- Los módulos de datos reciben el almacenamiento como parámetro (para probarlos con
+  `tests/AlmacenFalso.js`); las páginas reciben lo que necesitan (almacenamiento, resumen de la
+  contraseña, navegación) en lugar de usar `localStorage` o `location` directamente.
+- **No se modifican:** `.devcontainer/`, `playwright.config.js`, `serve.json`, `jsdoc.json`,
+  `js/clave.js`, `scripts/construir.js`, `tests/AlmacenFalso.js`, `tests/pagina.js`, ni lo que hacen
+  los scripts de `package.json`.
+- El repositorio y la web publicada son **públicos**: ningún dato real ni personal de nadie.
+
+## 4. Forma de trabajar
+
+- **Una tarjeta de Trello cada vez.** Al empezarla, a «Haciendo»; al terminarla, a «Hecho». Una
+  tarjeta solo está «Hecha» cuando cumple la Definición de Hecho del README (sobre todo: ha llegado a
+  `main` por pull request).
+- **«Haz la siguiente tarjeta»** significa seguir el orden del tablero sin preguntar antes de empezar
+  (con Claude Code, con el flujo del equipo de la sección 8).
+- **Cada tarjeta en su rama**, commits pequeños con mensajes claros, `push` y **pull request** hacia
+  `main`. Nunca se empuja directamente a `main`.
+- Las PRs se fusionan con **merge commit** (no squash ni rebase) y **las ramas no se borran**. A veces
+  fusiona el alumno para ver la PR y a veces pide que lo haga la IA.
+- Cada rama nueva se añade a la tabla «Ramas y versiones» del README, con su PR.
+- **Doble testeo** en todas las tarjetas: después de los tests, una segunda pasada que repasa cada
+  punto de la tarjeta frente a los tests y mira la cobertura del módulo (`vitest --coverage`) para
+  encontrar lo que falte por probar, y lo añade. Como `vitest.config.js` solo mide validadores y
+  `paginar`, el módulo se indica con `npm run coverage -- --coverage.include=js/<módulo>.js`.
+- Antes de cada PR: `npm run format:check`, `npm run lint` y `npm test` sin errores. El «doble testeo»
+  es una condición de la Definición de Hecho del README.
+- **JSDoc:** los tipos de función se escriben como `function(string): void` (no `(x: string) => void`,
+  que es sintaxis de TypeScript y rompe `npm run docs`). Si se cambia un comentario JSDoc, comprobar que
+  `npm run docs` sigue sin errores.
+- **Integración continua:** `.github/workflows/ci.yml` ejecuta tres trabajos en cada `push` y cada PR
+  a `main`: `Calidad` (lint y formato), `Tests` (`npm run coverage`: tests y umbral del 90 %; sube la
+  carpeta `coverage/` como artefacto `cobertura`, aunque falle) y `E2E` (Playwright con Chromium; sube
+  `playwright-report/` solo si falla). Cada uno espera al anterior (`needs`). Lleva
+  `permissions: contents: read` y `concurrency` (una ejecución por rama, cancela la anterior). Una PR
+  solo se fusiona con sus comprobaciones en verde. No se cambian los nombres de los trabajos: Vercel
+  los usará como comprobaciones en el sprint 3.
+- ESLint tiene, además de `no-var`, `prefer-const` y `eqeqeq`: `no-console` (salvo en `scripts/`),
+  `curly`, `no-implicit-coercion` y `camelcase`. El código nuevo tiene que cumplirlas.
+- Al terminar cada tarea, un resumen breve: **qué se ha hecho, para qué sirve ahora y para qué
+  servirá en el futuro**.
+- Todo se explica en **español**, paso a paso y con el porqué.
+- Ante cualquier problema (entorno, permisos, algo raro), **parar y comentarlo** en lugar de
+  improvisar.
+- En cada commit, revisar si hay que actualizar este archivo.
+
+## 5. Entorno
+
+- Se trabaja en el **Dev Container** (`node:24-bookworm` con Chromium). La web se sirve en
+  <http://localhost:3901>.
+- En Windows, los comandos de npm se ejecutan dentro del contenedor (por ejemplo, con la imagen del
+  Dev Container y la carpeta montada en `/workspace`).
+- `.gitattributes` fuerza los finales de línea LF; sin él, `format:check` falla en Windows.
+
+## 6. Libertades
+
+- **El diseño visual es libre** y lo propone la IA: ahora es un cielo nocturno (estrellas, aurora,
+  cordilleras, paneles de cristal) hecho solo con CSS y SVG, en `css/estilos.css`. El alumno puede
+  cambiarlo cuando quiera.
+- Los textos de la interfaz, los mensajes y los ejemplos se pueden proponer, siempre sin datos reales
+  de personas.
+
+## 7. Decisiones tomadas
+
+- **Merge** frente a rebase (justificado en el README).
+- **Requisito 13** (validador con regla de control): el campo «código de observatorio» con formato
+  `OBS-NNNN-D`, cuyo último dígito es la suma de las cuatro cifras multiplicadas por 3, 1, 3 y 1,
+  módulo 10 (`OBS-4821-7`). Los rangos de las coordenadas GPS se comprueban además, como extra.
+- Los **validadores** devuelven el mensaje de error o `''` si el valor es válido (listo para
+  `setCustomValidity`). Están todos en `js/validadores.js` (registro y captura) y los de formato se
+  reúnen en el objeto `validadores`, cuyas claves son los valores de `data-validar`: `nombreUsuario`,
+  `correo`, `clave`, `gps`, `urlImagen`, `catalogo`, `ascensionRecta`, `declinacion` y
+  `observatorio`. Un validador nuevo se añade a ese objeto. Que un campo obligatorio no quede vacío
+  no lo dicen los validadores, sino `required` y `validity.valueMissing`; el código de observatorio
+  es opcional y vacío es válido. La declinación admite `′ ″` y también `' "` del teclado.
+- **Paginación:** `paginar(lista, pagina, porPagina)` en `js/paginar.js` (pura, sin DOM) devuelve
+  `{ elementos, pagina, totalPaginas }`. Una lista vacía tiene 1 página (vacía), así la página
+  siempre va de 1 al total. Una página fuera de rango va a la más cercana; `NaN` (`?pagina=abc`) va
+  a la 1; los decimales se truncan. Un `porPagina` que no es un entero mayor que 0 lanza
+  `RangeError`. Los controles y `?pagina=` los ponen las páginas que la usan.
+- **Capturas** (`js/capturas.js`): en `localStorage`, una clave por usuario,
+  `horizonte.capturas.<nombre en minúsculas>`. Funciones: `listarCapturas`, `buscarCaptura`
+  (`null` si no existe), `crearCaptura` (el `id` lo pone siempre el módulo, con
+  `crypto.randomUUID()` o la función `crearId` que se le pase; nunca se repite),
+  `actualizarCaptura` (`null` si no existe; conserva `id` y posición) y `borrarCaptura` (`false`
+  si no existe). Todas reciben `(almacen, usuario, …)`, con `usuario` el nombre de la sesión. Se
+  descartan las entradas sin `id` de texto. Si no se puede guardar, lanzan un `Error` con mensaje
+  para el aviso.
+- Los **nombres de usuario no distinguen mayúsculas** («Ana» = «ana»).
+- Los usuarios se guardan en `localStorage` con la clave `horizonte.usuarios`. La función de resumen
+  de la contraseña se recibe como parámetro (por defecto `resumirClave`) para poder sustituirla en los
+  tests de integración.
+- La **sesión** se guarda en `sessionStorage` con la clave `horizonte.sesion` y solo contiene el
+  nombre y el rol (nunca el correo ni la contraseña). Si está estropeada, se lee como `null`.
+- **Páginas:** cada página tiene su módulo en `js/paginas/` con una función `iniciarX({ documento,
+  almacenUsuarios, almacenSesion, navegar, resumir })`. El HTML la llama desde un
+  `<script type="module">` pasándole `document`, `localStorage`, `sessionStorage` y
+  `(url) => location.assign(url)`; los tests de integración le pasan `AlmacenFalso` y `vi.fn()`.
+- **Formularios:** la validación en tiempo real es el componente común `js/validacion.js`:
+  `activarValidacion(formulario, { reglas, dependencias, avisoErrores })` devuelve
+  `{ validarCampo, validarFormulario }`. Cada campo se valida por primera vez al salir (`blur` en
+  la fase de captura del formulario) y desde entonces con cada `input`/`change`; los de
+  `dependencias` (`{ clave: ['repetir'] }`) se revalidan al cambiar el otro. El mensaje sale, por
+  orden, de `validity` (texto en `data-vacio` y `data-invalido` del HTML), del validador de
+  `data-validar` (solo si no está vacío) y de la regla de la página. La caja de error es la
+  `.invalid-feedback` de su `aria-describedby`. Los campos `disabled` no se validan. Los botones de
+  opción se validan como grupo, con el que lleva `required`. `validarFormulario` avisa y lleva el
+  foco al primer error. Los formularios nuevos (la ficha) lo usan; no se repite la lógica en cada
+  página. Sin doble envío (botón desactivado y `aria-busy` mientras se envía, más una variable local
+  `enviando` que ignora un segundo `submit`): lo hacen `entrar`, `registro` y la ficha. La variable
+  es defensa en profundidad: con el botón desactivado ya no envían ni el clic ni Intro, pero
+  `requestSubmit()` (o cualquier envío por código) sí; y se prefiere a `aria-busy`, que sirve para
+  la accesibilidad y no para guardar el estado. En la ficha, si guardar falla se reactiva el botón;
+  si se navega al listado, queda desactivado.
+  Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
+  lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
+  avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
+- **Ficha** (`js/paginas/ficha.js`): `iniciarFicha({ documento, ahora })` se llama desde
+  `ficha.html` después de `iniciarPaginaPrivada`, solo si hay sesión. Campos con `name`:
+  `titulo`, `categoria` (`paisaje`, `cielo`, `espacio`), `fecha`, `lugar`, `gps`, `altitud`,
+  `condiciones`, `equipo`, `observatorio` y, en `#ficha-espacio`, `catalogo`, `ascension` y
+  `declinacion`. El `max` de la fecha es «ahora» con `fechaLocal` (hora local); una regla repite la
+  comprobación porque happy-dom no hace `rangeOverflow` con `datetime-local`. Los datos del espacio
+  se ocultan y se desactivan (el `fieldset` y cada campo) si la categoría no es `espacio`, y al
+  ocultarse se borran sus errores. La categoría se lee con la propiedad `checked` de cada botón, no
+  con `:checked` (happy-dom lo devuelve desactualizado). `iniciarFicha` recibe además `sesion`,
+  `almacenCapturas`, `almacenSesion`, `busqueda` (`location.search`), `navegar` y `reemplazar`.
+  **Imágenes** (0–3, `MIN_IMAGENES`/`MAX_IMAGENES`): desde `#plantilla-imagen`, con campos
+  `imagen-url` (obligatoria, `data-validar="urlImagen"`) e `imagen-pie` (opcional), `id`
+  `ficha-imagen-<n>-url` con un número que nunca se repite, y un solo oyente `click` en
+  `#ficha-imagenes` (delegación con `closest('[data-accion]')`). **Guardar:** `datosDeCaptura(new
+  FormData(formulario))` normaliza (textos con `trim`, `altitud` número, `gps` «lat, lon»,
+  `observatorio` vacío → `null`, `espacio` → `null` si no es del espacio, `imagenes` →
+  `[{ url, pie }]` con `getAll`); se guarda con `crearCaptura` o `actualizarCaptura`, se deja un
+  aviso pendiente y se va al listado. **Editar** con `?id=…`: rellena el formulario; con un `id`
+  que no existe o es de otro usuario, aviso pendiente de error y `reemplazar('listado.html')`.
+- **Listado** (`js/paginas/listado.js`): `iniciarListado({ documento, sesion, almacenCapturas })`,
+  llamada desde `listado.html` después de `iniciarPaginaPrivada`. Cada captura es una copia de
+  `#plantilla-captura` rellenada con `textContent` y atributos (`[data-parte="…"]`); todas entran
+  de una vez con `replaceChildren` de un fragmento. Orden: de la fecha más reciente a la más
+  antigua (`ordenarPorFecha`). Los textos de cada valor guardado están en `TEXTOS`. La imagen solo
+  se carga si su URL pasa `validarUrlImagen`; la categoría solo añade su clase `chapa--…` si es
+  conocida. «Editar» es un enlace a `ficha.html?id=…` (`encodeURIComponent`). «Borrar» abre
+  `#dialogo-borrar` (un `<form method="dialog">`): un solo oyente `click` en la lista (delegación
+  con `closest`) y otro `close` en el diálogo, que solo borra si `returnValue === 'borrar'`;
+  después avisa, vuelve a pintar y da el foco al título (`tabindex="-1"`). En el listado la región
+  de avisos va debajo del título, para que se vea al recibir este el foco.
+  **Buscador y paginación:** 6 capturas por página (`POR_PAGINA`) y 300 ms de espera del buscador
+  (`ESPERA_BUSQUEDA`). `iniciarListado` recibe además `busqueda` (`location.search`, de donde se
+  lee `?pagina=`), `actualizarDireccion` (`(url) => history.replaceState(null, '', url)`, sin
+  añadir entradas al historial), `porPagina` y `esperaBusqueda` (para los tests). Módulos comunes,
+  reutilizables en `usuarios.html`: `js/buscar.js` (`normalizar`, sin tildes y en minúsculas con
+  `normalize('NFD')` y `\p{M}`; y `retardar`, el _debounce_) y `js/controlesPaginacion.js`
+  (`pintarControles` y `escucharControles`, este último una sola vez, con delegación). El buscador
+  es un `<div role="search">` (sin formulario: Intro no envía nada) y busca por los **textos
+  visibles** (`textoBuscable`: título, lugar, categoría, condiciones, equipo y catálogo, no por
+  los valores guardados). El texto buscado **no va a la dirección**; solo `?pagina=`, y la
+  página 1 sin parámetro (`listado.html`). Al buscar se vuelve a la página 1. Con una sola página
+  los controles se ocultan. Tras cambiar de página el foco va a `#listado-titulo`.
+- **Zona de administración** (`usuarios.html`, `js/paginas/usuarios.js`):
+  - `js/usuarios.js` exporta `cambiarRol(almacen, nombre, rol)` (`RangeError` si el rol no está en
+    `ROLES`, antes de leer nada; `null` si el usuario no existe; devuelve el usuario sin el resumen
+    de la contraseña y conserva su posición), `mismoNombre(a, b)` y `TEXTOS_ROL` («Usuario»,
+    «Administrador»; los usan la cabecera y la administración).
+  - **Los nombres se comparan sin distinguir mayúsculas pero con tildes:** «José» ≠ «Jose».
+    `normalizar` de `js/buscar.js` (quita tildes) es solo para buscar y ordenar. Lección: no
+    comparar nombres de usuario con `normalizar`; se usa `mismoNombre`.
+  - `js/direccion.js` (`leerPagina`, `escribirPagina`) guarda la página en `?pagina=` y es común al
+    listado y a la administración.
+  - `iniciarUsuarios({ documento, sesion, almacenUsuarios, busqueda, actualizarDireccion, porPagina,
+    esperaBusqueda })`: lista ordenada por nombre, buscador con _debounce_ (nombre, correo y rol tal
+    como se ve) y paginación de 6 en 6 con los controles de `controlesPaginacion.js`.
+  - Un único oyente `click` delegado en `#usuarios-lista` (`closest`); el `<li>` guarda `data-nombre`
+    y `data-rol`.
+  - **Un administrador no se quita el rol a sí mismo** (siempre debe quedar uno): su botón va
+    desactivado y con la explicación visible (`aria-describedby`), y el oyente repite la
+    comprobación (defensa en profundidad) por si se fuerza el clic.
+  - Tras cambiar un rol se vuelve a pintar con el mismo filtro y página, y el foco va al botón de esa
+    fila o, si ya no se ve o es el propio, al título. Los avisos van debajo del título.
+  - **Limitación conocida:** la sesión no se refresca si otro administrador cambia el rol de quien
+    la tiene abierta (el enunciado no lo pide). Si el profesor lo pide, se comprobaría el rol
+    guardado al entrar en `usuarios.html`.
+- **Inicio de sesión:** si hay sesión, va al listado. Con datos incorrectos, un único mensaje
+  («El usuario o la contraseña no son correctos.») que no dice cuál falla; vacía la contraseña y le
+  da el foco.
+- **Páginas privadas** (`listado`, `ficha`, `usuarios`): las protege `iniciarPaginaPrivada` de
+  `js/paginas/privada.js`, que recibe `reemplazar: (url) => location.replace(url)`. Sin sesión, a
+  `index.html` con `replace` (el botón «Atrás» no vuelve); en `usuarios.html`
+  (`soloAdministradores: true`), un usuario normal vuelve al listado con un aviso de error. Rellena la
+  cabecera (nombre, rol, «Usuarios» solo para administradores) y gestiona «Cerrar sesión». Las demás
+  partes de cada página privada se inician después, con la sesión que devuelve.
+- **Avisos:** evento propio `aviso` (`CustomEvent`, `bubbles: true`, `detail: { mensaje, tipo }`) con
+  un único oyente en `document`. Tipos: `exito`, `error`, `advertencia` e `info` (las clases de
+  alerta de Bootstrap). El aviso para la página siguiente se guarda en `sessionStorage` con la clave
+  `horizonte.aviso` y se borra al mostrarse.
+- **Tests de protección por rol:** leen el script real de cada página (por ejemplo el de
+  `usuarios.html`) para comprobar la opción que pasa (`soloAdministradores: true`), en vez de
+  pasarla a mano en el test: así fallan si alguien la quita del HTML.
+- **Pruebas e2e y cobertura:**
+  - Las pruebas de extremo a extremo (Playwright) están en `e2e/`, con los pasos que se repiten en
+    `e2e/ayudas.js` (`registrarse`, `iniciarSesion`, `cerrarSesion`, `darDeAltaCaptura`,
+    `editarCaptura`, `capturaDelListado`, y los datos ficticios `USUARIO` y `CAPTURA`).
+  - `e2e/sesion.spec.js` (5 tests): registrarse como primer usuario, cerrar sesión y volver a
+    entrar, contraseña incorrecta y protección del listado sin sesión. `e2e/capturas.spec.js`
+    (5 tests): alta, ficha incompleta, edición, cancelar el borrado y borrar con confirmación,
+    comprobando siempre tras `reload` que lo guardado sigue ahí. Se borró `e2e/ejemplo.spec.js`
+    (la plantilla, cuyo comentario decía sustituirlo).
+  - **Reglas:** localizadores como los vería un usuario (`getByRole`, `getByLabel`, `getByText`),
+    nunca selectores de CSS; rutas relativas (`/registro.html`) para que valgan con `BASE_URL`;
+    sin `waitForTimeout` (se espera con las comprobaciones `expect`, que reintentan solas); cada
+    test tiene un contexto nuevo, o sea, el almacenamiento vacío; datos ficticios.
+  - **El primer usuario registrado es administrador** (`js/usuarios.js`): con el almacenamiento
+    vacío, quien se registra en cada test ve «Usuarios».
+  - **Cobertura** (`vitest.config.js`): mide solo `js/validadores.js` y `js/paginar.js` (las
+    funciones puras) con un umbral del 90 % de líneas. Si no se llega, `npm run coverage` falla.
+    El resto de `js/` se prueba con los tests de integración, pero no cuenta para el umbral.
+    Para el doble testeo de otro módulo se pasa en la orden, por ejemplo
+    `npm run coverage -- --coverage.include=js/capturas.js` (el script es `vitest run --coverage`).
+- Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
+  **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
+
+## 8. Equipo de IA
+
+Con Claude Code, el trabajo de cada tarjeta lo hace un equipo con forma de orquesta: un **director**
+que piensa y dirige, y **subagentes** especializados que trabajan, prueban y revisan. Los subagentes
+están en `.claude/agents/`, uno por archivo, cada uno con su papel, sus herramientas y su modelo.
+
+### Quién es quién
+
+| Papel | Dónde está | Modelo | Qué hace |
+|-------|------------|--------|----------|
+| **Director** | La conversación principal (no es un archivo) | Opus | Lee la tarjeta y el ENUNCIADO, hace el plan, crea la rama, reparte el trabajo, decide cuando algo falla y hace los commits y la PR. No escribe el código de la funcionalidad: lo delega |
+| **implementador** | `.claude/agents/implementador.md` | Sonnet | El código de la tarjeta (HTML, CSS, `js/`, `js/paginas/`) según el plan |
+| **tester** | `.claude/agents/tester.md` | Sonnet | Los tests (unitarios, de integración y e2e) y el **doble testeo**. Si el fallo es del código, lo cuenta y no lo cambia |
+| **revisor** | `.claude/agents/revisor.md` | Opus | Revisión independiente frente al ENUNCIADO, la Definición de Hecho y este archivo: ✅ cumple, ❌ no cumple (archivo:línea), ⚠️ difícil de explicar. No edita |
+| **verificador** | `.claude/agents/verificador.md` | Haiku | Ejecuta las comprobaciones por orden y para en la primera que falla, con el error exacto |
+| **documentador** | `.claude/agents/documentador.md` | Sonnet | README, este archivo y un borrador del blog en `blog/BORRADOR.md` |
+
+El director es la conversación principal porque en Claude Code **un subagente no puede lanzar otros
+subagentes**: quien reparte el trabajo tiene que ser la sesión principal.
+
+### Por qué cada modelo
+
+- **Opus** donde hay que **pensar y juzgar**: el director decide el plan y qué hacer cuando algo
+  falla, y el revisor tiene que encontrar lo que nadie ha visto. Es el modelo más capaz y el más caro,
+  así que solo se usa donde cambia el resultado.
+- **Sonnet** donde hay que **producir**: escribir código, tests y documentación con un plan ya
+  decidido. Es rápido y bueno programando, y cuesta menos que Opus.
+- **Haiku** donde la tarea es **mecánica**: ejecutar seis órdenes y copiar el resultado. No hace falta
+  pensar, así que se usa el modelo más barato.
+
+### Reglas comunes a todos los subagentes
+
+- Empiezan leyendo este archivo. **El ENUNCIADO manda sobre todo.**
+- Ante cualquier cosa rara (el entorno, un permiso, algo que no cuadra), **paran y lo cuentan** en
+  lugar de improvisar. Si Docker no responde, no lo arrancan: avisan.
+- No tocan los archivos protegidos (sección 3) y no ponen datos reales de nadie.
+- **No hacen commits, push ni pull requests**: eso es del director.
+- Terminan con un informe breve para el director.
+- El revisor tiene `Bash` para ejecutar comprobaciones (`git diff`, los tests); que no edite lo
+  garantiza su prompt, no la herramienta. No tiene `Edit` ni `Write`.
+
+### El flujo de una tarjeta
+
+1. **Director:** lee la tarjeta de Trello y la pasa a «Haciendo», localiza el requisito en el
+   ENUNCIADO, escribe un plan corto (archivos, funciones, decisiones) y crea la rama.
+2. **implementador:** hace el código según el plan.
+3. **tester:** escribe los tests y hace el doble testeo.
+4. **verificador:** ejecuta `format:check`, `lint`, `test`, `coverage`, `docs` y, si la tarjeta toca
+   páginas, `e2e`. Si algo falla, el director decide a quién se lo devuelve (implementador o tester).
+   Como mucho **dos vueltas**: a la tercera, el director para y se lo cuenta al alumno.
+5. **revisor:** revisión independiente. Los ❌ vuelven al implementador o al tester; los ⚠️ los decide
+   el director.
+6. **documentador:** README, AGENTS.md y el borrador del blog.
+7. **Director:** commits pequeños, push y PR con las comprobaciones en verde; la tarjeta a «Hecho»
+   cuando llegue a `main`; y el resumen para el alumno: qué se ha hecho, para qué sirve ahora y para
+   qué servirá en el futuro, explicado paso a paso para que pueda defenderlo.
+
+Con **«haz la siguiente tarjeta»**, el director sigue este flujo con la siguiente del tablero sin
+preguntar antes de empezar.
+
+### El blog
+
+El documentador solo escribe un **borrador** en `blog/BORRADOR.md`, que no se sube (está en el
+`.gitignore`). El blog de verdad, `blog/README.md`, es el diario de aprendizaje del alumno: lo escribe
+él con sus palabras, porque le pueden preguntar por él en la exposición.
+
+### Con otra IA
+
+`.claude/agents/` solo lo entiende Claude Code. Otra IA (Codex, Gemini, Copilot…) puede seguir el
+mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas reglas.
+
+## 9. Estado
+
+- **Sprint 1** (6–15 de noviembre, tag `v0.1`). Hechos: entorno, tablero, README «Mi proyecto»,
+  Definición de Hecho, `.gitignore`, `.gitattributes`, las cinco páginas con su diseño, esta memoria
+  (`AGENTS.md` y `CLAUDE.md`), `js/almacen.js`, `js/validadores.js`, `js/usuarios.js`,
+  `js/sesion.js`, `js/avisos.js` y `js/formularios.js` (con sus tests al 100 % de cobertura), las
+  reglas de ESLint, las páginas de registro e inicio de sesión y la cabecera común con la protección
+  de las páginas privadas (`js/paginas/`, con tests de integración): el ciclo de sesión completo
+  (registrarse, entrar, ver la cabecera, cerrar sesión) funciona.
+- También hecho: el workflow de integración continua, paso 1 (`ci.yml` con `Calidad` y `Tests`).
+- También hechas: la entrada del sprint 1 en el blog y las secciones del README «Cómo ejecutarlo» y
+  «Almacenamiento y sesión».
+- **Sprint 1 cerrado** con el tag `v0.1` (reflexión y Definición de Hecho revisada en el README).
+- **Sprint 2 en marcha:** hechos los validadores de la captura y sus tests (`it.each`, 100 % de
+  cobertura), `paginar` y el módulo de capturas, cada uno con sus tests, y la validación en tiempo
+  real (`js/validacion.js`), ya usada en el registro y el inicio de sesión. La ficha está completa:
+  campos, campo condicional, imágenes, guardar y editar. El listado pinta las capturas con
+  «Editar» y «Borrar», con buscador y paginación. Montado el equipo de subagentes de IA (sección 8).
+  La zona de administración está hecha (rama `zona-administracion`: lista, buscador, paginación y
+  cambio de rol).
+- La sección del README «Funcionalidad y formularios» (con la tabla de las 14 expresiones regulares) está
+  escrita (rama `readme-funcionalidad`).
+- **Resuelto** (rama `ficha-doble-envio`): la ficha ya evita el doble envío, con 11 tests nuevos.
+- Los **tests de integración** de la ficha, el listado y la protección por rol están auditados y
+  completos (733 tests en 24 archivos, `js/` al 100 %).
+- La sección «Eventos» del README está escrita (rama `readme-eventos`): eventos en el HTML, tipos de
+  eventos y la tabla de los 18 oyentes de `js/`. Si se añade o quita un `addEventListener`, hay que
+  actualizar esa tabla.
+- Hechas las **pruebas e2e** (sesión y CRUD de capturas) y la **cobertura con umbral** del 90 %
+  (rama `e2e-cobertura`).
+- Hecha la **integración continua, paso 2** (rama `ci-paso-2`, PR #42): `Tests` con cobertura y
+  artefacto, trabajo `E2E`, `concurrency` y `permissions`; explicada en el README.
+- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: solo el cierre del sprint. Por orden de
+  fecha en el tablero.
+- La sección «Pruebas y cobertura» del README está escrita (rama `readme-pruebas`). **Aviso:** la
+  cobertura cuenta todos los tests juntos, así que quitar un caso de los tests de un validador no
+  baja del 90 % (los tests de integración de la ficha ejecutan los mismos validadores).
+- La sección «Arquitectura y módulos» del README está escrita (rama `readme-arquitectura`): diagrama
+  Mermaid, tabla de los 19 módulos, patrones y JSDoc. Si cambian los `import` o los `export`, hay que
+  actualizarla. Las funciones puras exportadas llevan `@example` (lo pide el enunciado).
+- **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
+  lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
