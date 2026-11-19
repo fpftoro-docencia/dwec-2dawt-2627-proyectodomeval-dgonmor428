@@ -24,7 +24,8 @@
  *   desactiva los botones en los límites;
  * - valida cada campo en tiempo real y todos al enviar (`js/validacion.js`);
  * - al enviar sin errores, lee los datos con `FormData`, los guarda normalizados, deja un aviso
- *   para el listado y vuelve a él;
+ *   para el listado y vuelve a él. Evita el doble envío: desactiva el botón («Guardando…») e
+ *   ignora cualquier `submit` mientras se guarda; si el guardado falla, lo reactiva;
  * - con `?id=…`, rellena el formulario con esa captura para editarla. Si no existe (o es de otro
  *   usuario), vuelve al listado con un aviso de error.
  *
@@ -32,7 +33,7 @@
  */
 
 import { activarValidacion } from '../validacion.js';
-import { mostrarEstadoCampo } from '../formularios.js';
+import { mostrarEstadoCampo, ponerEnviando } from '../formularios.js';
 import { lanzarAviso, guardarAvisoPendiente } from '../avisos.js';
 import { buscarCaptura, crearCaptura, actualizarCaptura } from '../capturas.js';
 
@@ -339,12 +340,28 @@ export function iniciarFicha({
 
   // ---- Guardar ----------------------------------------------------------------------------------
 
+  // El texto normal se lee una vez, ya con «Guardar cambios» si se edita; se restaura si falla
+  const botonGuardar = documento.querySelector('#ficha-guardar');
+  const textosBoton = { enviando: 'Guardando…', normal: botonGuardar.textContent.trim() };
+
+  // El botón desactivado frena el clic y Intro, pero no `requestSubmit()` ni cualquier envío hecho
+  // por código: por eso se ignora también un segundo `submit` (defensa en profundidad, como en
+  // entrar y registro). Va en una variable y no en `aria-busy`, que solo avisa al lector de pantalla.
+  let enviando = false;
+
   formulario.addEventListener('submit', (evento) => {
     evento.preventDefault();
+    if (enviando) {
+      return; // un segundo envío mientras se guarda no hace nada
+    }
     if (!validacion.validarFormulario()) {
       return;
     }
 
+    enviando = true;
+    ponerEnviando(formulario, botonGuardar, true, textosBoton);
+
+    // Va fuera del `try`: si algún día lanzara, `enviando` se quedaría a true
     const captura = datosDeCaptura(new FormData(formulario));
     try {
       if (capturaEditada === null) {
@@ -358,6 +375,10 @@ export function iniciarFicha({
     } catch (error) {
       // El almacenamiento está lleno o bloqueado: se avisa y se queda en la ficha
       lanzarAviso(formulario, error.message, 'error');
+      // Se queda en la ficha: se reactiva el botón para poder reintentar. (En «ya no existe» y en
+      // el éxito se navega al listado, así que el botón se queda desactivado.)
+      enviando = false;
+      ponerEnviando(formulario, botonGuardar, false, textosBoton);
       return;
     }
 

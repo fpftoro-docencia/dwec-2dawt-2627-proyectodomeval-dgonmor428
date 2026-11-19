@@ -753,4 +753,200 @@ describe('ficha', () => {
       expect(document.querySelectorAll('.imagen')).toHaveLength(3);
     });
   });
+
+  describe('doble envío', () => {
+    const avisoPendiente = () => JSON.parse(almacenSesion.getItem(CLAVE_AVISO_PENDIENTE));
+    const boton = () => document.querySelector('#ficha-guardar');
+    // El texto exacto, sin trim: el código lo guarda ya recortado y debe restaurarlo así
+    const textoBoton = () => boton().textContent;
+    const lleno = () => {
+      throw new DOMException('Lleno', 'QuotaExceededError');
+    };
+    const TEIDE = {
+      titulo: 'Nebulosa de Orión',
+      categoria: 'cielo',
+      fecha: '2026-11-10T22:40',
+      lugar: 'Observatorio del Teide',
+      gps: '28.3009, -16.5098',
+      altitud: 2390,
+      condiciones: 'despejado',
+      equipo: 'telescopio',
+      observatorio: null,
+      espacio: null,
+      imagenes: [],
+    };
+
+    describe('alta', () => {
+      it('dos envíos seguidos guardan una sola captura y navegan una vez', () => {
+        rellenarValida();
+        formulario.requestSubmit();
+        formulario.requestSubmit();
+        formulario.requestSubmit();
+
+        expect(listarCapturas(almacenCapturas, 'ana')).toHaveLength(1);
+        expect(navegar).toHaveBeenCalledTimes(1);
+        expect(navegar).toHaveBeenCalledWith(PAGINA_LISTADO);
+      });
+
+      it('un doble clic en el botón guarda una sola captura', () => {
+        rellenarValida();
+        boton().click();
+        boton().click();
+
+        expect(listarCapturas(almacenCapturas, 'ana')).toHaveLength(1);
+        expect(navegar).toHaveBeenCalledTimes(1);
+      });
+
+      it('un segundo envío no vuelve a escribir el aviso pendiente', () => {
+        const escribirSesion = vi.spyOn(almacenSesion, 'setItem');
+        rellenarValida();
+        formulario.requestSubmit();
+        formulario.requestSubmit();
+
+        const avisos = escribirSesion.mock.calls.filter(
+          ([clave]) => clave === CLAVE_AVISO_PENDIENTE,
+        );
+        expect(avisos).toHaveLength(1);
+      });
+
+      it('tras el primer envío el botón está desactivado, dice «Guardando…» y el formulario está ocupado', () => {
+        // El HTML escribe el texto en varias líneas: antes de enviar, solo se comprueba recortado
+        expect(boton().textContent.trim()).toBe('Guardar captura');
+        rellenarValida();
+        formulario.requestSubmit();
+
+        expect(boton().disabled).toBe(true);
+        expect(textoBoton()).toBe('Guardando…');
+        expect(formulario.hasAttribute('aria-busy')).toBe(true);
+      });
+
+      it('con el formulario inválido no guarda, no navega y el botón sigue activo', () => {
+        const textoAntes = boton().textContent;
+        formulario.requestSubmit();
+        formulario.requestSubmit();
+
+        expect(boton().disabled).toBe(false);
+        expect(boton().textContent).toBe(textoAntes);
+        expect(formulario.hasAttribute('aria-busy')).toBe(false);
+        expect(errorDe('titulo')).toBe('Escribe un título.');
+        expect(listarCapturas(almacenCapturas, 'ana')).toEqual([]);
+        expect(navegar).not.toHaveBeenCalled();
+      });
+
+      it('tras un envío inválido se corrige el formulario y se guarda (no queda bloqueado)', () => {
+        formulario.requestSubmit();
+        expect(listarCapturas(almacenCapturas, 'ana')).toEqual([]);
+
+        rellenarValida();
+        formulario.requestSubmit();
+        formulario.requestSubmit(); // y un segundo envío, ya ignorado
+
+        expect(listarCapturas(almacenCapturas, 'ana')).toHaveLength(1);
+        expect(navegar).toHaveBeenCalledTimes(1);
+        expect(boton().disabled).toBe(true);
+        expect(textoBoton()).toBe('Guardando…');
+      });
+
+      it('si falla el guardado, avisa y reactiva el botón con su texto original', () => {
+        almacenCapturas.setItem = lleno;
+        rellenarValida();
+        formulario.requestSubmit();
+
+        expect(textoAvisos()).toContain('el almacenamiento está lleno o bloqueado');
+        expect(boton().disabled).toBe(false);
+        expect(textoBoton()).toBe('Guardar captura');
+        expect(formulario.hasAttribute('aria-busy')).toBe(false);
+        expect(navegar).not.toHaveBeenCalled();
+      });
+
+      it('tras un fallo se puede reintentar y, si ahora funciona, guarda una sola captura', () => {
+        const guardar = almacenCapturas.setItem.bind(almacenCapturas);
+        let intentos = 0;
+        almacenCapturas.setItem = (clave, valor) => {
+          intentos += 1;
+          if (intentos === 1) {
+            lleno();
+          }
+          guardar(clave, valor);
+        };
+        rellenarValida();
+        formulario.requestSubmit();
+        expect(listarCapturas(almacenCapturas, 'ana')).toEqual([]);
+
+        formulario.requestSubmit();
+        formulario.requestSubmit(); // y un doble envío del reintento
+        expect(intentos).toBe(2);
+        expect(listarCapturas(almacenCapturas, 'ana')).toHaveLength(1);
+        expect(navegar).toHaveBeenCalledTimes(1);
+        expect(boton().disabled).toBe(true);
+        expect(textoBoton()).toBe('Guardando…');
+      });
+    });
+
+    describe('edición', () => {
+      let id;
+
+      beforeEach(() => {
+        id = crearCaptura(almacenCapturas, 'ana', TEIDE).id;
+        iniciar(`?id=${id}`);
+      });
+
+      it('dos envíos seguidos no duplican ni actualizan dos veces', () => {
+        escribir(campos.titulo, 'Orión editada');
+        const guardar = almacenCapturas.setItem.bind(almacenCapturas);
+        const escrituras = vi.fn(guardar);
+        almacenCapturas.setItem = escrituras;
+        formulario.requestSubmit();
+        formulario.requestSubmit();
+
+        expect(escrituras).toHaveBeenCalledTimes(1);
+        const capturas = listarCapturas(almacenCapturas, 'ana');
+        expect(capturas).toHaveLength(1);
+        expect(capturas[0]).toEqual({ ...TEIDE, titulo: 'Orión editada', id });
+        expect(navegar).toHaveBeenCalledTimes(1);
+      });
+
+      it('tras el primer envío: botón desactivado, «Guardando…» y aria-busy', () => {
+        expect(textoBoton()).toBe('Guardar cambios');
+        formulario.requestSubmit();
+        expect(boton().disabled).toBe(true);
+        expect(textoBoton()).toBe('Guardando…');
+        expect(formulario.hasAttribute('aria-busy')).toBe(true);
+      });
+
+      it('si falla el guardado, reactiva el botón con «Guardar cambios» y se puede reintentar', () => {
+        const guardar = almacenCapturas.setItem.bind(almacenCapturas);
+        almacenCapturas.setItem = lleno;
+        escribir(campos.titulo, 'Orión editada');
+        formulario.requestSubmit();
+
+        expect(textoAvisos()).toContain('el almacenamiento está lleno o bloqueado');
+        expect(boton().disabled).toBe(false);
+        expect(textoBoton()).toBe('Guardar cambios');
+        expect(formulario.hasAttribute('aria-busy')).toBe(false);
+        expect(navegar).not.toHaveBeenCalled();
+
+        almacenCapturas.setItem = guardar;
+        formulario.requestSubmit();
+        const capturas = listarCapturas(almacenCapturas, 'ana');
+        expect(capturas).toHaveLength(1);
+        expect(capturas[0].titulo).toBe('Orión editada');
+        expect(navegar).toHaveBeenCalledTimes(1);
+      });
+
+      it('si la captura se borró mientras se editaba: aviso de error, listado y botón desactivado', () => {
+        almacenCapturas.clear();
+        formulario.requestSubmit();
+
+        expect(navegar).toHaveBeenCalledTimes(1);
+        expect(navegar).toHaveBeenCalledWith(PAGINA_LISTADO);
+        expect(avisoPendiente()).toEqual({ mensaje: MENSAJE_NO_EXISTE, tipo: 'error' });
+        expect(boton().disabled).toBe(true);
+
+        // y un segundo envío no vuelve a navegar
+        formulario.requestSubmit();
+        expect(navegar).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
 });

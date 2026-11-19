@@ -425,19 +425,24 @@ mensaje nuevo (un texto vacío significa «sin error»). Así lo que se ve y lo 
 #### Evitar el doble envío
 
 En el inicio de sesión y el registro, enviar tarda un momento: el resumen de la contraseña se calcula
-con `await`. Para que un segundo envío no haga nada hay **dos** protecciones:
+con `await`. En la ficha, guardar es síncrono (no hay `await`), pero `navegar` no descarga la página
+al instante, así que también hay un hueco. Para que un segundo envío no haga nada hay **dos**
+protecciones, las mismas en `entrar.js`, `registro.js` y `ficha.js`:
 
 - `ponerEnviando(formulario, boton, true, textos)` (`js/formularios.js`) **desactiva el botón**, le
-  cambia el texto («Entrando…», «Creando tu cuenta…») y pone **`aria-busy`** en el formulario. Al
-  terminar con error, lo deja como estaba.
-- Una variable `enviando`: si llega otro `submit` mientras vale `true`, el oyente sale sin hacer
-  nada. Es la red de seguridad para los envíos que no dependen del botón desactivado (por ejemplo,
-  `requestSubmit()`).
+  cambia el texto («Entrando…», «Creando tu cuenta…», «Guardando…») y pone **`aria-busy`** en el
+  formulario. Si el envío falla y te quedas en la página, lo deja como estaba.
+- Una variable local `enviando`: si llega otro `submit` mientras vale `true`, el oyente sale sin
+  hacer nada. Es **defensa en profundidad**: con el botón desactivado, el clic y Intro ya no envían,
+  pero `requestSubmit()` (o cualquier envío hecho por código) sí lanza el `submit` aunque el botón
+  esté desactivado. En la ficha, sin ella se guardaría dos veces la captura (cada una con un `id`
+  nuevo). Se usa una variable y no `aria-busy` porque este atributo sirve para la accesibilidad (avisa
+  a los lectores de pantalla), no para guardar el estado del código.
 
-**Pendiente:** la ficha todavía **no** bloquea el doble envío. Guardar es síncrono (no hay `await`),
-pero salir de la página no es instantáneo, así que dos envíos seguidos podrían guardar la captura dos
-veces. Lo resolveré en una tarjeta aparte («S2 · Ficha: evitar el doble envío»), reutilizando
-`ponerEnviando`. Hoy lo usan solo `entrar.js` y `registro.js`.
+En la ficha, si guardar falla (almacenamiento lleno o bloqueado), se avisa, `enviando` vuelve a
+`false` y el botón se reactiva para poder reintentar. Si el guardado sale bien, o si la captura
+editada ya no existe, se navega al listado y el botón se queda desactivado hasta que cambia la
+página. Hay 11 tests de integración en el bloque «doble envío» de `tests/integracion/ficha.test.js`.
 
 ### Expresiones regulares
 
@@ -832,6 +837,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `subagentes-ia` | Equipo de subagentes de IA en `.claude/agents/` y su flujo en `AGENTS.md` | [#31](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/31) |
 | `listado-buscador-paginacion` | Listado: buscador con pausa (sin tildes ni mayúsculas), paginación de 6 en 6 con `?pagina=` y controles reutilizables (`js/buscar.js`, `js/controlesPaginacion.js`) | [#32](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/32) |
 | `zona-administracion` | Administración (`usuarios.html`): lista, buscador y paginación de usuarios, dar o quitar el rol de administrador (`cambiarRol`) y `js/direccion.js` común con el listado | [#33](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/33) |
+| `ficha-doble-envio` | Ficha: evitar el doble envío (botón desactivado, `aria-busy` y variable `enviando`) | [#39](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/39) |
 | `tests-integracion` | Tests de integración (happy-dom) de la ficha, el listado y la protección por rol, auditados frente al enunciado | [#34](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/34) |
 | `readme-eventos` | Sección «Eventos» del README: eventos en el HTML, tipos de eventos y tabla de todos los oyentes | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/35) |
 | `subir-agentes-ia` | Revisión de `.claude/agents/` frente a `AGENTS.md`, regla de no usar `-u root` en los agentes y sección «Equipo de IA» del README | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/36) |

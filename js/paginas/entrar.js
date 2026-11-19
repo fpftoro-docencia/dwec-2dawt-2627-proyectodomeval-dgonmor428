@@ -14,8 +14,9 @@
  * - con la contraseña incorrecta (o un usuario que no existe), avisa, vacía la contraseña y le da
  *   el foco; el mensaje no dice cuál de los dos falla, para no dar pistas a quien pruebe nombres;
  * - con los datos correctos, abre la sesión, deja un aviso de bienvenida y va al listado;
- * - mientras se calcula el resumen de la contraseña, el formulario está «enviando» y un segundo
- *   envío (otro clic o Intro) no hace nada.
+ * - mientras se calcula el resumen de la contraseña, el formulario está «enviando»: el botón se
+ *   desactiva (así ni el clic ni Intro envían) y, por si el envío se hace por código
+ *   (`requestSubmit()`), un segundo `submit` se ignora.
  *
  * @module paginas/entrar
  */
