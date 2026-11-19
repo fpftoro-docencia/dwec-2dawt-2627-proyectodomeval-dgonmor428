@@ -353,6 +353,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - Hechas las **pruebas e2e** (sesión y CRUD de capturas) y la **cobertura con umbral** del 90 %
   (rama `e2e-cobertura`).
 - **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: `ci.yml` completo (paso 2), README
-  (sección «Pruebas y cobertura») y cierre del sprint. Por orden de fecha en el tablero.
+  (sección «Arquitectura y módulos») y cierre del sprint. Por orden de fecha en el tablero.
+- La sección «Pruebas y cobertura» del README está escrita (rama `readme-pruebas`). **Aviso:** la
+  cobertura cuenta todos los tests juntos, así que quitar un caso de los tests de un validador no
+  baja del 90 % (los tests de integración de la ficha ejecutan los mismos validadores).
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
