@@ -1515,7 +1515,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `deployment-checks` | Sprint 3: Vercel solo publica lo que pasa `Calidad`, `Tests` y `E2E` | [#45](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/45) |
 | `despliegue-yml` | Sprint 3: `despliegue.yml` con `E2E desplegado` contra cada despliegue de Vercel | [#46](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/46) |
 | `e2e-desplegado-sin-check` | Sprint 3: `E2E desplegado` fuera de los Deployment Checks (bloqueaba la producción) | [#47](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/47) |
-| `e2e-desplegado-produccion` | Sprint 3: `E2E desplegado` también corre en producción, después de publicar | PR pendiente |
+| `e2e-desplegado-produccion` | Sprint 3: `E2E desplegado` también corre en producción, después de publicar | [#48](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/48) |
 
 #### *Merge* o *rebase*
 
