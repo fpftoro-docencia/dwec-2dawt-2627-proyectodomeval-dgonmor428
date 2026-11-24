@@ -92,3 +92,123 @@ en `localStorage`. La sesión tiene que acabarse al cerrar la pestaña, así que
 **Qué hace `needs` en el workflow.** En `ci.yml`, el trabajo `Tests` tiene `needs: calidad`: no
 empieza hasta que `Calidad` termina bien. Si el código no pasa ESLint, no se gastan minutos en los
 tests. Lo vi en la pestaña «Checks» de la pull request 18: primero `Calidad` y después `Tests`.
+
+## 24/11/2026 · Sprint 2 · Un CRUD que funciona y tests que no lo cuentan todo
+
+### Dificultades y cómo las resolví
+
+**El entorno, otra vez.** En el ordenador de clase no hay Node: todos los `npm run …` se ejecutan
+dentro de Docker con la imagen del Dev Container. Un día Docker Desktop estaba apagado y las pruebas
+de extremo a extremo no podían ni empezar; lo arranqué y seguí. Otro problema más raro: dos veces
+`npm run coverage` falló con `EACCES: permission denied` al borrar `coverage/`. La carpeta se había
+creado ejecutando el contenedor como `root`, y después el usuario normal no podía borrarla. La borré
+(como `root`, una vez) y desde entonces el contenedor se usa siempre con el usuario por defecto. Lo
+dejé escrito como regla para no repetirlo.
+
+**«José» y «Jose» eran la misma persona.** En la zona de administración, el botón del propio
+administrador está desactivado (no se puede quitar el rol a sí mismo). Para saber qué fila era la
+suya comparaba nombres con `normalizar`, la función del buscador, que quita las tildes. Resultado: con
+la sesión de «José», la fila de otro usuario «Jose» también salía bloqueada. Los tests pasaban porque
+ninguno tenía dos nombres que solo se diferenciaran por una tilde. Lo encontró la revisión. Lo
+arreglé con una función propia, `mismoNombre`, que no distingue mayúsculas pero sí tildes, y añadí un
+test con «José» y «Jose».
+
+**La ficha podía guardar dos veces la misma captura.** El inicio de sesión y el registro ya evitaban
+el doble envío, pero la ficha no: si se enviaba dos veces muy rápido, se guardaban dos capturas, cada
+una con su `id`. Tampoco lo veía ningún test, porque todos enviaban el formulario una sola vez. Lo vi
+al escribir la sección del README sobre formularios: el texto decía que estaba resuelto y al
+comprobarlo no lo estaba. Hice una tarjeta aparte, añadí `ponerEnviando` y una variable `enviando`, y
+un test que envía dos veces y comprueba que solo hay una captura.
+
+**Escribí cosas falsas en el README.** Al documentar, varias frases sonaban bien pero no eran
+verdad, y las encontró la revisión comparándolas con el código:
+
+- que el umbral de cobertura «bloquea la *pull request*» (en GitHub no hay protección de rama: no
+  fusionar con una comprobación en rojo es una norma mía, no una regla de GitHub);
+- que con el botón desactivado Intro vuelve a enviar el formulario (no: lo que sí envía es
+  `requestSubmit()` desde el código);
+- que una «ñ» ocupa dos posiciones en `.length` (ocupa una; los que ocupan dos son los emojis).
+
+Aprendí que la documentación también se prueba: cada afirmación tiene que poder comprobarse.
+
+**Un test que no podía fallar.** Al revisar los tests de integración había uno que comprobaba que la
+lista de usuarios quedaba vacía para un usuario normal, pero la lista solo quedaba vacía porque el
+propio test no iniciaba la página. Nunca habría fallado. Lo quité y lo sustituí por uno que lee el
+script real de `usuarios.html` y comprueba que pasa `soloAdministradores: true`: si alguien lo borra
+del HTML, el test falla.
+
+**Perdí parte del borrador del blog.** El borrador (`blog/BORRADOR.md`) se sobrescribió entero sin
+leerlo antes, y como está en el `.gitignore` git no tenía copia. Se perdieron varias secciones. Lo
+regeneré a partir del historial de commits y de `AGENTS.md`. Lección: lo que no está en git no tiene
+«deshacer».
+
+### Problemas conceptuales
+
+**Desactivar el botón no es lo mismo que evitar el doble envío.** Con el botón de envío desactivado,
+ni el clic ni Intro envían el formulario. Pero `formulario.requestSubmit()` sí, y cualquier código
+puede llamarlo. Por eso, además del botón, el oyente comprueba una variable:
+
+```js
+// js/paginas/ficha.js
+formulario.addEventListener('submit', (evento) => {
+  evento.preventDefault();
+  if (enviando) {
+    return;
+  }
+  …
+```
+
+`aria-busy` también se pone, pero es para el lector de pantalla, no para guardar el estado del
+programa.
+
+**Delegación de eventos con `closest`.** En el listado, en la administración, en la paginación y en
+las imágenes de la ficha hay un solo oyente en el contenedor, no uno por botón. `closest` sube desde
+lo que se ha pulsado (que puede ser el texto de dentro del botón) hasta el botón, y sirve también para
+los elementos que se pintan después:
+
+```js
+const boton = evento.target.closest('[data-accion="borrar"]');
+if (boton === null) {
+  return;
+}
+```
+
+**El _debounce_ es un cierre.** El buscador no filtra con cada tecla, sino 300 ms después de la
+última. `retardar` guarda el temporizador en una variable que solo ve la función que devuelve; cada
+llamada cancela el anterior:
+
+```js
+// js/buscar.js
+export function retardar(funcion, ms) {
+  let temporizador = null;
+  return (...argumentos) => {
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => funcion(...argumentos), ms);
+  };
+}
+```
+
+En los tests no se espera de verdad: con `vi.useFakeTimers()` se avanza el reloj a mano
+(`advanceTimersByTime(299)`: todavía no filtra; uno más: ya sí).
+
+**`blur` no sube.** La validación de cada campo empieza al salir de él. `blur` no hace burbuja, así que
+un oyente en el formulario no lo recibiría; en la fase de captura sí, porque baja desde `document`
+hasta el campo. Con un solo `addEventListener('blur', …, true)` en el formulario valen todos los
+campos, también los de las imágenes que se añaden después.
+
+**Qué mide de verdad la cobertura.** El 90 % de `vitest.config.js` cuenta las líneas de
+`validadores.js` y `paginar.js` que ejecuta **cualquier** test. Si quito un caso de los tests de un
+validador, los tests de la ficha siguen pasando por esa línea y `npm run coverage` no falla. Que una
+línea se ejecute no quiere decir que su regla esté comprobada. Para eso está el doble testeo: repasar
+cada punto de la tarjeta frente a los tests.
+
+**Cada nivel de la pirámide ve cosas distintas.** Los unitarios prueban funciones sueltas; los de
+integración, una página entera en happy-dom con el almacenamiento falso; los e2e, el navegador real.
+Al escribir el e2e de editar, mi test esperaba el botón «Guardar captura», pero al editar el código lo
+cambia a «Guardar cambios». Ese detalle solo lo vio el navegador.
+
+**Los trabajos del workflow se esperan unos a otros.** En el paso 2 de la integración continua,
+`Tests` espera a `Calidad` y `E2E` espera a `Tests` (`needs`): si falla lo barato, no se gastan
+minutos en instalar Chromium. El informe de cobertura se sube con `if: always()` (también cuando el
+umbral falla, que es cuando más hace falta verlo) y el de Playwright con `if: failure()` (solo si
+algo falla).
