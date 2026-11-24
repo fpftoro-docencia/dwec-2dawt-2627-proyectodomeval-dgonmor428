@@ -319,7 +319,8 @@ preguntar antes de empezar.
 
 El documentador solo escribe un **borrador** en `blog/BORRADOR.md`, que no se sube (está en el
 `.gitignore`). El blog de verdad, `blog/README.md`, es el diario de aprendizaje del alumno: lo escribe
-él con sus palabras, porque le pueden preguntar por él en la exposición.
+él con sus palabras, porque le pueden preguntar por él en la exposición. (Excepción: la entrada del
+sprint 2 la escribió la IA porque el alumno lo pidió expresamente; el alumno la revisa y la defiende.)
 
 ### Con otra IA
 
@@ -358,7 +359,8 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   (rama `e2e-cobertura`).
 - Hecha la **integración continua, paso 2** (rama `ci-paso-2`, PR #42): `Tests` con cobertura y
   artefacto, trabajo `E2E`, `concurrency` y `permissions`; explicada en el README.
-- **Sprint 2** (16–26 de noviembre, tag `v0.2`), por hacer: solo el cierre del sprint. Por orden de
+- **Sprint 2 cerrado** (tag `v0.2`, rama `cierre-sprint-2`): entrada del blog, reflexión y Definición de
+  Hecho revisada (nueva condición «Revisión independiente»). Siguiente: el sprint 3 (Vercel). Por orden de
   fecha en el tablero.
 - La sección «Pruebas y cobertura» del README está escrita (rama `readme-pruebas`). **Aviso:** la
   cobertura cuenta todos los tests juntos, así que quitar un caso de los tests de un validador no
