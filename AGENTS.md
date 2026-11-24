@@ -380,7 +380,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   `on: deployment_status`, trabajo `E2E desplegado` (solo si el estado es `success`) y `npm run e2e`
   con `BASE_URL` = `github.event.deployment_status.environment_url`. Necesita **deployment_status
   Events** activado en Vercel (Settings → Git); sin él, Vercel no crea «Deployments» en GitHub y el
-  workflow no se ejecuta nunca. No se cambia su nombre. Pasa en las vistas previas de las PR.
+  workflow no se ejecuta nunca. No se cambia su nombre. Se ejecuta en las vistas previas de las PR y,
+  en `main`, contra la versión de producción pero **después** de publicarla (Vercel crea el
+  «Deployment» de producción en GitHub tras promoverla; comprobado con `d15142f`, 10 de 10).
   **No es un Deployment Check:** se añadió y bloqueó la producción (`d95fa0a` en «Running Checks»),
   porque para producción Vercel no crea el «Deployment» de GitHub hasta que pasan las comprobaciones,
   así que `deployment_status` no llega y el trabajo nunca se ejecuta. El alumno decidió quitarlo. La

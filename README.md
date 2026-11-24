@@ -1396,7 +1396,11 @@ comprobaciones, así que el evento `deployment_status` no llega, `E2E desplegado
 comprobación no llega nunca. Era un bloqueo circular: nada nuevo de `main` se habría publicado. Lo
 quité de los Deployment Checks, y la producción vuelve a publicarse con `Calidad`, `Tests` y `E2E`.
 `E2E desplegado` sigue probando **cada vista previa** de las *pull requests*, que es la web tal como
-quedará. Lo que no cumple es la parte de «en `main`, antes de publicar». La alternativa que propone
+quedará, y también **la versión de producción, pero después de publicarla**: al fusionar la *pull
+request* #47, Vercel publicó `d15142f` cuando pasaron las tres comprobaciones, y solo entonces creó
+el «Deployment» de producción en GitHub; `E2E desplegado` se ejecutó contra su dirección y pasó 10
+de 10. Si fallara, avisaría de que la web publicada está rota, pero no la habría frenado. Lo que no
+cumple es la parte de «en `main`, antes de publicar». La alternativa que propone
 Vercel para eso son sus eventos `repository_dispatch`, pero se aparta de `deployment_status`, que es
 lo que pide el enunciado; queda pendiente de consultarlo con el profesor.
 
@@ -1511,6 +1515,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `deployment-checks` | Sprint 3: Vercel solo publica lo que pasa `Calidad`, `Tests` y `E2E` | [#45](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/45) |
 | `despliegue-yml` | Sprint 3: `despliegue.yml` con `E2E desplegado` contra cada despliegue de Vercel | [#46](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/46) |
 | `e2e-desplegado-sin-check` | Sprint 3: `E2E desplegado` fuera de los Deployment Checks (bloqueaba la producción) | [#47](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/47) |
+| `e2e-desplegado-produccion` | Sprint 3: `E2E desplegado` también corre en producción, después de publicar | [#48](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/48) |
 
 #### *Merge* o *rebase*
 
