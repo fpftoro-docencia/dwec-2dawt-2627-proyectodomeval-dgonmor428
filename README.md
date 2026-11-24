@@ -1431,7 +1431,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `readme-pruebas` | Sección «Pruebas y cobertura» del README: pirámide, simulación, e2e, umbral y salidas reales | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/40) |
 | `readme-arquitectura` | Sección «Arquitectura y módulos» del README: diagrama, tabla de módulos, patrones, dependencias inyectadas y JSDoc | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/41) |
 | `ci-paso-2` | Integración continua, paso 2: `Tests` con cobertura y artefacto, trabajo `E2E`, `concurrency` y `permissions` | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/42) |
-| `cierre-sprint-2` | Cierre del sprint 2: entrada del blog, reflexión y repaso de la Definición de Hecho | PR pendiente |
+| `cierre-sprint-2` | Cierre del sprint 2: entrada del blog, reflexión y repaso de la Definición de Hecho | [#43](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/43) |
 
 #### *Merge* o *rebase*
 
