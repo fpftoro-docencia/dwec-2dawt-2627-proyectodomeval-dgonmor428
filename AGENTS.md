@@ -362,6 +362,18 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - **Sprint 2 cerrado** (tag `v0.2`, rama `cierre-sprint-2`): entrada del blog, reflexión y Definición de
   Hecho revisada (nueva condición «Revisión independiente»). Siguiente: el sprint 3 (Vercel). Por orden de
   fecha en el tablero.
+- **Sprint 3 en marcha.** La web está publicada en Vercel (rama `vercel-publicar`):
+  <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app>. Proyecto
+  `dwec-2dawt-2627-proyectodomeval-dgonmor428` (Hobby): Framework «Other», Build Command
+  `npm run build`, Output Directory `dist` y *Vercel Authentication* desactivada. Con `BASE_URL`
+  apuntando a la web publicada pasan las 10 pruebas e2e.
+- **Regla de los e2e contra lo desplegado:** antes de pulsar un botón cuyo oyente pone el JavaScript,
+  la prueba espera a ver algo que ese JavaScript escribe en la misma función (por ejemplo, el nombre
+  en la cabecera o un aviso). En la web publicada los módulos tardan más y, sin esa espera, el clic
+  llega antes que el oyente (pasó con `cerrarSesion` en `e2e/ayudas.js`).
+- La IA no puede hacer clic en los navegadores del alumno (Edge) con el control del escritorio: para
+  Vercel se usa el navegador integrado de la app, con la sesión iniciada por el alumno. Los códigos de
+  verificación y los inicios de sesión los hace siempre el alumno.
 - La sección «Pruebas y cobertura» del README está escrita (rama `readme-pruebas`). **Aviso:** la
   cobertura cuenta todos los tests juntos, así que quitar un caso de los tests de un validador no
   baja del 90 % (los tests de integración de la ficha ejecutan los mismos validadores).
