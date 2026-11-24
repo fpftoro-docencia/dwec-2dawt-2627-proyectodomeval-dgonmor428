@@ -1338,10 +1338,13 @@ falló, así que se omitió. Que no esté es lo esperado.
 La dirección de producción la eligió Vercel acortando el nombre del proyecto (`…-dgo.vercel.app`).
 Al publicarla comprobé que responden las cinco páginas, el CSS, los módulos de `js/` y Bootstrap.
 Las pruebas e2e contra ella (`BASE_URL=https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app npm
-run e2e`) pasan 7 de 10: las tres que usan «Cerrar sesión» no ven la página de inicio de sesión
-después del clic. La causa más probable es que la prueba pulsa el botón antes de que el JavaScript
-de la página haya terminado de cargar (en local, más rápido, pasan). Se revisa en la tarjeta
-«Pruebas contra lo desplegado».
+run e2e`) pasan las 10 (y las 30 con `--repeat-each=3`). La primera vez fallaban 3, las que usan
+«Cerrar sesión», y en local no: en la web publicada los módulos de `js/` tardan más en llegar, y la
+prueba pulsaba los botones antes de que el JavaScript pusiera sus oyentes (el clic en «Cerrar
+sesión» no hacía nada, y el formulario de entrar se enviaba sin JavaScript). Se arregló en la prueba,
+no en la web: `cerrarSesion` (`e2e/ayudas.js`) espera a ver algo que escribe el JavaScript en la
+misma función que pone el oyente (el nombre en la cabecera y el aviso «Has cerrado la sesión»)
+antes de seguir.
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
