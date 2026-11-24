@@ -1350,8 +1350,12 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 - [ ] **Documentada:** si la tarea cambia el comportamiento o la estructura, el README (y el JSDoc, desde el sprint 3) está al día. Los *commits* son pequeños y con mensajes que dicen qué cambia.
 
 - [ ] **Doble testeo:** después de los tests, una segunda pasada repasa cada punto de la tarjeta
-  frente a los tests y mira la cobertura del módulo (`npx vitest run --coverage`): no quedan líneas
+  frente a los tests y mira la cobertura del módulo (`npm run coverage -- --coverage.include=js/<módulo>.js`): no quedan líneas
   sin probar, o lo que queda está justificado.
+
+- [ ] **Revisión independiente:** antes de la *pull request*, alguien que no ha escrito el código ni
+  los tests lo compara con el ENUNCIADO, la tarjeta y esta lista, y comprueba que cada frase nueva
+  del README es cierta en el código. Lo que encuentra se corrige antes de fusionar.
 
 *Cambios en la Definición de Hecho:*
 
@@ -1359,6 +1363,10 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
   mitad del sprint y encontró fallos reales que la primera pasada no vio (una contraseña repetida
   vacía que se daba por buena, `npm run docs` roto). Si la uso siempre, tiene que estar en la lista.
   La condición del *workflow* en verde ya se cumple de verdad desde la *pull request* 18.
+- **Cierre del sprint 2 (24/11/2026):** añadida la condición «Revisión independiente». Este sprint
+  encontró dos fallos reales con todos los tests en verde (comparar nombres de usuario quitando las
+  tildes y el doble envío de la ficha) y varias frases falsas en el README. La condición del
+  *workflow* incluye ahora el trabajo `E2E`.
 
 ### Sprints
 
@@ -1368,7 +1376,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 | Sprint | *Tag* | Qué incluye | Reflexión |
 |--------|-------|-------------|-----------|
 | 1 | `v0.1` | Las cinco páginas con su diseño; usuarios, sesión y roles; registro e inicio de sesión; cabecera común y protección de páginas; avisos; ESLint con cuatro reglas propias; 191 tests (unitarios y de integración); `ci.yml` con `Calidad` y `Tests` | **Bien:** módulos pequeños, cada uno con sus tests desde el principio (100 % de cobertura), y probar en el navegador además de con tests, que encontró fallos que los tests no veían. **Mal:** empecé tarde (las primeras tarjetas de código se pasaron de fecha), deseché el primer diseño entero y dos tarjetas de documentación se quedaron olvidadas hasta el cierre. **Cambio para el sprint 2:** repasar el tablero completo al empezar cada día, ir por orden de fecha y hacer la documentación de cada parte junto a su código, no al final. |
-| 2 | `v0.2` | Validadores de la captura, `paginar`, CRUD (ficha y listado), administración, validación en tiempo real, tests de integración y e2e, cobertura y `ci.yml` completo | *(al cerrar el sprint)* |
+| 2 | `v0.2` | Validadores de la captura, `paginar`, CRUD (ficha y listado), administración, validación en tiempo real, tests de integración y e2e, cobertura y `ci.yml` completo | **Bien:** el flujo por tarjetas con rama, pull request y comprobaciones en verde funcionó: 20 *pull requests* (de la #23 a la #42) y todo el CRUD, la administración, los tests e2e y el workflow completo. Los componentes comunes (buscador, paginación, validación) se escribieron una vez y se reutilizaron. **Mal:** dos fallos reales (comparar nombres sin tildes y el doble envío de la ficha) pasaron con todos los tests en verde y los encontró la revisión, y escribí en el README afirmaciones que no eran ciertas. También perdí parte del borrador del blog por sobrescribirlo. **Cambio para el sprint 3:** una revisión independiente antes de cada PR, comprobar cada frase de la documentación contra el código y no escribir nunca un archivo sin leerlo entero. |
 | 3 | `v1.0` | Vercel, Deployment Checks, `despliegue.yml`, prueba de humo, `release.yml`, evidencias, JSDoc y entrega | *(al cerrar el sprint)* |
 
 **Tablero de Trello:** [Horizonte](https://trello.com/b/e5RiblPh/horizonte)
@@ -1423,6 +1431,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `readme-pruebas` | Sección «Pruebas y cobertura» del README: pirámide, simulación, e2e, umbral y salidas reales | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/40) |
 | `readme-arquitectura` | Sección «Arquitectura y módulos» del README: diagrama, tabla de módulos, patrones, dependencias inyectadas y JSDoc | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/41) |
 | `ci-paso-2` | Integración continua, paso 2: `Tests` con cobertura y artefacto, trabajo `E2E`, `concurrency` y `permissions` | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/42) |
+| `cierre-sprint-2` | Cierre del sprint 2: entrada del blog, reflexión y repaso de la Definición de Hecho | PR pendiente |
 
 #### *Merge* o *rebase*
 
