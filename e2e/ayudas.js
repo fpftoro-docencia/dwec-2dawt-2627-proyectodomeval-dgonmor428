@@ -60,12 +60,22 @@ export async function iniciarSesion(page, usuario = USUARIO) {
 /**
  * Cierra la sesión con el botón de la cabecera y espera a llegar al inicio de sesión.
  *
- * @param {object} page - La página de Playwright.
+ * El botón está en el HTML desde el principio, pero su oyente lo pone el JavaScript de la página
+ * (`iniciarPaginaPrivada`), en la misma función que escribe el nombre en la cabecera. Por eso,
+ * antes de pulsar, se espera a ver el nombre: en la web publicada los módulos tardan más en llegar
+ * y, sin esta espera, el clic llegaba antes que el oyente y no hacía nada.
+ *
+ * @param {object} page - La página de Playwright, en una página privada.
+ * @param {string} [nombre] - El nombre de quien tiene la sesión (por defecto, `USUARIO.nombre`).
  * @returns {Promise<void>}
  */
-export async function cerrarSesion(page) {
+export async function cerrarSesion(page, nombre = USUARIO.nombre) {
+  await expect(page.getByRole('banner').getByText(nombre)).toBeVisible();
   await page.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(page.getByRole('heading', { name: 'Entrar', exact: true })).toBeVisible();
+  // Lo mismo en index.html: el aviso lo muestra `iniciarEntrar` en la misma función que pone el
+  // oyente `submit` del formulario. Si se ve el aviso, ya se puede enviar el formulario
+  await expect(page.getByText('Has cerrado la sesión.', { exact: false })).toBeVisible();
 }
 
 /**
