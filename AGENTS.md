@@ -376,6 +376,12 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   producción; falta añadir `E2E desplegado` cuando exista. La asignación automática del dominio de
   producción está activada (Settings → Environments → Production). Vercel reconoce cada
   comprobación por el nombre del trabajo: si se cambia en `ci.yml`, hay que elegirla de nuevo.
+- **Pruebas contra lo desplegado** (rama `despliegue-yml`): `.github/workflows/despliegue.yml`, con
+  `on: deployment_status`, trabajo `E2E desplegado` (solo si el estado es `success`) y `npm run e2e`
+  con `BASE_URL` = `github.event.deployment_status.environment_url`. Necesita **deployment_status
+  Events** activado en Vercel (Settings → Git); sin él, Vercel no crea «Deployments» en GitHub y el
+  workflow no se ejecuta nunca. `E2E desplegado` también es un Deployment Check. No se cambia su
+  nombre.
 - La IA no puede hacer clic en los navegadores del alumno (Edge) con el control del escritorio: para
   Vercel se usa el navegador integrado de la app, con la sesión iniciada por el alumno. Los códigos de
   verificación y los inicios de sesión los hace siempre el alumno.

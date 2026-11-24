@@ -1369,6 +1369,24 @@ La **asignación automática del dominio de producción** («Auto-assign Custom 
 Settings → Environments → Production) está activada, que es lo que viene por defecto: es la que
 mueve la dirección de producción a la versión nueva cuando pasa las comprobaciones.
 
+### Pruebas contra lo desplegado (`despliegue.yml`)
+
+Que las pruebas pasen con `serve` no garantiza que la web publicada funcione: puede faltar un fichero
+en `dist/` o una ruta puede comportarse distinto. Por eso `.github/workflows/despliegue.yml` pasa los
+mismos recorridos de Playwright **contra cada despliegue** de Vercel:
+
+| Parte | Qué hace |
+|-------|----------|
+| `on: deployment_status` | Se ejecuta cuando GitHub recibe el estado de un despliegue. Vercel lo envía al construir la vista previa de una *pull request* y la versión de producción de `main`. |
+| Trabajo `E2E desplegado` | Solo corre si `github.event.deployment_status.state` vale `success`: un despliegue pendiente o fallido no tiene dirección que probar. |
+| Pasos | Descargar el código (el commit desplegado), Node.js 24, `npm ci`, instalar Chromium y `npm run e2e`. |
+| `BASE_URL` | Vale `github.event.deployment_status.environment_url`, la dirección del despliegue. Con ella, `playwright.config.js` no arranca `serve`: prueba la web de Vercel. |
+
+**Lo que hizo falta en Vercel.** Al abrir la *pull request* el trabajo no aparecía: Vercel solo
+publicaba el estado del commit, no los «Deployments» de GitHub, y sin ellos no llega el evento
+`deployment_status`. Hubo que activar **deployment_status Events** en Settings → Git del proyecto.
+Después, `E2E desplegado` se añadió a los Deployment Checks, junto a `Calidad`, `Tests` y `E2E`.
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
 | *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
@@ -1478,6 +1496,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `cierre-sprint-2` | Cierre del sprint 2: entrada del blog, reflexión y repaso de la Definición de Hecho | [#43](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/43) |
 | `vercel-publicar` | Sprint 3: la web publicada en Vercel (build, salida y protección) | [#44](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/44) |
 | `deployment-checks` | Sprint 3: Vercel solo publica lo que pasa `Calidad`, `Tests` y `E2E` | [#45](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/45) |
+| `despliegue-yml` | Sprint 3: `despliegue.yml` con `E2E desplegado` contra cada despliegue de Vercel | [#46](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/46) |
 
 #### *Merge* o *rebase*
 
