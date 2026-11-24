@@ -371,6 +371,11 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   la prueba espera a ver algo que ese JavaScript escribe en la misma función (por ejemplo, el nombre
   en la cabecera o un aviso). En la web publicada los módulos tardan más y, sin esa espera, el clic
   llega antes que el oyente (pasó con `cerrarSesion` en `e2e/ayudas.js`).
+- **Deployment Checks** (rama `deployment-checks`): en Vercel, Settings → Build and Deployment →
+  Deployment Checks exige los trabajos de GitHub `Calidad`, `Tests` y `E2E` antes de publicar en
+  producción; falta añadir `E2E desplegado` cuando exista. La asignación automática del dominio de
+  producción está activada (Settings → Environments → Production). Vercel reconoce cada
+  comprobación por el nombre del trabajo: si se cambia en `ci.yml`, hay que elegirla de nuevo.
 - La IA no puede hacer clic en los navegadores del alumno (Edge) con el control del escritorio: para
   Vercel se usa el navegador integrado de la app, con la sesión iniciada por el alumno. Los códigos de
   verificación y los inicios de sesión los hace siempre el alumno.

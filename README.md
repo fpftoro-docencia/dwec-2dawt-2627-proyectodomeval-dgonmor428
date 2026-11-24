@@ -1346,6 +1346,29 @@ no en la web: `cerrarSesion` (`e2e/ayudas.js`) espera a ver algo que escribe el 
 misma función que pone el oyente (el nombre en la cabecera y el aviso «Has cerrado la sesión»)
 antes de seguir.
 
+### Solo se publica lo que pasa (Deployment Checks)
+
+En **Settings → Build and Deployment → Deployment Checks** del proyecto he añadido, como
+comprobaciones de **GitHub**, los tres trabajos del *workflow*: `Calidad`, `Tests` y `E2E`. Las
+importé desde el último commit de `main`, que ya los tenía en verde.
+
+| Comprobación | Qué exige antes de publicar |
+|--------------|-----------------------------|
+| `Calidad` | ESLint y Prettier sin errores |
+| `Tests` | Los tests unitarios y de integración, y el umbral de cobertura |
+| `E2E` | Los dos recorridos de Playwright contra la web servida con `serve` |
+
+Cómo funciona: con cada `push` a `main`, Vercel construye la versión nueva a la vez que se ejecuta
+el *workflow*, pero **no la pone** en la dirección de producción hasta que las tres comprobaciones
+están en verde. Si una falla, esa versión se queda retenida y la web sigue con la anterior. Vercel
+reconoce cada comprobación por el **nombre del trabajo**: por eso los nombres de `ci.yml` no se
+cambian (si se cambiaran, habría que volver a elegirlas aquí). Cuando exista el trabajo
+`E2E desplegado` (tarjeta «Pruebas contra lo desplegado»), se añadirá también.
+
+La **asignación automática del dominio de producción** («Auto-assign Custom Production Domains», en
+Settings → Environments → Production) está activada, que es lo que viene por defecto: es la que
+mueve la dirección de producción a la versión nueva cuando pasa las comprobaciones.
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
 | *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
@@ -1454,6 +1477,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `ci-paso-2` | Integración continua, paso 2: `Tests` con cobertura y artefacto, trabajo `E2E`, `concurrency` y `permissions` | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/42) |
 | `cierre-sprint-2` | Cierre del sprint 2: entrada del blog, reflexión y repaso de la Definición de Hecho | [#43](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/43) |
 | `vercel-publicar` | Sprint 3: la web publicada en Vercel (build, salida y protección) | [#44](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/44) |
+| `deployment-checks` | Sprint 3: Vercel solo publica lo que pasa `Calidad`, `Tests` y `E2E` | PR pendiente |
 
 #### *Merge* o *rebase*
 
