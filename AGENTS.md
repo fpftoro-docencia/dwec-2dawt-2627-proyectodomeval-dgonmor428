@@ -372,8 +372,8 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   en la cabecera o un aviso). En la web publicada los módulos tardan más y, sin esa espera, el clic
   llega antes que el oyente (pasó con `cerrarSesion` en `e2e/ayudas.js`).
 - **Deployment Checks** (rama `deployment-checks`): en Vercel, Settings → Build and Deployment →
-  Deployment Checks exige los trabajos de GitHub `Calidad`, `Tests` y `E2E` antes de publicar en
-  producción; falta añadir `E2E desplegado` cuando exista. La asignación automática del dominio de
+  Deployment Checks exige los trabajos de GitHub `Calidad`, `Tests`, `E2E` y `E2E desplegado` antes
+  de publicar en producción. La asignación automática del dominio de
   producción está activada (Settings → Environments → Production). Vercel reconoce cada
   comprobación por el nombre del trabajo: si se cambia en `ci.yml`, hay que elegirla de nuevo.
 - **Pruebas contra lo desplegado** (rama `despliegue-yml`): `.github/workflows/despliegue.yml`, con

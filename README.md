@@ -1349,21 +1349,22 @@ antes de seguir.
 ### Solo se publica lo que pasa (Deployment Checks)
 
 En **Settings → Build and Deployment → Deployment Checks** del proyecto he añadido, como
-comprobaciones de **GitHub**, los tres trabajos del *workflow*: `Calidad`, `Tests` y `E2E`. Las
-importé desde el último commit de `main`, que ya los tenía en verde.
+comprobaciones de **GitHub**, los trabajos `Calidad`, `Tests` y `E2E` de `ci.yml` (importados desde
+el último commit de `main`, que ya los tenía en verde) y, después, `E2E desplegado` de
+`despliegue.yml` (importado desde el commit de la *pull request* #46, la primera vez que se ejecutó).
 
 | Comprobación | Qué exige antes de publicar |
 |--------------|-----------------------------|
 | `Calidad` | ESLint y Prettier sin errores |
 | `Tests` | Los tests unitarios y de integración, y el umbral de cobertura |
 | `E2E` | Los dos recorridos de Playwright contra la web servida con `serve` |
+| `E2E desplegado` | Los mismos recorridos contra la versión ya desplegada en Vercel |
 
 Cómo funciona: con cada `push` a `main`, Vercel construye la versión nueva a la vez que se ejecuta
-el *workflow*, pero **no la pone** en la dirección de producción hasta que las tres comprobaciones
+el *workflow*, pero **no la pone** en la dirección de producción hasta que las cuatro comprobaciones
 están en verde. Si una falla, esa versión se queda retenida y la web sigue con la anterior. Vercel
-reconoce cada comprobación por el **nombre del trabajo**: por eso los nombres de `ci.yml` no se
-cambian (si se cambiaran, habría que volver a elegirlas aquí). Cuando exista el trabajo
-`E2E desplegado` (tarjeta «Pruebas contra lo desplegado»), se añadirá también.
+reconoce cada comprobación por el **nombre del trabajo**: por eso los nombres de `ci.yml` y
+`despliegue.yml` no se cambian (si se cambiaran, habría que volver a elegirlas aquí).
 
 La **asignación automática del dominio de producción** («Auto-assign Custom Production Domains», en
 Settings → Environments → Production) está activada, que es lo que viene por defecto: es la que
@@ -1377,7 +1378,7 @@ mismos recorridos de Playwright **contra cada despliegue** de Vercel:
 
 | Parte | Qué hace |
 |-------|----------|
-| `on: deployment_status` | Se ejecuta cuando GitHub recibe el estado de un despliegue. Vercel lo envía al construir la vista previa de una *pull request* y la versión de producción de `main`. |
+| `on: deployment_status` | Se ejecuta cuando GitHub recibe el estado de un despliegue. Vercel lo envía cuando termina de construir la vista previa de una *pull request* o la versión de producción de `main`. |
 | Trabajo `E2E desplegado` | Solo corre si `github.event.deployment_status.state` vale `success`: un despliegue pendiente o fallido no tiene dirección que probar. |
 | Pasos | Descargar el código (el commit desplegado), Node.js 24, `npm ci`, instalar Chromium y `npm run e2e`. |
 | `BASE_URL` | Vale `github.event.deployment_status.environment_url`, la dirección del despliegue. Con ella, `playwright.config.js` no arranca `serve`: prueba la web de Vercel. |
