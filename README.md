@@ -10,7 +10,7 @@
 
 **Horizonte** es un diario personal de fotografía y observación de **paisajes, del cielo y del espacio**. Cada usuario guarda sus capturas (un atardecer, una tormenta, una aurora, la Vía Láctea, una nebulosa…) con su lugar, sus coordenadas, sus imágenes y la información de cómo las hizo. El administrador gestiona a los usuarios de la aplicación. Se inspira en Locationscout (paisajes con coordenadas) y AstroBin (astrofotografía).
 
-**Web publicada:** <!-- https://<proyecto>.vercel.app -->
+**Web publicada:** <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app>
 
 ### La entidad
 
@@ -1323,7 +1323,25 @@ falló, así que se omitió. Que no esté es lo esperado.
      3. El camino de un cambio, con tus palabras: desde tu git push en una rama hasta que se ve en
         la web, qué se comprueba en cada paso y qué pasa si algo falla. -->
 
-**Web publicada:** <!-- https://<proyecto>.vercel.app -->
+**Web publicada:** <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app>
+
+### Vercel
+
+| Ajuste | Valor | Por qué |
+|--------|-------|---------|
+| Proyecto | `dwec-2dawt-2627-proyectodomeval-dgonmor428` (plan *Hobby*), importado del repositorio de GitHub | Vercel se conecta con su aplicación de GitHub: no hace falta ningún token ni secreto. |
+| *Framework Preset* | Other | Horizonte no usa ningún *framework*: son páginas HTML, CSS y JavaScript sin librerías. |
+| *Build Command* | `npm run build` | Ejecuta `scripts/construir.js`, que copia a `dist/` las páginas, `css/`, `js/`, `img/` y el CSS de Bootstrap en la misma ruta en la que lo enlazan las páginas. |
+| *Output Directory* | `dist` | Solo se publica lo que deja el *build*: ni los tests ni el resto de `node_modules/`. |
+| *Vercel Authentication* | Desactivada | Con ella, Vercel pide iniciar sesión para ver los despliegues. El repositorio ya es público y Playwright tiene que poder abrir las vistas previas sin cuenta. |
+
+La dirección de producción la eligió Vercel acortando el nombre del proyecto (`…-dgo.vercel.app`).
+Al publicarla comprobé que responden las cinco páginas, el CSS, los módulos de `js/` y Bootstrap.
+Las pruebas e2e contra ella (`BASE_URL=https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app npm
+run e2e`) pasan 7 de 10: las tres que usan «Cerrar sesión» no ven la página de inicio de sesión
+después del clic. La causa más probable es que la prueba pulsa el botón antes de que el JavaScript
+de la página haya terminado de cargar (en local, más rápido, pasan). Se revisa en la tarjeta
+«Pruebas contra lo desplegado».
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
@@ -1432,6 +1450,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `readme-arquitectura` | Sección «Arquitectura y módulos» del README: diagrama, tabla de módulos, patrones, dependencias inyectadas y JSDoc | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/41) |
 | `ci-paso-2` | Integración continua, paso 2: `Tests` con cobertura y artefacto, trabajo `E2E`, `concurrency` y `permissions` | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/42) |
 | `cierre-sprint-2` | Cierre del sprint 2: entrada del blog, reflexión y repaso de la Definición de Hecho | [#43](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/43) |
+| `vercel-publicar` | Sprint 3: la web publicada en Vercel (build, salida y protección) | PR pendiente |
 
 #### *Merge* o *rebase*
 
