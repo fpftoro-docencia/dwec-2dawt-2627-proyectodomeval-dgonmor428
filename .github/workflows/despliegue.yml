@@ -1,0 +1,44 @@
+# Pruebas contra lo desplegado.
+# Que las pruebas pasen con `serve` no garantiza que la web publicada funcione: puede faltar un
+# fichero en dist/ o una ruta puede comportarse distinto. Por eso, cada vez que Vercel termina un
+# despliegue (una vista previa de una pull request o una versión de producción de main), se ejecutan
+# los mismos recorridos de Playwright contra esa dirección.
+name: Despliegue
+
+on:
+  # Vercel avisa a GitHub del estado de cada despliegue: este evento llega con cada cambio de estado
+  deployment_status:
+
+# El workflow solo necesita leer el código
+permissions:
+  contents: read
+
+jobs:
+  e2e-desplegado:
+    name: E2E desplegado
+    # Solo cuando el despliegue ha terminado bien: los estados «pending» o «failure» no tienen una
+    # dirección que probar
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      # Descarga el commit desplegado, así las pruebas son las de esa misma versión
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar las dependencias exactas de package-lock.json
+        run: npm ci
+
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      # Con BASE_URL, playwright.config.js no arranca `serve`: prueba la web desplegada
+      - name: Pasar las pruebas de extremo a extremo contra el despliegue
+        run: npm run e2e
+        env:
+          BASE_URL: ${{ github.event.deployment_status.environment_url }}

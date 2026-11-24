@@ -372,10 +372,16 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   en la cabecera o un aviso). En la web publicada los módulos tardan más y, sin esa espera, el clic
   llega antes que el oyente (pasó con `cerrarSesion` en `e2e/ayudas.js`).
 - **Deployment Checks** (rama `deployment-checks`): en Vercel, Settings → Build and Deployment →
-  Deployment Checks exige los trabajos de GitHub `Calidad`, `Tests` y `E2E` antes de publicar en
-  producción; falta añadir `E2E desplegado` cuando exista. La asignación automática del dominio de
+  Deployment Checks exige los trabajos de GitHub `Calidad`, `Tests`, `E2E` y `E2E desplegado` antes
+  de publicar en producción. La asignación automática del dominio de
   producción está activada (Settings → Environments → Production). Vercel reconoce cada
   comprobación por el nombre del trabajo: si se cambia en `ci.yml`, hay que elegirla de nuevo.
+- **Pruebas contra lo desplegado** (rama `despliegue-yml`): `.github/workflows/despliegue.yml`, con
+  `on: deployment_status`, trabajo `E2E desplegado` (solo si el estado es `success`) y `npm run e2e`
+  con `BASE_URL` = `github.event.deployment_status.environment_url`. Necesita **deployment_status
+  Events** activado en Vercel (Settings → Git); sin él, Vercel no crea «Deployments» en GitHub y el
+  workflow no se ejecuta nunca. `E2E desplegado` también es un Deployment Check. No se cambia su
+  nombre.
 - La IA no puede hacer clic en los navegadores del alumno (Edge) con el control del escritorio: para
   Vercel se usa el navegador integrado de la app, con la sesión iniciada por el alumno. Los códigos de
   verificación y los inicios de sesión los hace siempre el alumno.
