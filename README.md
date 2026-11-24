@@ -1350,18 +1350,17 @@ antes de seguir.
 
 En **Settings → Build and Deployment → Deployment Checks** del proyecto he añadido, como
 comprobaciones de **GitHub**, los trabajos `Calidad`, `Tests` y `E2E` de `ci.yml` (importados desde
-el último commit de `main`, que ya los tenía en verde) y, después, `E2E desplegado` de
-`despliegue.yml` (importado desde el commit de la *pull request* #46, la primera vez que se ejecutó).
+el último commit de `main`, que ya los tenía en verde). `E2E desplegado` estuvo en la lista y se
+quitó: ver «Por qué `E2E desplegado` no es un Deployment Check» más abajo.
 
 | Comprobación | Qué exige antes de publicar |
 |--------------|-----------------------------|
 | `Calidad` | ESLint y Prettier sin errores |
 | `Tests` | Los tests unitarios y de integración, y el umbral de cobertura |
 | `E2E` | Los dos recorridos de Playwright contra la web servida con `serve` |
-| `E2E desplegado` | Los mismos recorridos contra la versión ya desplegada en Vercel |
 
 Cómo funciona: con cada `push` a `main`, Vercel construye la versión nueva a la vez que se ejecuta
-el *workflow*, pero **no la pone** en la dirección de producción hasta que las cuatro comprobaciones
+el *workflow*, pero **no la pone** en la dirección de producción hasta que las tres comprobaciones
 están en verde. Si una falla, esa versión se queda retenida y la web sigue con la anterior. Vercel
 reconoce cada comprobación por el **nombre del trabajo**: por eso los nombres de `ci.yml` y
 `despliegue.yml` no se cambian (si se cambiaran, habría que volver a elegirlas aquí).
@@ -1386,7 +1385,20 @@ mismos recorridos de Playwright **contra cada despliegue** de Vercel:
 **Lo que hizo falta en Vercel.** Al abrir la *pull request* el trabajo no aparecía: Vercel solo
 publicaba el estado del commit, no los «Deployments» de GitHub, y sin ellos no llega el evento
 `deployment_status`. Hubo que activar **deployment_status Events** en Settings → Git del proyecto.
-Después, `E2E desplegado` se añadió a los Deployment Checks, junto a `Calidad`, `Tests` y `E2E`.
+Con eso, en la *pull request* #46 apareció `E2E desplegado` y pasó contra la dirección propia de la
+vista previa (10 de 10).
+
+**Por qué `E2E desplegado` no es un Deployment Check.** El enunciado pide que, en `main`,
+`E2E desplegado` pase contra la versión nueva antes de que Vercel la publique, y lo añadí a los
+Deployment Checks. Al fusionar la *pull request* #46, la versión de producción (`d95fa0a`) se quedó
+en «Running Checks»: para producción, Vercel no crea el «Deployment» de GitHub mientras espera las
+comprobaciones, así que el evento `deployment_status` no llega, `E2E desplegado` no se ejecuta y la
+comprobación no llega nunca. Era un bloqueo circular: nada nuevo de `main` se habría publicado. Lo
+quité de los Deployment Checks, y la producción vuelve a publicarse con `Calidad`, `Tests` y `E2E`.
+`E2E desplegado` sigue probando **cada vista previa** de las *pull requests*, que es la web tal como
+quedará. Lo que no cumple es la parte de «en `main`, antes de publicar». La alternativa que propone
+Vercel para eso son sus eventos `repository_dispatch`, pero se aparta de `deployment_status`, que es
+lo que pide el enunciado; queda pendiente de consultarlo con el profesor.
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
@@ -1498,6 +1510,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `vercel-publicar` | Sprint 3: la web publicada en Vercel (build, salida y protección) | [#44](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/44) |
 | `deployment-checks` | Sprint 3: Vercel solo publica lo que pasa `Calidad`, `Tests` y `E2E` | [#45](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/45) |
 | `despliegue-yml` | Sprint 3: `despliegue.yml` con `E2E desplegado` contra cada despliegue de Vercel | [#46](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/46) |
+| `e2e-desplegado-sin-check` | Sprint 3: `E2E desplegado` fuera de los Deployment Checks (bloqueaba la producción) | [#47](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/47) |
 
 #### *Merge* o *rebase*
 
