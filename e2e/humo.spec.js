@@ -16,7 +16,7 @@ test('la web responde y muestra el inicio de sesión', async ({ page }) => {
   const respuesta = await page.goto('/index.html');
   expect(respuesta?.ok()).toBe(true);
 
-  await expect(page).toHaveTitle('Horizonte · ROTO A PROPÓSITO para la evidencia');
+  await expect(page).toHaveTitle('Horizonte · Tu diario de paisajes, cielo y espacio');
 
   // El formulario de inicio de sesión, tal como lo vería un usuario
   await expect(page.getByRole('heading', { name: 'Entrar', exact: true })).toBeVisible();
