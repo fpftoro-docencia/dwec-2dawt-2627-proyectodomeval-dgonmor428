@@ -1146,8 +1146,10 @@ All files       |     100 |      100 |     100 |     100 |
 ----------------|---------|----------|---------|---------|-------------------
 ```
 
-**El umbral.** En `vitest.config.js` está `thresholds: { lines: 90 }`: al menos el **90 % de las
-líneas**, que es lo que pide el enunciado. Si no se llega, `npm run coverage` termina con error.
+**El umbral.** El enunciado pide al menos el **90 % de las líneas**. En `vitest.config.js` está
+`thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 }`: lo cumple y es más
+estricto (al principio era `lines: 90`; lo subí al ver la limitación de más abajo). Si no se llega,
+`npm run coverage` termina con error.
 El trabajo `Tests` de `ci.yml` ejecuta `npm run coverage` (paso 2 de la integración continua), así
 que un umbral incumplido hace fallar el trabajo `Tests`. GitHub no impide fusionar por sí solo (la
 rama `main` no tiene protección); la norma del proyecto es no fusionar una *pull request* con una
@@ -1156,10 +1158,25 @@ comprobación en rojo, y en el sprint 3 Vercel también usará `Tests` como comp
 Comprobé que el umbral funciona: con `--coverage.thresholds.lines=101` la orden falla con «Coverage
 for lines (100%) does not meet global threshold (101%)».
 
-**Una limitación.** El umbral detecta una caída grande de cobertura, no la falta de un caso
-concreto. Quitando entero `tests/unitarios/validadores-captura.test.js` (97 tests), `coverage`
-sigue pasando (97,72 % de líneas en `validadores.js`), porque los tests de integración de la ficha
-también ejecutan esos validadores: la cobertura cuenta todos los tests juntos.
+**Una limitación, medida.** La cobertura cuenta **todos los tests juntos**, y los tests de
+integración (registro, ficha, listado, usuarios) también ejecutan los validadores y `paginar`.
+Contando solo los de integración, `validadores.js` queda en 97,72 % de líneas y 96,42 % de ramas, y
+`paginar.js` en 85,71 % y 83,33 %: lo único que no cubren es el código de observatorio vacío
+(`validarObservatorio`) y el `RangeError` de un `porPagina` no válido. Con el umbral al 100 % probé a
+quitar casos de los tests unitarios, uno a uno (46 pruebas y 23 tablas enteras):
+
+| Qué se quita | ¿Falla `npm run coverage`? |
+|--------------|----------------------------|
+| La fila del código de observatorio vacío (`validadores-captura.test.js`) | Sí |
+| El test del `RangeError` de `porPagina` (`paginar.test.js`) | Sí |
+| Cualquier otro caso de cualquier validador o de `paginar`, o incluso tablas enteras | No: los tests de integración pasan por las mismas líneas y ramas |
+
+Así que la comprobación del enunciado («quita un caso de los tests de un validador: `npm run
+coverage` falla por el umbral») se cumple para esos dos casos, no para todos. La cobertura mide qué
+código se **ejecuta**, no qué se **comprueba**: los casos de los tests unitarios siguen siendo los que
+fijan los mensajes y los límites exactos de cada validador. Que fallara con cualquier caso exigiría
+que `npm run coverage` contara solo los tests unitarios, y eso es cambiar el script o pasar menos
+tests, que el enunciado no permite.
 
 **A qué ficheros se aplica y por qué solo a ellos.** El `include` es
 `['js/validadores.js', 'js/paginar.js']`: las **funciones puras** (reciben un valor y devuelven
@@ -1296,7 +1313,7 @@ salido bien (`needs`).
 | `if: failure()` en el informe de Playwright | Solo se sube si un paso anterior del trabajo ha fallado: el informe ayuda a ver qué pasó, y si todo va bien no hay nada que guardar. |
 
 **El umbral de cobertura ahora cuenta.** `Tests` ejecuta `npm run coverage` en lugar de
-`npm test`, así que el umbral del 90 % de líneas de `vitest.config.js` pone el trabajo en rojo si no
+`npm test`, así que el umbral de `vitest.config.js` (100 %) pone el trabajo en rojo si no
 se alcanza. `main` no tiene protección de rama en GitHub: que una *pull request* con una
 comprobación en rojo no se fusione es una norma del proyecto (`AGENTS.md`, sección 4), y en el
 sprint 3 Vercel también usará estas comprobaciones. Con la salvedad de la subsección
@@ -1465,7 +1482,10 @@ el guardado de una captura, no lo vería (eso lo cubren las demás pruebas e2e).
 **la web publicada**, no el *commit* del *tag*. Por eso el *tag* se pone en un *commit* de `main` que
 ya está publicado: si no, `Humo` probaría una versión distinta a la que se va a empaquetar.
 
-Se probará con el *tag* intermedio `v0.9`. Prueba con `v0.9`: pendiente.
+Probado con el *tag* intermedio `v0.9` (sobre el commit `9bf29c2` de `main`, ya publicado por
+Vercel): los tres trabajos en verde y la Release
+[`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9)
+publicada con `v0.9.zip` adjunto y sus notas generadas. La Release `v1.0` será la de la entrega.
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
@@ -1582,6 +1602,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `e2e-desplegado-antes` | Sprint 3: `E2E desplegado` contra producción antes de publicar (`repository_dispatch`) | [#49](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/49) |
 | `e2e-desplegado-antes-docs` | Sprint 3: documentación de la solución y prueba de la retención con cuatro comprobaciones | [#50](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/50) |
 | `prueba-humo-release` | Sprint 3: prueba de humo (`e2e/humo.spec.js`) y `release.yml` (Comprobar, Humo y Release) | [#51](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/51) |
+| `umbral-cobertura-100` | Umbral de cobertura al 100 % (líneas, ramas, funciones y sentencias) y su limitación medida; resultado de la Release `v0.9` | PR pendiente |
 
 #### *Merge* o *rebase*
 

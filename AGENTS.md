@@ -65,7 +65,7 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   que es sintaxis de TypeScript y rompe `npm run docs`). Si se cambia un comentario JSDoc, comprobar que
   `npm run docs` sigue sin errores.
 - **Integración continua:** `.github/workflows/ci.yml` ejecuta tres trabajos en cada `push` y cada PR
-  a `main`: `Calidad` (lint y formato), `Tests` (`npm run coverage`: tests y umbral del 90 %; sube la
+  a `main`: `Calidad` (lint y formato), `Tests` (`npm run coverage`: tests y umbral del 100 %; sube la
   carpeta `coverage/` como artefacto `cobertura`, aunque falle) y `E2E` (Playwright con Chromium; sube
   `playwright-report/` solo si falla). Cada uno espera al anterior (`needs`). Lleva
   `permissions: contents: read` y `concurrency` (una ejecución por rama, cancela la anterior). Una PR
@@ -250,7 +250,7 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   - **El primer usuario registrado es administrador** (`js/usuarios.js`): con el almacenamiento
     vacío, quien se registra en cada test ve «Usuarios».
   - **Cobertura** (`vitest.config.js`): mide solo `js/validadores.js` y `js/paginar.js` (las
-    funciones puras) con un umbral del 90 % de líneas. Si no se llega, `npm run coverage` falla.
+    funciones puras) con un umbral del 100 % (líneas, ramas, funciones y sentencias; el enunciado pide al menos el 90 % de líneas). Si no se llega, `npm run coverage` falla.
     El resto de `js/` se prueba con los tests de integración, pero no cuenta para el umbral.
     Para el doble testeo de otro módulo se pasa en la orden, por ejemplo
     `npm run coverage -- --coverage.include=js/capturas.js` (el script es `vitest run --coverage`).
@@ -396,15 +396,17 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   Vercel se usa el navegador integrado de la app, con la sesión iniciada por el alumno. Los códigos de
   verificación y los inicios de sesión los hace siempre el alumno.
 - La sección «Pruebas y cobertura» del README está escrita (rama `readme-pruebas`). **Aviso:** la
-  cobertura cuenta todos los tests juntos, así que quitar un caso de los tests de un validador no
-  baja del 90 % (los tests de integración de la ficha ejecutan los mismos validadores).
+  cobertura cuenta todos los tests juntos. Con el umbral al 100 % (rama `umbral-cobertura-100`),
+  quitar un caso de los tests unitarios solo hace fallar `coverage` si es el código de observatorio
+  vacío o el `RangeError` de `paginar` (lo único que no cubren los tests de integración); medido con
+  46 pruebas. Es una limitación de la medida, explicada en el README («Cobertura»).
 - La sección «Arquitectura y módulos» del README está escrita (rama `readme-arquitectura`): diagrama
   Mermaid, tabla de los 19 módulos, patrones y JSDoc. Si cambian los `import` o los `export`, hay que
   actualizarla. Las funciones puras exportadas llevan `@example` (lo pide el enunciado).
 - **Prueba de humo y Release** (rama `prueba-humo-release`): `e2e/humo.spec.js` y
   `.github/workflows/release.yml` (al subir un tag `v*`: `Comprobar`, `Humo` contra la web publicada
   y `Release` con el zip de `dist/`). `Humo` prueba la web publicada, no el commit del tag: el tag se
-  pone en un commit de `main` ya publicado. Pendiente: probarlo con el tag `v0.9`. Además, Vitest
+  pone en un commit de `main` ya publicado. Probado con el tag `v0.9`: los tres trabajos en verde y la Release publicada con `v0.9.zip`. Además, Vitest
   (`exclude`) y ESLint (`ignores`) ignoran `.claude/`, donde están las copias de trabajo de los
   subagentes: Vitest las recogía y rompía `npm test`.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
