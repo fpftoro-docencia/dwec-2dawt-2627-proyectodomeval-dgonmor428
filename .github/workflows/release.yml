@@ -1,0 +1,108 @@
+# Publicación de una versión.
+# Al subir un tag que empiece por `v` (por ejemplo, `v1.0`), se comprueba el código, se hace una
+# prueba de humo contra la web publicada y, solo si todo va bien, se crea la Release de GitHub con
+# el zip de dist/ adjunto.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+# Crear la Release escribe en el repositorio (es lo único que necesita más que leer)
+permissions:
+  contents: write
+
+jobs:
+  # 1. El código del tag cumple las comprobaciones de calidad y los tests pasan
+  comprobar:
+    name: Comprobar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar las dependencias exactas de package-lock.json
+        run: npm ci
+
+      - name: Pasar ESLint
+        run: npm run lint
+
+      - name: Comprobar el formato con Prettier
+        run: npm run format:check
+
+      - name: Pasar los tests
+        run: npm test
+
+  # 2. La web publicada está viva (prueba de humo, solo e2e/humo.spec.js)
+  humo:
+    name: Humo
+    needs: comprobar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar las dependencias exactas de package-lock.json
+        run: npm ci
+
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      # La dirección de producción no es un secreto (la web es pública), así que se escribe aquí
+      # con `env`. Con BASE_URL, playwright.config.js no arranca `serve`: prueba la web publicada.
+      # Ojo: prueba lo que hay publicado, no el commit del tag. Por eso el tag se pone en un commit
+      # de main que Vercel ya ha publicado (con sus Deployment Checks en verde)
+      - name: Pasar la prueba de humo contra la web publicada
+        run: npx playwright test e2e/humo.spec.js
+        env:
+          BASE_URL: https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app
+
+  # 3. Se construye la web y se publica la Release con el zip adjunto
+  release:
+    name: Release
+    needs: humo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar las dependencias exactas de package-lock.json
+        run: npm ci
+
+      - name: Construir la web en dist/
+        run: npm run build
+
+      # El zip se llama como la versión (v1.0.zip). Se entra en dist/ antes de comprimir para que
+      # el zip lleve los archivos en la raíz y no una carpeta dist/ por delante.
+      # El nombre del tag pasa por una variable de entorno, no dentro del script, para que un tag
+      # con caracteres raros no pueda ejecutar órdenes
+      - name: Comprimir dist/ en un zip con el nombre de la versión
+        run: (cd dist && zip -r "../$VERSION.zip" .)
+        env:
+          VERSION: ${{ github.ref_name }}
+
+      # `gh` necesita un token: GitHub crea `github.token` en cada ejecución y caduca al terminar,
+      # así que no hay que guardarlo en ningún sitio. --generate-notes saca las notas de los commits
+      - name: Crear la Release con el zip adjunto
+        run: gh release create "$VERSION" "$VERSION.zip" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.ref_name }}

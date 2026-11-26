@@ -3,7 +3,9 @@ import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'happy-dom',
-    exclude: [...configDefaults.exclude, 'e2e/**'], // las pruebas de e2e/ son de Playwright
+    // las pruebas de e2e/ son de Playwright; .claude/ tiene las copias de trabajo (worktrees) de los
+    // subagentes, que repiten todo el proyecto
+    exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],
     // `npm run coverage` mide la cobertura (requisito 21 del enunciado)
     coverage: {
       provider: 'v8',

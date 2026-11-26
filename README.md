@@ -967,7 +967,7 @@ Hay tres niveles de prueba, de más pequeño a más grande: **unitarios** (una f
 solo), de **integración** (una página real con sus módulos, en un navegador simulado) y de
 **extremo a extremo** o e2e (la web de verdad, en un navegador de verdad). Cuanto más abajo, más
 rápidas y precisas son las pruebas; cuanto más arriba, más se parecen a lo que hace una persona.
-En total hay **733 tests de Vitest en 24 archivos** (378 unitarios y 355 de integración) y **10 e2e**
+En total hay **733 tests de Vitest en 24 archivos** (378 unitarios y 355 de integración) y **11 e2e**
 de Playwright.
 
 ### La pirámide
@@ -1000,6 +1000,7 @@ de Playwright.
 | Integración | `tests/integracion/ejemplo.test.js` | Un formulario mínimo (ejemplo de la plantilla, ver abajo) | 2 |
 | e2e | `e2e/sesion.spec.js` | Registrarse, cerrar sesión y volver a entrar, contraseña incorrecta, protección del listado | 5 |
 | e2e | `e2e/capturas.spec.js` | Alta, ficha incompleta, edición, cancelar el borrado y borrar | 5 |
+| e2e | `e2e/humo.spec.js` | Prueba de humo: `/index.html` responde, con su título y el formulario de entrar | 1 |
 
 **Los dos ejemplos de la plantilla.** `tests/unitarios/ejemplo.test.js` comprueba `resumirClave`
 (`js/clave.js`, que no se puede modificar) con una tabla `it.each` y comprueba que la misma
@@ -1195,26 +1196,27 @@ solo mide los dos ficheros de la tabla.
 
 ### Pruebas e2e: salida real
 
-Salida de `npm run e2e` (Chromium, 2 trabajadores en paralelo, con `serve` en el puerto 3901):
+Salida de `npm run e2e` (Chromium, con `serve` en el puerto 3901):
 
 ```text
 > mi-aplicacion@1.0.0 e2e
 > playwright test
 
-Running 10 tests using 2 workers
+Running 11 tests using 3 workers
 
-  ✓   1 [chromium] › e2e/sesion.spec.js:8:3 › Sesión › la primera persona que se registra es administradora y ve «Usuarios» (398ms)
-  ✓   3 [chromium] › e2e/sesion.spec.js:18:3 › Sesión › se cierra la sesión y se vuelve a entrar con los mismos datos (679ms)
-  ✓   4 [chromium] › e2e/sesion.spec.js:29:3 › Sesión › con una contraseña incorrecta no se entra y se avisa sin decir cuál falla (483ms)
-  ✓   2 [chromium] › e2e/capturas.spec.js:17:3 › Capturas (CRUD) › una captura nueva aparece en el listado y sigue ahí al recargar (1.6s)
-  ✓   5 [chromium] › e2e/sesion.spec.js:43:3 › Sesión › sin sesión, el listado lleva a la página de inicio de sesión (175ms)
-  ✓   6 [chromium] › e2e/capturas.spec.js:33:3 › Capturas (CRUD) › una ficha incompleta no se guarda y marca los errores (497ms)
-  ✓   7 [chromium] › e2e/sesion.spec.js:50:3 › Sesión › tras cerrar la sesión, el listado vuelve a estar protegido (507ms)
-  ✓   8 [chromium] › e2e/capturas.spec.js:42:3 › Capturas (CRUD) › al editar una captura se ven los cambios, también tras recargar (2.6s)
-  ✓   9 [chromium] › e2e/capturas.spec.js:58:3 › Capturas (CRUD) › cancelar el diálogo de borrado conserva la captura (1.5s)
-  ✓  10 [chromium] › e2e/capturas.spec.js:74:3 › Capturas (CRUD) › al borrar con confirmación la captura desaparece, también tras recargar (1.5s)
+  ✓   1 [chromium] › e2e/humo.spec.js:14:1 › la web responde y muestra el inicio de sesión (318ms)
+  ✓   3 [chromium] › e2e/sesion.spec.js:8:3 › Sesión › la primera persona que se registra es administradora y ve «Usuarios» (513ms)
+  ✓   4 [chromium] › e2e/sesion.spec.js:18:3 › Sesión › se cierra la sesión y se vuelve a entrar con los mismos datos (596ms)
+  ✓   5 [chromium] › e2e/sesion.spec.js:29:3 › Sesión › con una contraseña incorrecta no se entra y se avisa sin decir cuál falla (597ms)
+  ✓   2 [chromium] › e2e/capturas.spec.js:17:3 › Capturas (CRUD) › una captura nueva aparece en el listado y sigue ahí al recargar (1.9s)
+  ✓   6 [chromium] › e2e/sesion.spec.js:43:3 › Sesión › sin sesión, el listado lleva a la página de inicio de sesión (187ms)
+  ✓   7 [chromium] › e2e/capturas.spec.js:33:3 › Capturas (CRUD) › una ficha incompleta no se guarda y marca los errores (404ms)
+  ✓   8 [chromium] › e2e/sesion.spec.js:50:3 › Sesión › tras cerrar la sesión, el listado vuelve a estar protegido (544ms)
+  ✓   9 [chromium] › e2e/capturas.spec.js:42:3 › Capturas (CRUD) › al editar una captura se ven los cambios, también tras recargar (2.5s)
+  ✓  10 [chromium] › e2e/capturas.spec.js:58:3 › Capturas (CRUD) › cancelar el diálogo de borrado conserva la captura (1.5s)
+  ✓  11 [chromium] › e2e/capturas.spec.js:74:3 › Capturas (CRUD) › al borrar con confirmación la captura desaparece, también tras recargar (1.5s)
 
-  10 passed (11.4s)
+  11 passed (11.6s)
 ```
 
 ## Integración continua
@@ -1415,6 +1417,55 @@ vista previa (10 de 10).
 Así queda: en las *pull requests*, `E2E desplegado` prueba la vista previa; en `main`, prueba la
 versión nueva **antes** de que Vercel la publique, y si falla, la versión se queda retenida.
 
+### Prueba de humo y Release (`release.yml`)
+
+Una **prueba de humo** (*smoke test*) es una prueba muy corta que solo comprueba que lo publicado
+«está vivo». El nombre viene de la electrónica: se enciende el aparato y se mira si sale humo. No
+prueba ninguna funcionalidad (para eso están `e2e/sesion.spec.js` y `e2e/capturas.spec.js`). Al ser
+tan corta, tiene pocos motivos para fallar por otra cosa.
+
+`e2e/humo.spec.js` tiene un test, «la web responde y muestra el inicio de sesión», que comprueba:
+
+- que `/index.html` responde con un código correcto (`respuesta.ok()`);
+- que el título de la página es «Horizonte · Tu diario de paisajes, cielo y espacio»;
+- que se ven el encabezado «Entrar», los campos «Nombre de usuario» y «Contraseña» y el botón
+  «Entrar en mi diario».
+
+Es de **solo lectura**: no registra usuarios ni toca el almacenamiento, así que no cambia nada en la
+web publicada. Abre `/index.html` y no `/` porque con `serve` la raíz muestra un listado de carpetas,
+no la página de inicio. La dirección es relativa para valer con `serve` y con `BASE_URL`.
+
+`.github/workflows/release.yml` publica una versión cuando se sube un *tag*:
+
+| Parte | Qué hace |
+|-------|----------|
+| `on: push: tags: ['v*']` | Se ejecuta al subir un *tag* que empiece por `v` (`v0.9`, `v1.0`…). |
+| `permissions: contents: write` | Crear la Release escribe en el repositorio; es lo único que necesita más que leer. |
+
+| Trabajo | Espera a | Pasos |
+|---------|----------|-------|
+| `Comprobar` | Nada (es el primero) | Descargar el código, Node.js 24 con caché, `npm ci`, `npm run lint`, `npm run format:check` y `npm test`. |
+| `Humo` | `Comprobar` (`needs`) | Descargar el código, Node.js 24, `npm ci`, instalar Chromium y `npx playwright test e2e/humo.spec.js` con `BASE_URL` = <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app>. |
+| `Release` | `Humo` (`needs`) | Descargar el código, Node.js 24, `npm ci`, `npm run build`, comprimir `dist/` en `<versión>.zip` y `gh release create "$VERSION" "$VERSION.zip" --generate-notes`. |
+
+Detalles que conviene saber:
+
+- La `BASE_URL` de producción está escrita en el *workflow* con `env`: no es un secreto, la web es
+  pública. Con `BASE_URL`, `playwright.config.js` no arranca `serve`: prueba la web publicada.
+- El zip se llama como el *tag* (`github.ref_name`, por ejemplo `v1.0.zip`). Se entra en `dist/`
+  antes de comprimir (`cd dist && zip -r "../$VERSION.zip" .`) para que los archivos queden en la
+  raíz del zip, sin una carpeta `dist/` por delante. El nombre del *tag* pasa por la variable de
+  entorno `VERSION`, no dentro del *script*.
+- `gh` necesita un *token*: se le da en `GH_TOKEN` con `${{ github.token }}`, que GitHub crea en
+  cada ejecución y caduca al terminar, así que no hay que guardarlo en ningún sitio.
+  `--generate-notes` saca las notas de la Release de los *commits*.
+
+**Lo que no detecta.** La prueba de humo solo mira el HTML de inicio: si se rompiera, por ejemplo,
+el guardado de una captura, no lo vería (eso lo cubren las demás pruebas e2e). Además, `Humo` prueba
+**la web publicada**, no el *commit* del *tag*. Por eso el *tag* se pone en un *commit* de `main` que
+ya está publicado: si no, `Humo` probaría una versión distinta a la que se va a empaquetar.
+
+Se probará con el *tag* intermedio `v0.9`. Prueba con `v0.9`: pendiente.
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
@@ -1530,6 +1581,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `e2e-desplegado-produccion` | Sprint 3: `E2E desplegado` también corre en producción, después de publicar | [#48](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/48) |
 | `e2e-desplegado-antes` | Sprint 3: `E2E desplegado` contra producción antes de publicar (`repository_dispatch`) | [#49](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/49) |
 | `e2e-desplegado-antes-docs` | Sprint 3: documentación de la solución y prueba de la retención con cuatro comprobaciones | [#50](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/50) |
+| `prueba-humo-release` | Sprint 3: prueba de humo (`e2e/humo.spec.js`) y `release.yml` (Comprobar, Humo y Release) | [#51](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/51) |
 
 #### *Merge* o *rebase*
 

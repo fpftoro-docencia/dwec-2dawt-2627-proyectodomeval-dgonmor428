@@ -239,7 +239,9 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   - `e2e/sesion.spec.js` (5 tests): registrarse como primer usuario, cerrar sesión y volver a
     entrar, contraseña incorrecta y protección del listado sin sesión. `e2e/capturas.spec.js`
     (5 tests): alta, ficha incompleta, edición, cancelar el borrado y borrar con confirmación,
-    comprobando siempre tras `reload` que lo guardado sigue ahí. Se borró `e2e/ejemplo.spec.js`
+    comprobando siempre tras `reload` que lo guardado sigue ahí. `e2e/humo.spec.js` (1 test): la
+    prueba de humo, de solo lectura (abre `/index.html`, no `/`, porque con `serve` la raíz es un
+    listado de carpetas); la usa `release.yml`. En total, 11 tests e2e. Se borró `e2e/ejemplo.spec.js`
     (la plantilla, cuyo comentario decía sustituirlo).
   - **Reglas:** localizadores como los vería un usuario (`getByRole`, `getByLabel`, `getByText`),
     nunca selectores de CSS; rutas relativas (`/registro.html`) para que valgan con `BASE_URL`;
@@ -399,5 +401,11 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - La sección «Arquitectura y módulos» del README está escrita (rama `readme-arquitectura`): diagrama
   Mermaid, tabla de los 19 módulos, patrones y JSDoc. Si cambian los `import` o los `export`, hay que
   actualizarla. Las funciones puras exportadas llevan `@example` (lo pide el enunciado).
+- **Prueba de humo y Release** (rama `prueba-humo-release`): `e2e/humo.spec.js` y
+  `.github/workflows/release.yml` (al subir un tag `v*`: `Comprobar`, `Humo` contra la web publicada
+  y `Release` con el zip de `dist/`). `Humo` prueba la web publicada, no el commit del tag: el tag se
+  pone en un commit de `main` ya publicado. Pendiente: probarlo con el tag `v0.9`. Además, Vitest
+  (`exclude`) y ESLint (`ignores`) ignoran `.claude/`, donde están las copias de trabajo de los
+  subagentes: Vitest las recogía y rompía `npm test`.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
