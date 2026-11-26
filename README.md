@@ -1336,12 +1336,6 @@ falló, así que se omitió. Que no esté es lo esperado.
 
 ## Despliegue continuo
 
-<!-- Sprint 3. 1. Cómo has configurado Vercel: build, carpeta de salida, protección de los
-        despliegues y Deployment Checks (qué comprobaciones exige y por qué).
-     2. Qué hacen despliegue.yml y release.yml, y qué comprueba tu prueba de humo.
-     3. El camino de un cambio, con tus palabras: desde tu git push en una rama hasta que se ve en
-        la web, qué se comprueba en cada paso y qué pasa si algo falla. -->
-
 **Web publicada:** <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app>
 
 ### Vercel
@@ -1376,8 +1370,8 @@ el último commit de `main`, que ya los tenía en verde) y `E2E desplegado` de `
 |--------------|-----------------------------|
 | `Calidad` | ESLint y Prettier sin errores |
 | `Tests` | Los tests unitarios y de integración, y el umbral de cobertura |
-| `E2E` | Los dos recorridos de Playwright contra la web servida con `serve` |
-| `E2E desplegado` | Los mismos recorridos contra la versión nueva ya desplegada en Vercel, antes de publicarla |
+| `E2E` | Las 11 pruebas de Playwright (sesión, CRUD de capturas y humo) contra la web servida con `serve` |
+| `E2E desplegado` | Las mismas pruebas contra la versión nueva ya desplegada en Vercel, antes de publicarla |
 
 Cómo funciona: con cada `push` a `main`, Vercel construye la versión nueva a la vez que se ejecuta
 el *workflow*, pero **no la pone** en la dirección de producción hasta que las cuatro comprobaciones
@@ -1487,14 +1481,106 @@ Vercel): los tres trabajos en verde y la Release
 [`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9)
 publicada con `v0.9.zip` adjunto y sus notas generadas. La Release `v1.0` será la de la entrega.
 
+### Evidencias
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
-| *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
-| Versión retenida por Vercel | <!-- enlace a la ejecución en rojo --> | `img/vercel-retenido.png` |
-| Release `v1.0` | <!-- enlace a la Release --> | — |
+| Web publicada | <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app> | — |
+| *Pull request* con su vista previa y `E2E desplegado` | [#52](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/52) | `img/pr-comprobaciones.png` |
+| Versión retenida por Vercel | [`Integración continua` en rojo](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45848616296) y [`Despliegue` en rojo](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45848638591) | `img/vercel-retenido.png` |
+| Release `v1.0` | Pendiente: se publica en la entrega final (la prueba con la [`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9) ya está hecha) | — |
 
-<!-- Qué rompiste a propósito para la versión retenida, qué viste en Vercel y cómo comprobaste que la
-     web seguía con la versión anterior. -->
+#### 1. La web publicada
+
+<https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app>
+
+#### 2. *Pull request* con su vista previa
+
+- *Pull request*:
+  [#52](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/52).
+- Vista previa (la que publica Vercel en su comentario):
+  <https://dwec-2dawt-2627-proyectodomeval-git-705854-dgonmor428s-projects.vercel.app>.
+- En su último commit (`91c6851`), `E2E desplegado` se ejecutó contra la dirección propia de ese
+  despliegue,
+  <https://dwec-2dawt-2627-proyectodomeval-dgonmor428-j9fao7rc9.vercel.app>, y pasaron 11 de 11.
+
+![Pestaña Checks de la pull request #52: Calidad, Tests, E2E y E2E desplegado en verde, y el check
+de Vercel](img/pr-comprobaciones.png)
+
+#### 3. Versión retenida
+
+**Qué rompí.** En la *pull request*
+[#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)
+cambié el título que espera `e2e/humo.spec.js`: en lugar del título real de la página puse
+«Horizonte · ROTO A PROPÓSITO para la evidencia». La web no cambió; lo que falla es la prueba, que
+ya no encuentra el título que espera. Es la **única vez** que he fusionado en rojo, y lo hice a
+propósito porque el enunciado lo pide para esta evidencia.
+
+**Qué pasó en `main`** (commit de fusión `028781e`):
+
+1. `Integración continua` salió en rojo: falla `E2E`
+   ([ejecución](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45848616296)).
+2. `Despliegue`, lanzado por `repository_dispatch`, también salió en rojo: `E2E desplegado` falla
+   contra la versión retenida
+   ([ejecución](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45848638591)).
+3. Vercel marcó ese despliegue como «Checks Failed» y **no lo publicó**: la producción siguió en
+   `c92fd46` (la fusión de la #52), que es la que lleva el distintivo azul «Production».
+
+Cómo sé que no se publicó, si la web se ve igual (la rotura solo tocaba una prueba): en Vercel, el
+distintivo «Production» siguió en `c92fd46` (la captura), y en GitHub el «Deployment» de producción
+de `028781e` quedó en `failure` («Checks for Deployment have failed»).
+
+![Lista de despliegues de Vercel: «Merge pull request #53» (028781e) en Checks Failed y la
+producción actual en c92fd46](img/vercel-retenido.png)
+
+**Cómo lo deshice.** La *pull request*
+[#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)
+revierte la #53. En `main` (`2dbac8f`) volvió todo a verde
+([`Integración continua`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45849616380)
+y
+[`Despliegue`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45849636242))
+y Vercel la publicó unos 90 segundos después de fusionar, en cuanto estuvieron en verde las cuatro
+comprobaciones.
+
+#### 4. Release `v1.0`
+
+Pendiente: se publica en la entrega final. Ya he probado el proceso con la
+[`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9).
+
+#### 5. El camino de un cambio
+
+Así viaja un cambio mío desde mi ordenador hasta la web publicada, y qué se comprueba en cada paso.
+
+1. **Rama y `push`.** Trabajo en una rama propia y la subo con `git push`. Nunca empujo a `main`.
+2. **Pull request.** Abro una *pull request* hacia `main`. Vercel construye una vista previa con
+   cada `push` a la rama (haya *pull request* o no); lo que arranca la *pull request* es la
+   integración continua. Así que pasan dos cosas a la vez.
+3. **Integración continua en GitHub.** `ci.yml` ejecuta `Calidad` (ESLint y Prettier), `Tests`
+   (tests y umbral de cobertura) y `E2E` (Playwright con `serve`), uno detrás de otro.
+4. **Vercel construye la vista previa.** A la vez, Vercel hace `npm run build` y publica esa versión
+   en una dirección propia, distinta de la de producción.
+5. **`E2E desplegado` contra la vista previa.** Al terminar la vista previa, Vercel avisa a GitHub
+   (evento `deployment_status`) y `despliegue.yml` pasa los recorridos e2e contra la dirección de
+   ese despliegue.
+6. **Reviso la vista previa.** La abro y miro que se vea como espero. Si algo falla (una
+   comprobación en rojo o algo que no me gusta), corrijo en la misma rama, hago `push` y se repite
+   desde el paso 3.
+7. **Fusión.** Con todo en verde, fusiono con *merge commit* (las ramas no se borran).
+8. **De nuevo `Calidad`, `Tests` y `E2E` en `main`.** `ci.yml` se ejecuta también con el `push` a
+   `main`.
+9. **Vercel construye la versión de producción y la retiene.** Construye la versión de `main`, pero
+   **no la pone todavía** en la dirección de producción: espera a los Deployment Checks.
+10. **`E2E desplegado` contra la versión retenida.** Vercel envía `repository_dispatch`
+    (`vercel.deployment.ready`) y `despliegue.yml` pasa los recorridos e2e contra la dirección
+    propia de esa versión. Con la acción de Vercel escribe el estado `E2E desplegado` en el commit.
+11. **Se publica o se retiene.** Si las cuatro comprobaciones (`Calidad`, `Tests`, `E2E` y
+    `E2E desplegado`) están en verde, Vercel publica la versión en la dirección de producción. Si
+    alguna falla, la versión se queda retenida y la web **sigue con la anterior**: es lo que
+    muestra la evidencia 3. Entonces corrijo en una rama nueva (o revierto, como hice con la #54).
+12. **Release.** Cuando subo un *tag* `v*` a un commit de `main` ya publicado, `release.yml` ejecuta
+    `Comprobar` (lint, formato y tests), `Humo` (la prueba de humo contra la web publicada) y
+    `Release` (el zip de `dist/` y la Release de GitHub). Cada trabajo espera al anterior: si uno
+    falla, no se crea la Release.
 
 ## Organización del trabajo
 
@@ -1603,6 +1689,9 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `e2e-desplegado-antes-docs` | Sprint 3: documentación de la solución y prueba de la retención con cuatro comprobaciones | [#50](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/50) |
 | `prueba-humo-release` | Sprint 3: prueba de humo (`e2e/humo.spec.js`) y `release.yml` (Comprobar, Humo y Release) | [#51](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/51) |
 | `umbral-cobertura-100` | Umbral de cobertura al 100 % (líneas, ramas, funciones y sentencias) y su limitación medida; resultado de la Release `v0.9` | [#52](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/52) |
+| `romper-e2e-a-proposito` | Evidencia: rompe a propósito la prueba de humo para ver que Vercel retiene la versión (fusionada en rojo a propósito) | [#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53) |
+| `deshacer-romper-e2e` | Evidencia: deshace la rotura; todo vuelve a verde y Vercel publica | [#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54) |
+| `evidencias-despliegue` | Sprint 3: evidencias del despliegue continuo en el README (capturas y «El camino de un cambio»); incluye la rotura a propósito de la prueba de humo ([#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)) y su reversión ([#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)) | PR pendiente |
 
 #### *Merge* o *rebase*
 

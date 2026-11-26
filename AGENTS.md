@@ -409,5 +409,9 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   pone en un commit de `main` ya publicado. Probado con el tag `v0.9`: los tres trabajos en verde y la Release publicada con `v0.9.zip`. Además, Vitest
   (`exclude`) y ESLint (`ignores`) ignoran `.claude/`, donde están las copias de trabajo de los
   subagentes: Vitest las recogía y rompía `npm test`.
+- **Evidencias del despliegue continuo** (rama `evidencias-despliegue`): hechas en el README
+  («Despliegue continuo»): PR #52 con su vista previa, versión retenida (PR #53 rota a propósito, la
+  única fusión en rojo permitida, y revertida con la #54) y «El camino de un cambio». La Release
+  `v1.0` queda pendiente para la entrega final.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
