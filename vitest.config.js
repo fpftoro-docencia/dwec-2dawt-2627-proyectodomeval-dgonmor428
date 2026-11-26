@@ -12,9 +12,12 @@ export default defineConfig({
       reporter: ['text', 'html'], // `text` en la terminal y `html` en coverage/, que sube el workflow
       // Las funciones puras: los validadores (registro y captura) y la paginación
       include: ['js/validadores.js', 'js/paginar.js'],
-      // El umbral que pide el enunciado: al menos el 90 % de líneas. Si no se llega, `npm run
-      // coverage` termina con error y la integración continua se pone en rojo
-      thresholds: { lines: 90 },
+      // El enunciado pide al menos el 90 % de líneas; aquí se exige el 100 % de líneas, ramas,
+      // funciones y sentencias, que lo cumple y es más estricto. Si no se llega, `npm run coverage`
+      // termina con error y el trabajo `Tests` se pone en rojo. Ojo: la cobertura cuenta todos los
+      // tests juntos, y los de integración también ejecutan estos validadores, así que quitar un
+      // caso de los tests unitarios solo la baja si nadie más pasa por esa línea o rama
+      thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },
   },
 });
