@@ -11,7 +11,8 @@
  *   `ascension` y `declinacion`;
  * - el grupo de imágenes `#ficha-imagenes`: la lista `#ficha-imagenes-lista`, el contador
  *   `#ficha-imagenes-cuenta`, el botón `[data-accion="anadir-imagen"]` y la plantilla
- *   `#plantilla-imagen`;
+ *   `#plantilla-imagen` (con los campos `imagen-url` e `imagen-pie`, el número `.imagen__numero`
+ *   y el botón `[data-accion="quitar-imagen"]`);
  * - el título de la página `#ficha-encabezado`.
  *
  * Qué hace:
@@ -77,7 +78,7 @@ export function fechaLocal(fecha) {
  * todos los valores, en el orden del formulario.
  *
  * @param {FormData} datos - Los datos del formulario (`new FormData(formulario)`).
- * @returns {object} La captura sin `id` (el `id` lo pone el módulo de capturas).
+ * @returns {module:capturas~DatosCaptura} La captura sin `id` (el `id` lo pone el módulo de capturas).
  * @example
  * datosDeCaptura(new FormData(formulario)).altitud; // → 2390 (un número, no '2390')
  */

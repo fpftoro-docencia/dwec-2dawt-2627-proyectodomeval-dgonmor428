@@ -45,6 +45,16 @@ export const TIPOS_AVISO = Object.freeze({
  */
 
 /**
+ * El evento propio `aviso` (un `CustomEvent` con `bubbles: true`). Lo lanza {@link lanzarAviso}
+ * desde cualquier elemento y lo recoge un único oyente en `document` ({@link escucharAvisos}).
+ * Las funciones que lo lanzan lo indican con `@fires aviso`.
+ *
+ * @event aviso
+ * @type {CustomEvent}
+ * @property {DetalleAviso} detail - El mensaje y el tipo del aviso.
+ */
+
+/**
  * Lanza el evento `aviso` desde un elemento. Sube hasta `document`, donde lo recoge
  * {@link escucharAvisos}.
  *
