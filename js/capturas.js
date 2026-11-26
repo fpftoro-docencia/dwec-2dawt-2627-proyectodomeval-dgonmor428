@@ -24,11 +24,48 @@ const MENSAJE_SIN_GUARDAR =
   'No se ha podido guardar la captura: el almacenamiento está lleno o bloqueado.';
 
 /**
- * Una captura tal como se guarda: su `id` y los campos de la ficha (título, categoría, fecha,
- * lugar, coordenadas…), que son cosa de la ficha y este módulo guarda tal cual.
+ * Una imagen de una captura: su URL y un pie opcional.
  *
- * @typedef {object} Captura
- * @property {string} id - Identificador único.
+ * @typedef {object} ImagenCaptura
+ * @property {string} url - Dirección de la imagen (`http://` o `https://`).
+ * @property {string} pie - Texto que acompaña a la imagen; `''` si no lo tiene.
+ */
+
+/**
+ * Los datos del espacio de una captura de categoría «espacio».
+ *
+ * @typedef {object} DatosEspacio
+ * @property {string} catalogo - Código de catálogo (`M42`, `NGC 1976`…).
+ * @property {string} ascension - Ascensión recta (`05h 35m 17s`).
+ * @property {string} declinacion - Declinación (`-05° 23′ 28″`).
+ */
+
+/**
+ * Los campos de la ficha, normalizados, sin `id`: es lo que devuelve `datosDeCaptura` de
+ * `paginas/ficha` y lo que reciben {@link crearCaptura} y {@link actualizarCaptura}.
+ *
+ * @typedef {object} DatosCaptura
+ * @property {string} titulo - Título de la captura.
+ * @property {'paisaje'|'cielo'|'espacio'} categoria - Su categoría.
+ * @property {string} fecha - Fecha y hora local (`2026-11-05T09:07`).
+ * @property {string} lugar - Nombre del lugar.
+ * @property {string} gps - Coordenadas «latitud, longitud» (`36.7213, -4.4214`).
+ * @property {number} altitud - Altitud en metros.
+ * @property {string} condiciones - Condiciones del cielo.
+ * @property {string} equipo - Equipo usado.
+ * @property {string|null} observatorio - Código de observatorio (`OBS-4821-7`), o `null` si no
+ *   se ha escrito.
+ * @property {DatosEspacio|null} espacio - Los datos del espacio, o `null` si la categoría no es
+ *   «espacio».
+ * @property {ImagenCaptura[]} imagenes - De 0 a 3 imágenes.
+ */
+
+/**
+ * Una captura tal como se guarda: sus datos de ficha y su `id`. Este módulo solo exige el `id`
+ * (descarta las entradas sin él) y guarda el resto tal cual.
+ *
+ * @typedef {DatosCaptura} Captura
+ * @property {string} id - Identificador único, que pone este módulo.
  */
 
 /**
@@ -121,7 +158,7 @@ export function buscarCaptura(almacen, usuario, id) {
  *
  * @param {Storage} almacen - Dónde se guardan.
  * @param {string} usuario - El nombre del usuario.
- * @param {object} datos - Los campos de la ficha, ya normalizados.
+ * @param {DatosCaptura} datos - Los campos de la ficha, ya normalizados.
  * @param {function(): string} [crearId] - Cómo crear el `id`. Por defecto, `crypto.randomUUID()`.
  * @returns {Captura} La captura guardada, con su `id`.
  * @throws {Error} Si el almacenamiento no deja guardar.
@@ -150,7 +187,7 @@ export function crearCaptura(almacen, usuario, datos, crearId = crearIdAleatorio
  * @param {Storage} almacen - Dónde se guardan.
  * @param {string} usuario - El nombre del usuario.
  * @param {string} id - El `id` de la captura que se edita.
- * @param {object} datos - Los campos nuevos, que sustituyen a los anteriores.
+ * @param {DatosCaptura} datos - Los campos nuevos, que sustituyen a los anteriores.
  * @returns {Captura|null} La captura guardada, o `null` si no existe ese `id`.
  * @throws {Error} Si el almacenamiento no deja guardar.
  * @example
