@@ -31,3 +31,5 @@ Thumbs.db
 
 # Borrador del blog que escribe el documentador: el blog de verdad lo escribe el alumno.
 blog/BORRADOR.md
+# Copias de trabajo (worktrees) que crea Claude Code para los subagentes: no son del proyecto.
+.claude/worktrees/

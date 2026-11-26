@@ -3,7 +3,7 @@ import globals from 'globals';
 
 export default [
   // Lo que generan las herramientas no se revisa: documentación, web publicable e informes
-  { ignores: ['docs/', 'dist/', 'coverage/', 'playwright-report/', 'test-results/'] },
+  { ignores: ['docs/', 'dist/', 'coverage/', 'playwright-report/', 'test-results/', '.claude/'] },
   js.configs.recommended,
   {
     languageOptions: {
