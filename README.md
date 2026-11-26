@@ -1691,7 +1691,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `umbral-cobertura-100` | Umbral de cobertura al 100 % (líneas, ramas, funciones y sentencias) y su limitación medida; resultado de la Release `v0.9` | [#52](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/52) |
 | `romper-e2e-a-proposito` | Evidencia: rompe a propósito la prueba de humo para ver que Vercel retiene la versión (fusionada en rojo a propósito) | [#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53) |
 | `deshacer-romper-e2e` | Evidencia: deshace la rotura; todo vuelve a verde y Vercel publica | [#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54) |
-| `evidencias-despliegue` | Sprint 3: evidencias del despliegue continuo en el README (capturas y «El camino de un cambio»); incluye la rotura a propósito de la prueba de humo ([#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)) y su reversión ([#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)) | PR pendiente |
+| `evidencias-despliegue` | Sprint 3: evidencias del despliegue continuo en el README (capturas y «El camino de un cambio»); incluye la rotura a propósito de la prueba de humo ([#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)) y su reversión ([#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)) | [#55](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/55) |
 
 #### *Merge* o *rebase*
 
