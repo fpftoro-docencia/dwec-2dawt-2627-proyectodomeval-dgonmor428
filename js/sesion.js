@@ -45,8 +45,7 @@ function esSesionValida(dato) {
  * Abre la sesión de un usuario. Solo guarda su nombre y su rol, aunque el objeto traiga más datos.
  *
  * @param {Storage} almacen - Dónde se guarda la sesión (normalmente, `sessionStorage`).
- * @param {module:usuarios~Usuario} usuario - El usuario que entra (de él solo se guardan el
- *   nombre y el rol).
+ * @param {{ nombre: string, rol: 'usuario'|'administrador' }} usuario - El usuario que entra.
  * @returns {boolean} `true` si se ha guardado; `false` si el almacenamiento lo ha impedido.
  * @example
  * iniciarSesion(sessionStorage, { nombre: 'ana', rol: 'administrador' }); // → true
