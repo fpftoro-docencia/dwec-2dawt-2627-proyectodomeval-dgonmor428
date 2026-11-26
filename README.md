@@ -1529,7 +1529,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `e2e-desplegado-sin-check` | Sprint 3: `E2E desplegado` fuera de los Deployment Checks (bloqueaba la producción) | [#47](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/47) |
 | `e2e-desplegado-produccion` | Sprint 3: `E2E desplegado` también corre en producción, después de publicar | [#48](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/48) |
 | `e2e-desplegado-antes` | Sprint 3: `E2E desplegado` contra producción antes de publicar (`repository_dispatch`) | [#49](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/49) |
-| `e2e-desplegado-antes-docs` | Sprint 3: documentación de la solución y prueba de la retención con cuatro comprobaciones | PR pendiente |
+| `e2e-desplegado-antes-docs` | Sprint 3: documentación de la solución y prueba de la retención con cuatro comprobaciones | [#50](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/50) |
 
 #### *Merge* o *rebase*
 
