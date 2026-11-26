@@ -1350,17 +1350,18 @@ antes de seguir.
 
 En **Settings → Build and Deployment → Deployment Checks** del proyecto he añadido, como
 comprobaciones de **GitHub**, los trabajos `Calidad`, `Tests` y `E2E` de `ci.yml` (importados desde
-el último commit de `main`, que ya los tenía en verde). `E2E desplegado` estuvo en la lista y se
-quitó: ver «Por qué `E2E desplegado` no es un Deployment Check» más abajo.
+el último commit de `main`, que ya los tenía en verde) y `E2E desplegado` de `despliegue.yml`
+(importado del commit `4f01bf7`, la primera vez que se ejecutó contra producción).
 
 | Comprobación | Qué exige antes de publicar |
 |--------------|-----------------------------|
 | `Calidad` | ESLint y Prettier sin errores |
 | `Tests` | Los tests unitarios y de integración, y el umbral de cobertura |
 | `E2E` | Los dos recorridos de Playwright contra la web servida con `serve` |
+| `E2E desplegado` | Los mismos recorridos contra la versión nueva ya desplegada en Vercel, antes de publicarla |
 
 Cómo funciona: con cada `push` a `main`, Vercel construye la versión nueva a la vez que se ejecuta
-el *workflow*, pero **no la pone** en la dirección de producción hasta que las tres comprobaciones
+el *workflow*, pero **no la pone** en la dirección de producción hasta que las cuatro comprobaciones
 están en verde. Si una falla, esa versión se queda retenida y la web sigue con la anterior. Vercel
 reconoce cada comprobación por el **nombre del trabajo**: por eso los nombres de `ci.yml` y
 `despliegue.yml` no se cambian (si se cambiaran, habría que volver a elegirlas aquí).
@@ -1377,10 +1378,12 @@ mismos recorridos de Playwright **contra cada despliegue** de Vercel:
 
 | Parte | Qué hace |
 |-------|----------|
-| `on: deployment_status` | Se ejecuta cuando GitHub recibe el estado de un despliegue. Vercel lo envía cuando termina de construir la vista previa de una *pull request* o la versión de producción de `main`. |
-| Trabajo `E2E desplegado` | Solo corre si `github.event.deployment_status.state` vale `success`: un despliegue pendiente o fallido no tiene dirección que probar. |
-| Pasos | Descargar el código (el commit desplegado), Node.js 24, `npm ci`, instalar Chromium y `npm run e2e`. |
-| `BASE_URL` | Vale `github.event.deployment_status.environment_url`, la dirección del despliegue. Con ella, `playwright.config.js` no arranca `serve`: prueba la web de Vercel. |
+| `on: deployment_status` | Se ejecuta cuando GitHub recibe el estado de un despliegue. Vercel lo envía cuando termina de construir la **vista previa** de una *pull request* (para producción también, pero después de publicarla: esa ejecución se omite). |
+| `on: repository_dispatch` (`vercel.deployment.ready`) | Para **producción**: Vercel lo envía cuando la versión de `main` está construida pero **todavía no publicada**, esperando a sus comprobaciones. Solo funciona con el *workflow* en `main`. |
+| Trabajo `E2E desplegado` | Corre si es una vista previa terminada bien (`deployment_status.state == 'success'` y entorno distinto de `Production`) o una versión de producción lista (`client_payload.environment == 'production'`). |
+| Pasos | Descargar el commit desplegado (`client_payload.git.sha` o `github.sha`), Node.js 24, `npm ci`, instalar Chromium y `npm run e2e`. En producción, además, la acción `vercel/repository-dispatch/actions/status@v1` escribe el estado `E2E desplegado` en ese commit: es lo que lee Vercel. |
+| `BASE_URL` | La dirección propia del despliegue: `client_payload.url` (producción) o `deployment_status.environment_url` (vista previa). Con ella, `playwright.config.js` no arranca `serve`: prueba la web de Vercel. |
+| `permissions` y `concurrency` | `contents: read`, `actions: read` y `statuses: write` (lo que necesita la acción de Vercel); una ejecución por commit, sin cancelar, porque Vercel espera su resultado. |
 
 **Lo que hizo falta en Vercel.** Al abrir la *pull request* el trabajo no aparecía: Vercel solo
 publicaba el estado del commit, no los «Deployments» de GitHub, y sin ellos no llega el evento
@@ -1388,21 +1391,30 @@ publicaba el estado del commit, no los «Deployments» de GitHub, y sin ellos no
 Con eso, en la *pull request* #46 apareció `E2E desplegado` y pasó contra la dirección propia de la
 vista previa (10 de 10).
 
-**Por qué `E2E desplegado` no es un Deployment Check.** El enunciado pide que, en `main`,
-`E2E desplegado` pase contra la versión nueva antes de que Vercel la publique, y lo añadí a los
-Deployment Checks. Al fusionar la *pull request* #46, la versión de producción (`d95fa0a`) se quedó
-en «Running Checks»: para producción, Vercel no crea el «Deployment» de GitHub mientras espera las
-comprobaciones, así que el evento `deployment_status` no llega, `E2E desplegado` no se ejecuta y la
-comprobación no llega nunca. Era un bloqueo circular: nada nuevo de `main` se habría publicado. Lo
-quité de los Deployment Checks, y la producción vuelve a publicarse con `Calidad`, `Tests` y `E2E`.
-`E2E desplegado` sigue probando **cada vista previa** de las *pull requests*, que es la web tal como
-quedará, y también **la versión de producción, pero después de publicarla**: al fusionar la *pull
-request* #47, Vercel publicó `d15142f` cuando pasaron las tres comprobaciones, y solo entonces creó
-el «Deployment» de producción en GitHub; `E2E desplegado` se ejecutó contra su dirección y pasó 10
-de 10. Si fallara, avisaría de que la web publicada está rota, pero no la habría frenado. Lo que no
-cumple es la parte de «en `main`, antes de publicar». La alternativa que propone
-Vercel para eso son sus eventos `repository_dispatch`, pero se aparta de `deployment_status`, que es
-lo que pide el enunciado; queda pendiente de consultarlo con el profesor.
+**El problema de producción y cómo se resolvió.** El enunciado pide que, en `main`,
+`E2E desplegado` pase contra la versión nueva **antes** de que Vercel la publique. Con solo
+`deployment_status` no se podía:
+
+1. Lo añadí a los Deployment Checks y, al fusionar la *pull request* #46, la versión de producción
+   (`d95fa0a`) se quedó en «Running Checks»: para producción, Vercel no crea el «Deployment» de
+   GitHub hasta **después** de publicar, así que `deployment_status` no llegaba, `E2E desplegado` no
+   se ejecutaba y la comprobación no llegaba nunca. Era un bloqueo circular.
+2. Lo quité de los Deployment Checks (*pull request* #47): la producción volvía a publicarse, y
+   `E2E desplegado` se ejecutaba contra ella, pero después de publicar.
+3. La documentación de Vercel (Deployment Checks) dice que, para pruebas con GitHub Actions antes de
+   publicar, hay que usar el evento `repository_dispatch` de tipo `vercel.deployment.ready`, que llega
+   con la versión construida y retenida, y avisar a Vercel con la acción
+   `vercel/repository-dispatch/actions/status@v1`. Activé **repository_dispatch Events** en Settings →
+   Git y lo añadí a `despliegue.yml` (*pull request* #49), conservando `deployment_status` para las
+   vistas previas, como pide el enunciado.
+4. Al fusionar la #49, Vercel envió `vercel.deployment.ready` para `4f01bf7`: `E2E desplegado` probó
+   la dirección propia de esa versión mientras Vercel la tenía retenida (10 de 10), escribió su estado
+   en el commit y Vercel la publicó después. Entonces volví a poner `E2E desplegado` en los Deployment
+   Checks, importado de ese commit.
+
+Así queda: en las *pull requests*, `E2E desplegado` prueba la vista previa; en `main`, prueba la
+versión nueva **antes** de que Vercel la publique, y si falla, la versión se queda retenida.
+
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
@@ -1516,6 +1528,8 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `despliegue-yml` | Sprint 3: `despliegue.yml` con `E2E desplegado` contra cada despliegue de Vercel | [#46](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/46) |
 | `e2e-desplegado-sin-check` | Sprint 3: `E2E desplegado` fuera de los Deployment Checks (bloqueaba la producción) | [#47](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/47) |
 | `e2e-desplegado-produccion` | Sprint 3: `E2E desplegado` también corre en producción, después de publicar | [#48](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/48) |
+| `e2e-desplegado-antes` | Sprint 3: `E2E desplegado` contra producción antes de publicar (`repository_dispatch`) | [#49](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/49) |
+| `e2e-desplegado-antes-docs` | Sprint 3: documentación de la solución y prueba de la retención con cuatro comprobaciones | PR pendiente |
 
 #### *Merge* o *rebase*
 
