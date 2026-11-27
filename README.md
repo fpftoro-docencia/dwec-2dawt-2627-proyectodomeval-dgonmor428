@@ -1605,6 +1605,11 @@ Así viaja un cambio mío desde mi ordenador hasta la web publicada, y qué se c
     `Release` (el zip de `dist/` y la Release de GitHub). Cada trabajo espera al anterior: si uno
     falla, no se crea la Release.
 
+Para enseñar este camino en la exposición dejo preparada la rama `demo-camino-cambio`, ya subida y
+**sin *pull request***. Solo cambia un texto de `index.html` («¿Es tu primera vez? Crea tu cuenta»
+pasa a «¿Todavía no tienes diario? Crea tu cuenta»). La *pull request* la abriré ese día, para
+recorrer los pasos 2 a 11 en directo. No la fusiono ni la borro antes.
+
 ## Organización del trabajo
 
 ### Definición de Hecho
@@ -1715,6 +1720,8 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `jsdoc-modulos` | Sprint 3: JSDoc completo (evento `aviso` documentado y typedefs de la captura: `ImagenCaptura`, `DatosEspacio`, `DatosCaptura`) | [#56](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/56) |
 | `readme-final` | Sprint 3: README completo y revisado, y comprobación final | [#57](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/57) |
 | `ficha-anadir-imagen-clic` | Sprint 3: arregla el clic perdido en «Añadir imagen» (y en cualquier botón de un formulario validado): `mousedown` cancelado en `js/validacion.js` | [#58](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/58) |
+| `preparar-demostracion` | Sprint 3: prepara la demostración de la exposición (ensayo con datos ficticios y la rama `demo-camino-cambio`) | pendiente |
+| `demo-camino-cambio` | Rama preparada para la demostración: cambia el texto que invita a crear una cuenta | se abre en la exposición |
 
 #### *Merge* o *rebase*
 
