@@ -89,4 +89,51 @@ test.describe('Capturas (CRUD)', () => {
     await expect(page.getByText('Tu cielo aún está vacío')).toBeVisible();
     await expect(capturaDelListado(page, CAPTURA.titulo)).toHaveCount(0);
   });
+
+  test('dos clics seguidos en «Añadir imagen» con la primera URL vacía añaden dos imágenes', async ({
+    page,
+  }) => {
+    await page.goto('/ficha.html');
+    // Espera a algo que escribe el JavaScript de iniciarFicha (el «max» de la fecha), para que el
+    // clic no llegue antes que el oyente (en la web publicada los módulos tardan más)
+    await expect(page.getByLabel('Fecha y hora')).toHaveAttribute('max', /T/);
+    const anadir = page.getByRole('button', { name: 'Añadir imagen' });
+
+    // El primer clic añade la imagen y le da el foco a su URL, que se queda vacía
+    await anadir.click();
+    await expect(page.getByLabel('Dirección (URL)')).toBeFocused();
+
+    // El segundo clic, con el ratón de verdad (pulsar y soltar), ya no se pierde aunque el campo
+    // vacío tenga el foco: sin el arreglo, su error empujaba el botón hacia abajo entre pulsar y soltar
+    await anadir.click();
+
+    await expect(page.getByLabel('Dirección (URL)')).toHaveCount(2);
+    await expect(page.getByText('2 de 3')).toBeVisible();
+    // El foco está en la segunda URL, la recién añadida
+    await expect(page.getByLabel('Dirección (URL)').nth(1)).toBeFocused();
+    // El error aparece al validarse la primera URL al salir; la segunda tiene el foco y aún no
+    await expect(page.getByText('Escribe la dirección de la imagen.')).toBeVisible();
+  });
+
+  test('quitar una imagen recién añadida y vacía no da errores y devuelve el foco a «Añadir imagen»', async ({
+    page,
+  }) => {
+    const errores = [];
+    page.on('pageerror', (error) => errores.push(error.message));
+
+    await page.goto('/ficha.html');
+    await expect(page.getByLabel('Fecha y hora')).toHaveAttribute('max', /T/);
+    const anadir = page.getByRole('button', { name: 'Añadir imagen' });
+
+    await anadir.click();
+    await expect(page.getByLabel('Dirección (URL)')).toBeFocused();
+
+    // El foco está en la URL vacía; quitar esa misma imagen hace que el campo pierda el foco
+    await page.getByRole('button', { name: 'Quitar' }).click();
+
+    await expect(page.getByLabel('Dirección (URL)')).toHaveCount(0);
+    await expect(page.getByText('0 de 3')).toBeVisible();
+    await expect(anadir).toBeFocused();
+    expect(errores).toEqual([]);
+  });
 });
