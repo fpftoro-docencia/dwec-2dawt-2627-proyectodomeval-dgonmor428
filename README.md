@@ -2,10 +2,6 @@
 
 ![Integración continua](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/workflows/ci.yml/badge.svg)
 
-<!-- Completa cada sección a medida que avanzas en los sprints. Borra los comentarios como este
-     cuando termines. Este README es también la portada de la documentación que genera `npm run docs`.
-     No cambies los títulos de las secciones (##): la corrección los busca por su nombre. -->
-
 ## Mi proyecto
 
 **Horizonte** es un diario personal de fotografía y observación de **paisajes, del cielo y del espacio**. Cada usuario guarda sus capturas (un atardecer, una tormenta, una aurora, la Vía Láctea, una nebulosa…) con su lugar, sus coordenadas, sus imágenes y la información de cómo las hizo. El administrador gestiona a los usuarios de la aplicación. Se inspira en Locationscout (paisajes con coordenadas) y AstroBin (astrofotografía).
@@ -18,10 +14,10 @@ La entidad es la **captura**. Cada usuario ve solo las suyas. Hay un **campo con
 
 | Campo | Control | Obligatorio | Regla de validación | Mensaje si no se cumple |
 |-------|---------|:-----------:|---------------------|-------------------------|
-| Título | Texto | Sí | No puede quedar vacío | «Escribe un título.» |
+| Título | Texto | Sí | No puede quedar vacío; como mucho 80 caracteres | «Escribe un título.» |
 | Categoría | Botones de opción: Paisaje, Cielo, Espacio | Sí | Hay que elegir una | «Elige una categoría.» |
 | Fecha y hora | `datetime-local` | Sí | No puede ser futura (el `max` lo pone el código con la fecha y la hora de ahora) | «Escribe la fecha y la hora.» / «La fecha no puede ser futura.» |
-| Lugar | Texto | Sí | No puede quedar vacío | «Escribe el lugar.» |
+| Lugar | Texto | Sí | No puede quedar vacío; como mucho 80 caracteres | «Escribe el lugar.» |
 | Coordenadas GPS | Texto | Sí | Regex del formato `36.7213, -4.4214` **y** comprobación con código de los rangos (latitud entre −90 y 90, longitud entre −180 y 180) | «Escribe las coordenadas.» / «Usa el formato 36.7213, -4.4214.» / «La latitud va de −90 a 90 y la longitud de −180 a 180.» |
 | Altitud (m) | Número | Sí | Entre −430 y 8849 | «Escribe la altitud.» / «La altitud va de −430 a 8849 m.» |
 | Condiciones del cielo | Lista desplegable: despejado, nubes, niebla, lluvia, tormenta, nieve, aurora | Sí | Hay que elegir una | «Elige las condiciones del cielo.» |
@@ -784,7 +780,7 @@ GitHub lo muestra como `|`. En el código es `|`, sin barra invertida.)
 | N.º | Dónde y regex | Para qué | Cómo funciona |
 |-----|---------------|----------|---------------|
 | 12 | `js/buscar.js`, `normalizar` (l. 26): `/\p{M}/gu` | Quitar las tildes para buscar sin distinguirlas | `normalize('NFD')` separa cada letra de su acento («é» → «e» + marca) y esta regex borra todas las marcas (`\p{M}`, con `g` para todas). `Cámara` → `camara` |
-| 13 | `js/paginas/ficha.js`, `datosDeCaptura` (l. 94): `/,\s*/u` | Normalizar las coordenadas | La coma y los espacios que la siguen (`\s*`, cero o más) se sustituyen por `', '`. Sin `g`: solo la primera coma, y solo hay una |
+| 13 | `js/paginas/ficha.js`, `datosDeCaptura` (l. 96): `/,\s*/u` | Normalizar las coordenadas | La coma y los espacios que la siguen (`\s*`, cero o más) se sustituyen por `', '`. Sin `g`: solo la primera coma, y solo hay una |
 | 14 | `js/validacion.js`, `cajaDeError` (l. 77): `/\s+/u` | Separar los ids de `aria-describedby` | `aria-describedby` guarda varios ids separados por espacios; `split` los parte por uno o más espacios |
 
 #### Qué hace la regex y qué hace el código
@@ -1030,7 +1026,7 @@ un solo módulo, aunque ese módulo necesita el DOM de happy-dom.
 - **e2e: lo que solo se ve en un navegador real.** Que `localStorage` sobreviva a una recarga
   (`reload`), que el `<dialog>` y los `<template>` funcionen de verdad, que `location.replace` lleve
   a otra página o que las rutas y los módulos de `<script type="module">` carguen desde un servidor.
-  Son lentas (unos segundos cada una), así que solo hay 10: los recorridos principales, y no cada
+  Son lentas (unos segundos cada una), así que solo hay 11 (los 10 de los dos recorridos y la prueba de humo), y no una por cada
   regla de validación.
 
 ### Cómo se simula el usuario, los servicios y el tiempo
@@ -1094,8 +1090,9 @@ formas de apuntar a la web, y son **las mismas pruebas** en las dos:
   dominio escrito, y los elementos se buscan como los vería una persona (`getByRole`, `getByLabel`,
   `getByText`), no por selectores de CSS que pueden cambiar.
 
-**Todavía no hay web desplegada:** se publicará con Vercel en el sprint 3, así que de momento solo
-se han ejecutado las e2e con `serve`.
+**Los mismos recorridos se pasan contra lo desplegado:** `despliegue.yml` (trabajo
+`E2E desplegado`) los ejecuta contra cada despliegue de Vercel, y `e2e/humo.spec.js` se pasa contra
+producción en `release.yml`. Se explica en [«Despliegue continuo»](#despliegue-continuo).
 
 Los pasos que se repiten están en `e2e/ayudas.js` (`registrarse`, `iniciarSesion`, `cerrarSesion`,
 `darDeAltaCaptura`, `editarCaptura` y `capturaDelListado`), con los datos ficticios `USUARIO` y
@@ -1151,9 +1148,10 @@ All files       |     100 |      100 |     100 |     100 |
 estricto (al principio era `lines: 90`; lo subí al ver la limitación de más abajo). Si no se llega,
 `npm run coverage` termina con error.
 El trabajo `Tests` de `ci.yml` ejecuta `npm run coverage` (paso 2 de la integración continua), así
-que un umbral incumplido hace fallar el trabajo `Tests`. GitHub no impide fusionar por sí solo (la
-rama `main` no tiene protección); la norma del proyecto es no fusionar una *pull request* con una
-comprobación en rojo, y en el sprint 3 Vercel también usará `Tests` como comprobación.
+que un umbral incumplido hace fallar el trabajo `Tests`. GitHub no impide fusionar por sí solo (`main`
+tiene las reglas de Classroom, que impiden el *force-push* y el borrado, pero no exige
+comprobaciones); la norma del proyecto es no fusionar una *pull request* con una comprobación en
+rojo, y Vercel exige `Calidad`, `Tests`, `E2E` y `E2E desplegado` en sus Deployment Checks.
 
 Comprobé que el umbral funciona: con `--coverage.thresholds.lines=101` la orden falla con «Coverage
 for lines (100%) does not meet global threshold (101%)».
@@ -1314,9 +1312,10 @@ salido bien (`needs`).
 
 **El umbral de cobertura ahora cuenta.** `Tests` ejecuta `npm run coverage` en lugar de
 `npm test`, así que el umbral de `vitest.config.js` (100 %) pone el trabajo en rojo si no
-se alcanza. `main` no tiene protección de rama en GitHub: que una *pull request* con una
-comprobación en rojo no se fusione es una norma del proyecto (`AGENTS.md`, sección 4), y en el
-sprint 3 Vercel también usará estas comprobaciones. Con la salvedad de la subsección
+se alcanza. `main` tiene las reglas de Classroom (impiden el *force-push* y el borrado), pero no
+exige comprobaciones en GitHub: que una *pull request* con una comprobación en rojo no se fusione
+es una norma del proyecto (`AGENTS.md`, sección 4), y Vercel exige estas comprobaciones en sus
+Deployment Checks. Con la salvedad de la subsección
 [«Cobertura»](#cobertura) de «Pruebas y cobertura»: el umbral solo mide `js/validadores.js` y `js/paginar.js`, no
 todo `js/`.
 
@@ -1324,8 +1323,9 @@ todo `js/`.
 (`.../actions/workflows/ci.yml/badge.svg`). GitHub la genera sola: se ve verde si la última ejecución
 de `ci.yml` en `main` ha pasado, y roja si ha fallado.
 
-**Los nombres de los trabajos no se cambian** (`Calidad`, `Tests` y `E2E`). En el sprint 3 Vercel
-los usará como comprobaciones obligatorias antes de publicar, y los busca por su nombre.
+**Los nombres de los trabajos no se cambian** (`Calidad`, `Tests` y `E2E`). Vercel
+los usa (junto con `E2E desplegado` de `despliegue.yml`) como Deployment Checks antes de publicar, y
+los busca por su nombre.
 
 **Ejecución en verde con sus artefactos:**
 [ejecución 44555654063](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/44555654063),
@@ -1351,7 +1351,7 @@ falló, así que se omitió. Que no esté es lo esperado.
 La dirección de producción la eligió Vercel acortando el nombre del proyecto (`…-dgo.vercel.app`).
 Al publicarla comprobé que responden las cinco páginas, el CSS, los módulos de `js/` y Bootstrap.
 Las pruebas e2e contra ella (`BASE_URL=https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app npm
-run e2e`) pasan las 10 (y las 30 con `--repeat-each=3`). La primera vez fallaban 3, las que usan
+run e2e`) pasaban las 10 que había entonces (hoy son 11, con la de humo; y las 30 con `--repeat-each=3`). La primera vez fallaban 3, las que usan
 «Cerrar sesión», y en local no: en la web publicada los módulos de `js/` tardan más en llegar, y la
 prueba pulsaba los botones antes de que el JavaScript pusiera sus oyentes (el clic en «Cerrar
 sesión» no hacía nada, y el formulario de entrar se enviaba sin JavaScript). Se arregló en la prueba,
@@ -1394,7 +1394,7 @@ mismos recorridos de Playwright **contra cada despliegue** de Vercel:
 | `on: deployment_status` | Se ejecuta cuando GitHub recibe el estado de un despliegue. Vercel lo envía cuando termina de construir la **vista previa** de una *pull request* (para producción también, pero después de publicarla: esa ejecución se omite). |
 | `on: repository_dispatch` (`vercel.deployment.ready`) | Para **producción**: Vercel lo envía cuando la versión de `main` está construida pero **todavía no publicada**, esperando a sus comprobaciones. Solo funciona con el *workflow* en `main`. |
 | Trabajo `E2E desplegado` | Corre si es una vista previa terminada bien (`deployment_status.state == 'success'` y entorno distinto de `Production`) o una versión de producción lista (`client_payload.environment == 'production'`). |
-| Pasos | Descargar el commit desplegado (`client_payload.git.sha` o `github.sha`), Node.js 24, `npm ci`, instalar Chromium y `npm run e2e`. En producción, además, la acción `vercel/repository-dispatch/actions/status@v1` escribe el estado `E2E desplegado` en ese commit: es lo que lee Vercel. |
+| Pasos | Descargar el commit desplegado (`client_payload.git.sha` o `github.sha`), Node.js 24, `npm ci`, instalar Chromium y `npm run e2e`. En producción, además, la acción `vercel/repository-dispatch/actions/status@v1` escribe el estado `E2E desplegado` en ese commit: es lo que lee Vercel. Va al **principio** del trabajo, antes de las pruebas: escribe el estado «pendiente» al empezar y, al terminar el trabajo (un paso posterior automático), «éxito» o «fallo» según el resultado de los pasos. |
 | `BASE_URL` | La dirección propia del despliegue: `client_payload.url` (producción) o `deployment_status.environment_url` (vista previa). Con ella, `playwright.config.js` no arranca `serve`: prueba la web de Vercel. |
 | `permissions` y `concurrency` | `contents: read`, `actions: read` y `statuses: write` (lo que necesita la acción de Vercel); una ejecución por commit, sin cancelar, porque Vercel espera su resultado. |
 
@@ -1402,7 +1402,7 @@ mismos recorridos de Playwright **contra cada despliegue** de Vercel:
 publicaba el estado del commit, no los «Deployments» de GitHub, y sin ellos no llega el evento
 `deployment_status`. Hubo que activar **deployment_status Events** en Settings → Git del proyecto.
 Con eso, en la *pull request* #46 apareció `E2E desplegado` y pasó contra la dirección propia de la
-vista previa (10 de 10).
+vista previa (10 de 10, las que había entonces).
 
 **El problema de producción y cómo se resolvió.** El enunciado pide que, en `main`,
 `E2E desplegado` pase contra la versión nueva **antes** de que Vercel la publique. Con solo
@@ -1421,7 +1421,7 @@ vista previa (10 de 10).
    Git y lo añadí a `despliegue.yml` (*pull request* #49), conservando `deployment_status` para las
    vistas previas, como pide el enunciado.
 4. Al fusionar la #49, Vercel envió `vercel.deployment.ready` para `4f01bf7`: `E2E desplegado` probó
-   la dirección propia de esa versión mientras Vercel la tenía retenida (10 de 10), escribió su estado
+   la dirección propia de esa versión mientras Vercel la tenía retenida (10 de 10, las que había entonces), escribió su estado
    en el commit y Vercel la publicó después. Entonces volví a poner `E2E desplegado` en los Deployment
    Checks, importado de ese commit.
 
@@ -1618,9 +1618,6 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 ### Sprints
 
-<!-- Una fila por sprint. La reflexión: qué salió bien, qué no, qué cambias para el siguiente
-     (cuatro o cinco líneas, sobre tu trabajo y no sobre el enunciado). -->
-
 | Sprint | *Tag* | Qué incluye | Reflexión |
 |--------|-------|-------------|-----------|
 | 1 | `v0.1` | Las cinco páginas con su diseño; usuarios, sesión y roles; registro e inicio de sesión; cabecera común y protección de páginas; avisos; ESLint con cuatro reglas propias; 191 tests (unitarios y de integración); `ci.yml` con `Calidad` y `Tests` | **Bien:** módulos pequeños, cada uno con sus tests desde el principio (100 % de cobertura), y probar en el navegador además de con tests, que encontró fallos que los tests no veían. **Mal:** empecé tarde (las primeras tarjetas de código se pasaron de fecha), deseché el primer diseño entero y dos tarjetas de documentación se quedaron olvidadas hasta el cierre. **Cambio para el sprint 2:** repasar el tablero completo al empezar cada día, ir por orden de fecha y hacer la documentación de cada parte junto a su código, no al final. |
@@ -1629,7 +1626,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 
 **Tablero de Trello:** [Horizonte](https://trello.com/b/e5RiblPh/horizonte)
 
-**Blog del proyecto:** [blog/README.md](blog/README.md) <!-- dificultades y problemas conceptuales de cada sprint -->
+**Blog del proyecto:** [blog/README.md](blog/README.md)
 
 ### Equipo de IA
 
@@ -1670,12 +1667,12 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `subagentes-ia` | Equipo de subagentes de IA en `.claude/agents/` y su flujo en `AGENTS.md` | [#31](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/31) |
 | `listado-buscador-paginacion` | Listado: buscador con pausa (sin tildes ni mayúsculas), paginación de 6 en 6 con `?pagina=` y controles reutilizables (`js/buscar.js`, `js/controlesPaginacion.js`) | [#32](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/32) |
 | `zona-administracion` | Administración (`usuarios.html`): lista, buscador y paginación de usuarios, dar o quitar el rol de administrador (`cambiarRol`) y `js/direccion.js` común con el listado | [#33](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/33) |
-| `ficha-doble-envio` | Ficha: evitar el doble envío (botón desactivado, `aria-busy` y variable `enviando`) | [#39](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/39) |
 | `tests-integracion` | Tests de integración (happy-dom) de la ficha, el listado y la protección por rol, auditados frente al enunciado | [#34](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/34) |
 | `readme-eventos` | Sección «Eventos» del README: eventos en el HTML, tipos de eventos y tabla de todos los oyentes | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/35) |
 | `subir-agentes-ia` | Revisión de `.claude/agents/` frente a `AGENTS.md`, regla de no usar `-u root` en los agentes y sección «Equipo de IA» del README | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/36) |
 | `e2e-cobertura` | Pruebas de extremo a extremo (`e2e/`: sesión y CRUD de capturas) y cobertura con umbral del 90 % de líneas en `js/validadores.js` y `js/paginar.js` | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/37) |
 | `readme-funcionalidad` | Sección «Funcionalidad y formularios» del README: lectura de datos, validación y tabla de expresiones regulares | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/38) |
+| `ficha-doble-envio` | Ficha: evitar el doble envío (botón desactivado, `aria-busy` y variable `enviando`) | [#39](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/39) |
 | `readme-pruebas` | Sección «Pruebas y cobertura» del README: pirámide, simulación, e2e, umbral y salidas reales | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/40) |
 | `readme-arquitectura` | Sección «Arquitectura y módulos» del README: diagrama, tabla de módulos, patrones, dependencias inyectadas y JSDoc | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/41) |
 | `ci-paso-2` | Integración continua, paso 2: `Tests` con cobertura y artefacto, trabajo `E2E`, `concurrency` y `permissions` | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/42) |
@@ -1693,6 +1690,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `deshacer-romper-e2e` | Evidencia: deshace la rotura; todo vuelve a verde y Vercel publica | [#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54) |
 | `evidencias-despliegue` | Sprint 3: evidencias del despliegue continuo en el README (capturas y «El camino de un cambio»); incluye la rotura a propósito de la prueba de humo ([#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)) y su reversión ([#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)) | [#55](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/55) |
 | `jsdoc-modulos` | Sprint 3: JSDoc completo (evento `aviso` documentado y typedefs de la captura: `ImagenCaptura`, `DatosEspacio`, `DatosCaptura`) | [#56](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/56) |
+| `readme-final` | Sprint 3: README completo y revisado, y comprobación final | [#57](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/57) |
 
 #### *Merge* o *rebase*
 
@@ -1716,6 +1714,7 @@ Integro con ***merge***: cada *pull request* se fusiona con el botón «Merge» 
 | `.DS_Store` y `Thumbs.db` | Ficheros que crea el sistema operativo |
 | `.env` y `.env.*` | Por si algún día hubiera claves: el repositorio es público |
 | `.claude/settings.local.json` | Los permisos que Claude Code guarda en cada equipo: son de quien trabaja, no del proyecto |
+| `.claude/worktrees/` | Las copias de trabajo de los subagentes de Claude Code: no son del proyecto (ESLint y Vitest también las ignoran) |
 | `blog/BORRADOR.md` | El borrador del blog que escribe el subagente documentador: el blog de verdad lo escribe el alumno |
 
 `package-lock.json` **sí** se sube: sin él, `npm ci` falla en el *workflow*.

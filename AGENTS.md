@@ -414,5 +414,7 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   única fusión en rojo permitida, y revertida con la #54) y «El camino de un cambio». La Release
   `v1.0` queda pendiente para la entrega final.
 - **JSDoc en todos los módulos** (rama `jsdoc-modulos`): auditados los 19 módulos (HTML de cada página, `@listens`/`@fires`, `@example` en las funciones puras). Añadidos `@event aviso` en `js/avisos.js` y los typedefs `ImagenCaptura`, `DatosEspacio` y `DatosCaptura` en `js/capturas.js`. Criterio: `@listens` va en la función que hace el `addEventListener`; `@fires aviso` en toda función que llama a `lanzarAviso` o `mostrarAvisoPendiente`.
+- **README completo y revisado** (rama `readme-final`): sin comentarios de plantilla y con las frases
+  desfasadas corregidas; la comprobación final pasó (las siete órdenes en verde).
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
