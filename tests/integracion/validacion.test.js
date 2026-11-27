@@ -150,6 +150,67 @@ describe('validación en tiempo real (componente común)', () => {
     });
   });
 
+  describe('el clic en un botón (mousedown)', () => {
+    // Un botón con un elemento dentro, como el de «Añadir imagen» si llevara un icono
+    function anadirBotonConIcono() {
+      formulario.insertAdjacentHTML(
+        'beforeend',
+        '<button type="button"><span>Añadir</span></button>',
+      );
+      return formulario.lastElementChild;
+    }
+
+    function pulsar(objetivo, boton = 0) {
+      const evento = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        button: boton,
+      });
+      objetivo.dispatchEvent(evento);
+      return evento;
+    }
+
+    it('con el botón principal sobre un botón, se cancela (el foco no se mueve)', () => {
+      expect(pulsar(formulario.querySelector('button')).defaultPrevented).toBe(true);
+    });
+
+    it('con el botón principal sobre un elemento dentro de un botón, también', () => {
+      const boton = anadirBotonConIcono();
+      expect(pulsar(boton.querySelector('span')).defaultPrevented).toBe(true);
+    });
+
+    it('con el botón derecho o el central del ratón, no', () => {
+      const boton = formulario.querySelector('button');
+      expect(pulsar(boton, 2).defaultPrevented).toBe(false);
+      expect(pulsar(boton, 1).defaultPrevented).toBe(false);
+    });
+
+    it('sobre un campo, no (hay que poder poner el cursor y seleccionar el texto)', () => {
+      expect(pulsar(campos.titulo).defaultPrevented).toBe(false);
+    });
+
+    it('fuera de un botón (un párrafo, el propio formulario), no', () => {
+      expect(pulsar(document.querySelector('#titulo-error')).defaultPrevented).toBe(false);
+      expect(pulsar(formulario).defaultPrevented).toBe(false);
+    });
+
+    // El efecto real sobre el foco (que el clic no dispare el blur) no se puede probar aquí: un
+    // mousedown con dispatchEvent no mueve el foco. Lo comprueba el e2e con el ratón de verdad.
+    it('tras un mousedown en un botón, el campo se sigue validando al salir de él (blur normal)', () => {
+      pulsar(formulario.querySelector('button'));
+      expect(errorDe('titulo')).toBe('');
+      salir(campos.titulo);
+      expect(errorDe('titulo')).toBe('Escribe un título.');
+    });
+
+    it('tras un mousedown en un botón, el formulario se sigue validando al enviar', () => {
+      pulsar(formulario.querySelector('button'));
+      expect(validacion.validarFormulario()).toBe(false);
+      expect(errorDe('titulo')).toBe('Escribe un título.');
+      expect(document.activeElement).toBe(campos.titulo);
+    });
+  });
+
   describe('de dónde sale el mensaje', () => {
     it('de validity.valueMissing, con el texto de data-vacio', () => {
       salir(campos.titulo);

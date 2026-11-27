@@ -148,6 +148,14 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
   `requestSubmit()` (o cualquier envío por código) sí; y se prefiere a `aria-busy`, que sirve para
   la accesibilidad y no para guardar el estado. En la ficha, si guardar falla se reactiva el botón;
   si se navega al listado, queda desactivado.
+  **Clic perdido:** `activarValidacion` también cancela (`preventDefault`) el `mousedown` del botón
+  principal sobre cualquier `<button>` del formulario. Con el ratón el orden es `mousedown` → `blur`
+  → `mouseup` → `click`; el error que mostraba el `blur` empujaba el botón, el `mouseup` caía fuera y
+  el clic se perdía. Sin `mousedown` el foco no se mueve, así que **todo botón de un formulario
+  validado tiene que enviar o mover el foco** (el campo se valida entonces). Con el teclado no
+  cambia nada. Limitación: los enlaces de debajo del formulario («Crea tu cuenta», «Entrar») están
+  fuera y les puede pasar lo mismo. Descartadas: una guarda en el `blur` (nunca se ejecutaba) y
+  reservar con CSS el hueco de `.invalid-feedback` (cambia el espaciado de todos los formularios).
   Lo común está en `js/formularios.js` (`mostrarEstadoCampo` y `ponerEnviando`): las páginas nuevas
   lo reutilizan en lugar de repetirlo. En las páginas con un formulario principal, la región de
   avisos va dentro de su panel, encima del título, para que el aviso se vea donde se está escribiendo.
@@ -238,10 +246,11 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
     `editarCaptura`, `capturaDelListado`, y los datos ficticios `USUARIO` y `CAPTURA`).
   - `e2e/sesion.spec.js` (5 tests): registrarse como primer usuario, cerrar sesión y volver a
     entrar, contraseña incorrecta y protección del listado sin sesión. `e2e/capturas.spec.js`
-    (5 tests): alta, ficha incompleta, edición, cancelar el borrado y borrar con confirmación,
-    comprobando siempre tras `reload` que lo guardado sigue ahí. `e2e/humo.spec.js` (1 test): la
+    (7 tests): alta, ficha incompleta, edición, cancelar el borrado, borrar con confirmación
+    (comprobando siempre tras `reload` que lo guardado sigue ahí), dos clics seguidos en «Añadir
+    imagen» y «Quitar la imagen con el foco». `e2e/humo.spec.js` (1 test): la
     prueba de humo, de solo lectura (abre `/index.html`, no `/`, porque con `serve` la raíz es un
-    listado de carpetas); la usa `release.yml`. En total, 11 tests e2e. Se borró `e2e/ejemplo.spec.js`
+    listado de carpetas); la usa `release.yml`. En total, 13 tests e2e. Se borró `e2e/ejemplo.spec.js`
     (la plantilla, cuyo comentario decía sustituirlo).
   - **Reglas:** localizadores como los vería un usuario (`getByRole`, `getByLabel`, `getByText`),
     nunca selectores de CSS; rutas relativas (`/registro.html`) para que valgan con `BASE_URL`;
@@ -353,7 +362,7 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   escrita (rama `readme-funcionalidad`).
 - **Resuelto** (rama `ficha-doble-envio`): la ficha ya evita el doble envío, con 11 tests nuevos.
 - Los **tests de integración** de la ficha, el listado y la protección por rol están auditados y
-  completos (733 tests en 24 archivos, `js/` al 100 %).
+  completos (740 tests en 24 archivos, `js/` al 100 %).
 - La sección «Eventos» del README está escrita (rama `readme-eventos`): eventos en el HTML, tipos de
   eventos y la tabla de los 18 oyentes de `js/`. Si se añade o quita un `addEventListener`, hay que
   actualizar esa tabla.
@@ -416,5 +425,8 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - **JSDoc en todos los módulos** (rama `jsdoc-modulos`): auditados los 19 módulos (HTML de cada página, `@listens`/`@fires`, `@example` en las funciones puras). Añadidos `@event aviso` en `js/avisos.js` y los typedefs `ImagenCaptura`, `DatosEspacio` y `DatosCaptura` en `js/capturas.js`. Criterio: `@listens` va en la función que hace el `addEventListener`; `@fires aviso` en toda función que llama a `lanzarAviso` o `mostrarAvisoPendiente`.
 - **README completo y revisado** (rama `readme-final`): sin comentarios de plantilla y con las frases
   desfasadas corregidas; la comprobación final pasó (las siete órdenes en verde).
+- **Clic perdido en «Añadir imagen»** (rama `ficha-anadir-imagen-clic`): arreglado en
+  `js/validacion.js` con un `mousedown` cancelado en los botones del formulario (ver «Formularios» en
+  la sección 7). Con 7 tests más de integración (`validacion.test.js`, 42) y 2 e2e más (13 en total).
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).

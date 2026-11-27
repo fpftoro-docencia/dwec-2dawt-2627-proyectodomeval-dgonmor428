@@ -26,6 +26,10 @@
  * árbol, así que el formulario lo escucha en la fase de **captura**, que baja desde `document`
  * hasta el campo y sí pasa por él.
  *
+ * **El clic en un botón:** el formulario cancela el `mousedown` de sus botones (botón principal).
+ * Así el foco no se mueve al pulsar, no hay `blur` entre pulsar y soltar, el botón no se desplaza
+ * si el error del campo anterior hace crecer el formulario y el `click` no se pierde.
+ *
  * Los campos desactivados (`disabled`) no se validan ni se envían: el navegador los deja fuera
  * (`willValidate` es `false`), como el campo condicional de la ficha cuando no se ve.
  *
@@ -143,6 +147,7 @@ export function mensajeDeError(campo, reglas = {}) {
  * @param {string} [opciones.avisoErrores] - El aviso al enviar con errores.
  * @returns {Validacion} Para validar un campo o todo el formulario desde la página.
  * @listens blur
+ * @listens mousedown
  * @listens input
  * @listens change
  * @fires aviso
@@ -239,6 +244,23 @@ export function activarValidacion(
     },
     true,
   );
+
+  // Un clic solo se produce si pulsar (`mousedown`) y soltar (`mouseup`) caen en el mismo
+  // elemento. El orden con el ratón es: mousedown → blur del campo que tenía el foco → mouseup →
+  // click. Si ese `blur` muestra un error, el formulario crece y el botón baja unos píxeles: al
+  // soltar, el ratón ya está fuera del botón y el clic se pierde. Cancelando el `mousedown` de un
+  // botón, el foco no se mueve (moverlo es lo que hace el navegador por defecto al pulsar), no hay
+  // `blur` y el botón se queda quieto. El campo se valida igual después: al enviar, o cuando el
+  // código del clic mueve el foco. Por eso cada botón de un formulario validado tiene que hacer una
+  // de las dos cosas (hoy lo hacen todos: «Guardar», «Entrar», «Crear mi cuenta», «Añadir imagen»
+  // y «Quitar»). Solo cubre `<button>`, que es lo único que usan los formularios (ningún
+  // `<input type="button">`). Con el teclado no cambia nada: Tab, Intro y Espacio no son `mousedown`.
+  formulario.addEventListener('mousedown', (evento) => {
+    // Solo el botón principal del ratón (0): el derecho abre el menú y el central no hace clic
+    if (evento.button === 0 && evento.target.closest('button') !== null) {
+      evento.preventDefault();
+    }
+  });
 
   /**
    * Con cada cambio: revalida el campo si ya se había tocado y los que dependen de él.
