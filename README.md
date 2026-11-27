@@ -341,7 +341,7 @@ uso (las busqué con `grep`):
 | `@typedef` y `@property` | Tipos de objetos: `DetalleAviso`, `Sesion`, `Captura`, `Usuario`, `Validacion`, `Pagina`… |
 | `@example` | Un ejemplo de uso en las funciones puras y en la mayoría de las demás; las que tocan el DOM o el almacenamiento llevan siempre `@param` y `@returns` y a veces no llevan `@example` |
 | `@throws` | Los errores que lanza una función: `RangeError` en `paginar` y `cambiarRol`; `Error` en `capturas.js` y `registrarUsuario` (nombre ocupado o no se puede guardar); `Error` en `validacion.js` (`cajaDeError` sin caja de error y `mensajeDeError` con un `data-validar` desconocido) |
-| `@listens` y `@fires` | Los eventos que escucha o lanza una función (`click`, `input`, `blur`, `change`, `submit`, `close`, `aviso`) |
+| `@listens` y `@fires` | Los eventos que escucha o lanza una función (`click`, `mousedown`, `input`, `blur`, `change`, `submit`, `close`, `aviso`) |
 | `@template` | Un tipo genérico: `leerJSON` devuelve el mismo tipo que su valor por defecto |
 | `@type` | El tipo de una constante: el objeto `validadores` |
 | `{@link …}` | Enlaces entre funciones y tipos dentro de los textos |
@@ -675,9 +675,24 @@ formularios llevan `novalidate`: no quiero los globos del navegador, los mensaje
 - **Las reglas que dependen de otro campo se revalidan** cuando cambia el otro: `{ clave: ['repetir'] }`
   hace que al cambiar la contraseña se vuelva a validar «repetir» (si ya se había tocado).
 - **Al enviar, todos** (`validarFormulario`): si hay errores, se avisa y el foco va al primero.
-- Los tres oyentes (`blur` en la fase de captura, `input` y `change`) están en el **formulario**, no
-  en cada campo, así valen también para los campos que se crean después (las imágenes). Por qué `blur`
-  va en captura está en «Propagación», dentro de [Eventos](#eventos).
+- Los cuatro oyentes (`blur` en la fase de captura, `mousedown`, `input` y `change`) están en el
+  **formulario**, no en cada campo ni en cada botón, así valen también para los elementos que se
+  crean después (las imágenes). Por qué `blur` va en captura está en «Propagación», dentro de
+  [Eventos](#eventos).
+- **El `mousedown` de los botones se cancela.** Con el ratón el orden es `mousedown`, `blur` del
+  campo que tenía el foco, `mouseup` y `click`, y el clic solo llega si pulsar y soltar caen en el
+  mismo elemento. Si el `blur` mostraba un error, el formulario crecía, el botón bajaba unos píxeles
+  y al soltar el ratón ya no estaba encima: el clic se perdía («Añadir imagen», «Quitar», «Guardar»,
+  «Entrar»…). Ahora `activarValidacion` hace `preventDefault()` en el `mousedown` del botón
+  principal sobre un `<button>` del formulario: el navegador no mueve el foco (es su acción por
+  defecto), no hay `blur` y el botón no se mueve. Con el teclado no cambia nada. El campo se valida
+  después, al enviar o cuando el código del clic mueve el foco, así que **todo botón de un formulario
+  validado tiene que enviar o mover el foco**. Descarté dos alternativas: una guarda en el `blur`
+  para los campos ya quitados (en Chromium el `blur` llega antes de quitar el campo y Firefox no lo
+  lanza, así que nunca se ejecutaba) y reservar con CSS el hueco de `.invalid-feedback` (arreglaría
+  también los enlaces de fuera del formulario, pero cambia el espaciado de todos los formularios).
+- **Limitación conocida:** los enlaces que están debajo del formulario («Crea tu cuenta» en
+  `index.html`, «Entrar» en `registro.html`) no están dentro de él y les puede pasar lo mismo.
 - Los campos `disabled` no se validan (`willValidate` es `false`): por eso el campo condicional oculto
   no molesta.
 
@@ -861,12 +876,15 @@ y el `<dialog>` en `listado.html`.
 | `change` | `js/validacion.js` y los botones de categoría de la ficha | Salta al **confirmar** el valor. En los botones de opción, casillas y `datetime-local` no hay un «escribir» que valga: el cambio es el momento. En la validación lo uso junto a `input` como red de seguridad, por si algún control o navegador solo lanza `change`. Validar dos veces no hace daño: `validarCampo` da el mismo resultado si se repite |
 | `blur` | `js/validacion.js` (fase de captura) | Para la **primera** validación de cada campo: no quiero decirle «obligatorio» a alguien que aún no ha empezado a escribir, sino cuando se va del campo. Uso `blur` en la fase de captura (no `focusout`): lo justifico en «Propagación» |
 | `click` | Cerrar sesión, «Cerrar» del aviso, botones de la paginación, «Añadir/Quitar imagen», «Borrar» del listado y «Hacer/Quitar administrador» | Para botones que no envían nada. Los pongo siempre con delegación, salvo «Cerrar sesión» (un botón fijo) |
+| `mousedown` | `js/validacion.js`, en cada formulario | Para que el clic en un botón no se pierda. `click` llega demasiado tarde: antes ya ha pasado el `blur` del campo, el error ha empujado el botón hacia abajo y el `mouseup` cae fuera. `pointerdown` es parecido, pero cancelarlo **no** evita el cambio de foco; el que hay que cancelar es el `mousedown`. Solo con el botón principal (`evento.button === 0`) y sobre un `<button>` (`closest('button')`) |
 | `close` | `<dialog id="dialogo-borrar">` en `listado.js` | El diálogo se cierra con «Cancelar», con «Borrar» **y con Escape**. Si escuchara `click` en «Borrar», no sabría reaccionar al resto y tendría que repetir la lógica en cada botón. Con `close` hay un solo punto de salida, y `returnValue` me dice cuál fue |
 | `aviso` (propio) | Se lanza desde las páginas y la validación, se recoge en `document` (`js/avisos.js`) | Un `CustomEvent` con `bubbles: true` y `detail: { mensaje, tipo }`. Quien avisa no necesita saber dónde está la región de avisos: solo lanza el evento y sube hasta `document` |
 
-**`preventDefault`** lo uso solo en los tres `submit` (`entrar.js`, `registro.js` y `ficha.js`):
-cancela el envío normal del navegador, que recargaría la página y perdería los datos. No lo uso en
-los enlaces ni en el diálogo porque ahí quiero el comportamiento nativo.
+**`preventDefault`** lo uso en los tres `submit` (`entrar.js`, `registro.js` y `ficha.js`) y en el
+`mousedown` de `js/validacion.js`. En los `submit` cancela el envío normal del navegador, que
+recargaría la página y perdería los datos. En el `mousedown` de un botón cancela el cambio de foco
+que hace el navegador al pulsar. No lo uso en los enlaces ni en el diálogo porque ahí quiero el
+comportamiento nativo.
 
 **`input` frente a `change`, dónde se usa cada uno:**
 
@@ -884,7 +902,7 @@ elemento que recibe el evento, actúa en el objetivo.
 
 #### Todos los oyentes
 
-Hay **18 llamadas a `addEventListener`** en `js/` (más un evento que se lanza, `aviso`). Todos se
+Hay **19 llamadas a `addEventListener`** en `js/` (más un evento que se lanza, `aviso`). Todos se
 registran una sola vez al iniciar la página.
 
 | N.º | Evento | Dónde se registra | Fase | Para qué |
@@ -905,10 +923,11 @@ registran una sola vez al iniciar la página.
 | 14 | `input` | `js/paginas/usuarios.js`, en el campo de búsqueda | Objetivo | Filtrar los usuarios, con la misma pausa |
 | 15 | `click` | `js/paginas/usuarios.js`, en la lista de usuarios | Burbuja (delegación) | «Hacer/Quitar administrador» (`closest('[data-accion="cambiar-rol"]')`) |
 | 16 | `blur` | `js/validacion.js`, en cada formulario | **Captura** (`true`) | La primera validación de un campo al salir de él |
-| 17 | `input` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Revalidar mientras se escribe un campo que ya se ha tocado, y sus dependientes |
-| 18 | `change` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Lo mismo para los cambios que no son escribir (opciones, fecha) |
+| 17 | `mousedown` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Cancelar el `mousedown` de los botones (botón principal del ratón) para que el foco no se mueva y el clic no se pierda si un error desplaza el botón |
+| 18 | `input` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Revalidar mientras se escribe un campo que ya se ha tocado, y sus dependientes |
+| 19 | `change` | `js/validacion.js`, en cada formulario | Burbuja (delegación) | Lo mismo para los cambios que no son escribir (opciones, fecha) |
 
-Los números 16, 17 y 18 están escritos una sola vez en `js/validacion.js`, pero `activarValidacion`
+Los números 16, 17, 18 y 19 están escritos una sola vez en `js/validacion.js`, pero `activarValidacion`
 se llama desde `entrar.js`, `registro.js` y `ficha.js`: en el navegador se registran una vez por
 formulario (nunca dos en la misma página, salvo que se llamara dos veces a la función).
 
@@ -935,7 +954,9 @@ texto o un icono dentro del botón) hacia arriba hasta el botón que interesa. S
 - **Administración:** los botones de rol (número 15).
 - **Grupo dinámico de imágenes:** «Quitar» de imágenes que no existían al cargar (número 6).
 - **Avisos:** «Cerrar» de cada aviso nuevo (número 2).
-- **Formularios:** `input` y `change` en el formulario en vez de uno por campo (números 5, 17 y 18).
+- **Formularios:** `input` y `change` en el formulario en vez de uno por campo (números 5, 18 y 19).
+  El `mousedown` (número 17) también está en el formulario y usa `closest('button')` para saber si
+  se ha pulsado un botón, aunque el `target` sea el texto de dentro.
 
 Lo que gano: un oyente en vez de uno por elemento, no tengo que quitarlos ni volverlos a poner al
 repintar la lista, y los elementos nuevos funcionan sin hacer nada más.
@@ -963,7 +984,7 @@ Hay tres niveles de prueba, de más pequeño a más grande: **unitarios** (una f
 solo), de **integración** (una página real con sus módulos, en un navegador simulado) y de
 **extremo a extremo** o e2e (la web de verdad, en un navegador de verdad). Cuanto más abajo, más
 rápidas y precisas son las pruebas; cuanto más arriba, más se parecen a lo que hace una persona.
-En total hay **733 tests de Vitest en 24 archivos** (378 unitarios y 355 de integración) y **11 e2e**
+En total hay **740 tests de Vitest en 24 archivos** (378 unitarios y 362 de integración) y **13 e2e**
 de Playwright.
 
 ### La pirámide
@@ -986,7 +1007,7 @@ de Playwright.
 | Unitario | `tests/unitarios/ejemplo.test.js` | `resumirClave` (ejemplo de la plantilla, ver abajo) | 3 |
 | Integración | `tests/integracion/entrar.test.js` | `index.html`: iniciar sesión | 18 |
 | Integración | `tests/integracion/registro.test.js` | `registro.html`: crear la cuenta | 26 |
-| Integración | `tests/integracion/validacion.test.js` | `js/validacion.js` sobre un formulario de prueba con un campo de cada tipo | 35 |
+| Integración | `tests/integracion/validacion.test.js` | `js/validacion.js` sobre un formulario de prueba con un campo de cada tipo | 42 |
 | Integración | `tests/integracion/privadas.test.js` | Protección por sesión y por rol, y cabecera común | 23 |
 | Integración | `tests/integracion/ficha.test.js` | `ficha.html`: campos, campo condicional, imágenes, guardar, editar y doble envío | 97 |
 | Integración | `tests/integracion/listado.test.js` | `listado.html`: pintar, editar y borrar con el diálogo | 30 |
@@ -995,7 +1016,7 @@ de Playwright.
 | Integración | `tests/integracion/usuarios-roles.test.js` | `usuarios.html`: dar y quitar el rol de administrador | 29 |
 | Integración | `tests/integracion/ejemplo.test.js` | Un formulario mínimo (ejemplo de la plantilla, ver abajo) | 2 |
 | e2e | `e2e/sesion.spec.js` | Registrarse, cerrar sesión y volver a entrar, contraseña incorrecta, protección del listado | 5 |
-| e2e | `e2e/capturas.spec.js` | Alta, ficha incompleta, edición, cancelar el borrado y borrar | 5 |
+| e2e | `e2e/capturas.spec.js` | Alta, ficha incompleta, edición, cancelar el borrado y borrar, dos clics seguidos en «Añadir imagen» y quitar una imagen con el foco en un campo | 7 |
 | e2e | `e2e/humo.spec.js` | Prueba de humo: `/index.html` responde, con su título y el formulario de entrar | 1 |
 
 **Los dos ejemplos de la plantilla.** `tests/unitarios/ejemplo.test.js` comprueba `resumirClave`
@@ -1026,7 +1047,7 @@ un solo módulo, aunque ese módulo necesita el DOM de happy-dom.
 - **e2e: lo que solo se ve en un navegador real.** Que `localStorage` sobreviva a una recarga
   (`reload`), que el `<dialog>` y los `<template>` funcionen de verdad, que `location.replace` lleve
   a otra página o que las rutas y los módulos de `<script type="module">` carguen desde un servidor.
-  Son lentas (unos segundos cada una), así que solo hay 11 (los 10 de los dos recorridos y la prueba de humo), y no una por cada
+  Son lentas (unos segundos cada una), así que solo hay 13 (los 12 de los dos recorridos y la prueba de humo), y no una por cada
   regla de validación.
 
 ### Cómo se simula el usuario, los servicios y el tiempo
@@ -1108,32 +1129,32 @@ vacío. Por eso quien se registra en cada test es el primer usuario y es adminis
 elegidos se ejecutan. Salida real (quitando los colores y las líneas de tiempos y de ayuda):
 
 ```text
- ✓ tests/integracion/ejemplo.test.js (2 tests) 13ms
- ✓ tests/unitarios/validadores-captura.test.js (97 tests) 12ms
- ✓ tests/unitarios/sesion.test.js (21 tests) 9ms
- ✓ tests/unitarios/validadores.test.js (38 tests) 9ms
+ ✓ tests/unitarios/buscar.test.js (14 tests) 10ms
+ ✓ tests/unitarios/validadores.test.js (38 tests) 7ms
+ ✓ tests/unitarios/usuarios-rol.test.js (25 tests) 12ms
+ ✓ tests/unitarios/capturas.test.js (35 tests) 17ms
+ ✓ tests/integracion/validacion.test.js (42 tests) 143ms
+ ✓ tests/unitarios/avisos.test.js (27 tests) 48ms
  ✓ tests/unitarios/usuarios.test.js (27 tests) 25ms
- ✓ tests/unitarios/avisos.test.js (27 tests) 50ms
- ✓ tests/integracion/validacion.test.js (35 tests) 166ms
- ✓ tests/integracion/privadas.test.js (23 tests) 260ms
- ✓ tests/integracion/listado.test.js (30 tests) 411ms
- ✓ tests/integracion/registro.test.js (26 tests) 534ms
- ✓ tests/integracion/usuarios-roles.test.js (29 tests) 466ms
- ✓ tests/integracion/entrar.test.js (18 tests) 667ms
- ✓ tests/integracion/usuarios-lista.test.js (51 tests) 592ms
- ✓ tests/integracion/listado-busqueda.test.js (44 tests) 650ms
- ✓ tests/unitarios/controlesPaginacion.test.js (16 tests) 29ms
- ✓ tests/unitarios/capturas.test.js (35 tests) 13ms
- ✓ tests/unitarios/buscar.test.js (14 tests) 9ms
- ✓ tests/integracion/ficha.test.js (97 tests) 1587ms
- ✓ tests/unitarios/usuarios-rol.test.js (25 tests) 9ms
- ✓ tests/unitarios/paginar.test.js (20 tests) 6ms
- ✓ tests/unitarios/almacen.test.js (20 tests) 7ms
+ ✓ tests/integracion/privadas.test.js (23 tests) 254ms
+ ✓ tests/unitarios/validadores-captura.test.js (97 tests) 18ms
+ ✓ tests/integracion/registro.test.js (26 tests) 514ms
+ ✓ tests/integracion/usuarios-roles.test.js (29 tests) 452ms
+ ✓ tests/integracion/listado.test.js (30 tests) 455ms
+ ✓ tests/integracion/entrar.test.js (18 tests) 635ms
+ ✓ tests/integracion/usuarios-lista.test.js (51 tests) 558ms
+ ✓ tests/unitarios/controlesPaginacion.test.js (16 tests) 26ms
+ ✓ tests/integracion/listado-busqueda.test.js (44 tests) 735ms
+ ✓ tests/integracion/ejemplo.test.js (2 tests) 13ms
+ ✓ tests/integracion/ficha.test.js (97 tests) 1455ms
+ ✓ tests/unitarios/sesion.test.js (21 tests) 6ms
  ✓ tests/unitarios/ejemplo.test.js (3 tests) 6ms
  ✓ tests/unitarios/direccion.test.js (20 tests) 6ms
+ ✓ tests/unitarios/almacen.test.js (20 tests) 7ms
  ✓ tests/unitarios/usuarios-nombre.test.js (15 tests) 5ms
+ ✓ tests/unitarios/paginar.test.js (20 tests) 6ms
  Test Files  24 passed (24)
-      Tests  733 passed (733)
+      Tests  740 passed (740)
 ----------------|---------|----------|---------|---------|-------------------
 File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 ----------------|---------|----------|---------|---------|-------------------
@@ -1217,21 +1238,23 @@ Salida de `npm run e2e` (Chromium, con `serve` en el puerto 3901):
 > mi-aplicacion@1.0.0 e2e
 > playwright test
 
-Running 11 tests using 3 workers
+Running 13 tests using 3 workers
 
-  ✓   1 [chromium] › e2e/humo.spec.js:14:1 › la web responde y muestra el inicio de sesión (318ms)
-  ✓   3 [chromium] › e2e/sesion.spec.js:8:3 › Sesión › la primera persona que se registra es administradora y ve «Usuarios» (513ms)
-  ✓   4 [chromium] › e2e/sesion.spec.js:18:3 › Sesión › se cierra la sesión y se vuelve a entrar con los mismos datos (596ms)
-  ✓   5 [chromium] › e2e/sesion.spec.js:29:3 › Sesión › con una contraseña incorrecta no se entra y se avisa sin decir cuál falla (597ms)
-  ✓   2 [chromium] › e2e/capturas.spec.js:17:3 › Capturas (CRUD) › una captura nueva aparece en el listado y sigue ahí al recargar (1.9s)
-  ✓   6 [chromium] › e2e/sesion.spec.js:43:3 › Sesión › sin sesión, el listado lleva a la página de inicio de sesión (187ms)
-  ✓   7 [chromium] › e2e/capturas.spec.js:33:3 › Capturas (CRUD) › una ficha incompleta no se guarda y marca los errores (404ms)
-  ✓   8 [chromium] › e2e/sesion.spec.js:50:3 › Sesión › tras cerrar la sesión, el listado vuelve a estar protegido (544ms)
-  ✓   9 [chromium] › e2e/capturas.spec.js:42:3 › Capturas (CRUD) › al editar una captura se ven los cambios, también tras recargar (2.5s)
-  ✓  10 [chromium] › e2e/capturas.spec.js:58:3 › Capturas (CRUD) › cancelar el diálogo de borrado conserva la captura (1.5s)
+  ✓   1 [chromium] › e2e/humo.spec.js:14:1 › la web responde y muestra el inicio de sesión (214ms)
+  ✓   2 [chromium] › e2e/sesion.spec.js:8:3 › Sesión › la primera persona que se registra es administradora y ve «Usuarios» (400ms)
+  ✓   4 [chromium] › e2e/sesion.spec.js:18:3 › Sesión › se cierra la sesión y se vuelve a entrar con los mismos datos (655ms)
+  ✓   5 [chromium] › e2e/sesion.spec.js:29:3 › Sesión › con una contraseña incorrecta no se entra y se avisa sin decir cuál falla (523ms)
+  ✓   3 [chromium] › e2e/capturas.spec.js:17:3 › Capturas (CRUD) › una captura nueva aparece en el listado y sigue ahí al recargar (1.6s)
+  ✓   6 [chromium] › e2e/sesion.spec.js:43:3 › Sesión › sin sesión, el listado lleva a la página de inicio de sesión (152ms)
+  ✓   7 [chromium] › e2e/capturas.spec.js:33:3 › Capturas (CRUD) › una ficha incompleta no se guarda y marca los errores (386ms)
+  ✓   8 [chromium] › e2e/sesion.spec.js:50:3 › Sesión › tras cerrar la sesión, el listado vuelve a estar protegido (546ms)
+  ✓   9 [chromium] › e2e/capturas.spec.js:42:3 › Capturas (CRUD) › al editar una captura se ven los cambios, también tras recargar (2.6s)
+  ✓  10 [chromium] › e2e/capturas.spec.js:58:3 › Capturas (CRUD) › cancelar el diálogo de borrado conserva la captura (1.4s)
   ✓  11 [chromium] › e2e/capturas.spec.js:74:3 › Capturas (CRUD) › al borrar con confirmación la captura desaparece, también tras recargar (1.5s)
+  ✓  12 [chromium] › e2e/capturas.spec.js:93:3 › Capturas (CRUD) › dos clics seguidos en «Añadir imagen» con la primera URL vacía añaden dos imágenes (423ms)
+  ✓  13 [chromium] › e2e/capturas.spec.js:118:3 › Capturas (CRUD) › quitar una imagen recién añadida y vacía no da errores y devuelve el foco a «Añadir imagen» (376ms)
 
-  11 passed (11.6s)
+  13 passed (12.1s)
 ```
 
 ## Integración continua
@@ -1351,7 +1374,7 @@ falló, así que se omitió. Que no esté es lo esperado.
 La dirección de producción la eligió Vercel acortando el nombre del proyecto (`…-dgo.vercel.app`).
 Al publicarla comprobé que responden las cinco páginas, el CSS, los módulos de `js/` y Bootstrap.
 Las pruebas e2e contra ella (`BASE_URL=https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app npm
-run e2e`) pasaban las 10 que había entonces (hoy son 11, con la de humo; y las 30 con `--repeat-each=3`). La primera vez fallaban 3, las que usan
+run e2e`) pasaban las 10 que había entonces (hoy son 13, con la de humo; y las 30 con `--repeat-each=3`). La primera vez fallaban 3, las que usan
 «Cerrar sesión», y en local no: en la web publicada los módulos de `js/` tardan más en llegar, y la
 prueba pulsaba los botones antes de que el JavaScript pusiera sus oyentes (el clic en «Cerrar
 sesión» no hacía nada, y el formulario de entrar se enviaba sin JavaScript). Se arregló en la prueba,
@@ -1370,7 +1393,7 @@ el último commit de `main`, que ya los tenía en verde) y `E2E desplegado` de `
 |--------------|-----------------------------|
 | `Calidad` | ESLint y Prettier sin errores |
 | `Tests` | Los tests unitarios y de integración, y el umbral de cobertura |
-| `E2E` | Las 11 pruebas de Playwright (sesión, CRUD de capturas y humo) contra la web servida con `serve` |
+| `E2E` | Las 13 pruebas de Playwright (sesión, CRUD de capturas y humo) contra la web servida con `serve` |
 | `E2E desplegado` | Las mismas pruebas contra la versión nueva ya desplegada en Vercel, antes de publicarla |
 
 Cómo funciona: con cada `push` a `main`, Vercel construye la versión nueva a la vez que se ejecuta
@@ -1691,6 +1714,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `evidencias-despliegue` | Sprint 3: evidencias del despliegue continuo en el README (capturas y «El camino de un cambio»); incluye la rotura a propósito de la prueba de humo ([#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)) y su reversión ([#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)) | [#55](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/55) |
 | `jsdoc-modulos` | Sprint 3: JSDoc completo (evento `aviso` documentado y typedefs de la captura: `ImagenCaptura`, `DatosEspacio`, `DatosCaptura`) | [#56](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/56) |
 | `readme-final` | Sprint 3: README completo y revisado, y comprobación final | [#57](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/57) |
+| `ficha-anadir-imagen-clic` | Sprint 3: arregla el clic perdido en «Añadir imagen» (y en cualquier botón de un formulario validado): `mousedown` cancelado en `js/validacion.js` | pendiente |
 
 #### *Merge* o *rebase*
 
