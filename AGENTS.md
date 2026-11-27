@@ -264,8 +264,10 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
     Para el doble testeo de otro módulo se pasa en la orden, por ejemplo
     `npm run coverage -- --coverage.include=js/capturas.js` (el script es `vitest run --coverage`).
 - **Rama `demo-camino-cambio`:** es para la demostración «El camino de un cambio» de la exposición.
-  No abrir su PR, no fusionarla, no borrarla y no cambiarla: la PR la abre el alumno en la
-  exposición. Solo toca `index.html`.
+  La IA no abre su PR, no la fusiona, no la borra y no la cambia: la PR la abre el alumno en la
+  exposición. Solo toca `index.html`. Como al subirla ya se creó su vista previa y pasó
+  `E2E desplegado`, para verlo ejecutarse en directo el alumno puede subir un commit pequeño más
+  en la exposición (o pulsar «Re-run jobs» de ese run en Actions).
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
