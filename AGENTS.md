@@ -263,6 +263,11 @@ las libertades y las decisiones ya tomadas, para que todo el que llegue siga las
     El resto de `js/` se prueba con los tests de integración, pero no cuenta para el umbral.
     Para el doble testeo de otro módulo se pasa en la orden, por ejemplo
     `npm run coverage -- --coverage.include=js/capturas.js` (el script es `vitest run --coverage`).
+- **Rama `demo-camino-cambio`:** es para la demostración «El camino de un cambio» de la exposición.
+  La IA no abre su PR, no la fusiona, no la borra y no la cambia: la PR la abre el alumno en la
+  exposición. Solo toca `index.html`. Como al subirla ya se creó su vista previa y pasó
+  `E2E desplegado`, para verlo ejecutarse en directo el alumno puede subir un commit pequeño más
+  en la exposición (o pulsar «Re-run jobs» de ese run en Actions).
 - Las herramientas de diseño Impeccable, Taste Skill y Playwright MCP se probaron y se
   **desinstalaron a petición del alumno**: no se vuelven a instalar sin que lo pida.
 
@@ -428,5 +433,11 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - **Clic perdido en «Añadir imagen»** (rama `ficha-anadir-imagen-clic`): arreglado en
   `js/validacion.js` con un `mousedown` cancelado en los botones del formulario (ver «Formularios» en
   la sección 7). Con 7 tests más de integración (`validacion.test.js`, 42) y 2 e2e más (13 en total).
+- **Preparar la demostración** (rama `preparar-demostracion`): subida la rama `demo-camino-cambio`
+  (commit `fe7fb44`, **sin PR**), que solo toca `index.html` («¿Es tu primera vez? Crea tu cuenta»
+  pasa a «¿Todavía no tienes diario? Crea tu cuenta»). **No se fusiona ni se borra antes de la
+  exposición**: el alumno abre la PR allí. Ensayado el punto 1 contra la web publicada con datos
+  ficticios (usuario `astronoma`; observatorio `OBS-4821-3` da «El dígito de control no es
+  correcto.» y se corrige a `OBS-4821-7`).
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
