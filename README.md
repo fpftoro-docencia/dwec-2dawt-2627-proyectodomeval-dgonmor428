@@ -1690,7 +1690,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `deshacer-romper-e2e` | Evidencia: deshace la rotura; todo vuelve a verde y Vercel publica | [#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54) |
 | `evidencias-despliegue` | Sprint 3: evidencias del despliegue continuo en el README (capturas y «El camino de un cambio»); incluye la rotura a propósito de la prueba de humo ([#53](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/53)) y su reversión ([#54](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/54)) | [#55](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/55) |
 | `jsdoc-modulos` | Sprint 3: JSDoc completo (evento `aviso` documentado y typedefs de la captura: `ImagenCaptura`, `DatosEspacio`, `DatosCaptura`) | [#56](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/56) |
-| `readme-final` | Sprint 3: README completo y revisado, y comprobación final | PR pendiente |
+| `readme-final` | Sprint 3: README completo y revisado, y comprobación final | [#57](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/57) |
 
 #### *Merge* o *rebase*
 
