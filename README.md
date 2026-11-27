@@ -1741,7 +1741,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `ficha-anadir-imagen-clic` | Sprint 3: arregla el clic perdido en «Añadir imagen» (y en cualquier botón de un formulario validado): `mousedown` cancelado en `js/validacion.js` | [#58](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/58) |
 | `preparar-demostracion` | Sprint 3: prepara la demostración de la exposición (ensayo con datos ficticios y la rama `demo-camino-cambio`) | [#59](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/59) |
 | `demo-camino-cambio` | Rama preparada para la demostración: cambia el texto que invita a crear una cuenta | se abre en la exposición |
-| `entrega-final` | Sprint 3: entrada del blog, reflexión, repaso de la Definición de Hecho y enlace de la Release `v1.0` | pendiente |
+| `entrega-final` | Sprint 3: entrada del blog, reflexión, repaso de la Definición de Hecho y enlace de la Release `v1.0` | [#60](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/60) |
 
 #### *Merge* o *rebase*
 
