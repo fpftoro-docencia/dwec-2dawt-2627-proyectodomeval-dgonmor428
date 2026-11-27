@@ -1502,7 +1502,8 @@ ya está publicado: si no, `Humo` probaría una versión distinta a la que se va
 Probado con el *tag* intermedio `v0.9` (sobre el commit `9bf29c2` de `main`, ya publicado por
 Vercel): los tres trabajos en verde y la Release
 [`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9)
-publicada con `v0.9.zip` adjunto y sus notas generadas. La Release `v1.0` será la de la entrega.
+publicada con `v0.9.zip` adjunto y sus notas generadas. La Release de la entrega es la
+[`v1.0`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v1.0).
 
 ### Evidencias
 
@@ -1511,7 +1512,7 @@ publicada con `v0.9.zip` adjunto y sus notas generadas. La Release `v1.0` será 
 | Web publicada | <https://dwec-2dawt-2627-proyectodomeval-dgo.vercel.app> | — |
 | *Pull request* con su vista previa y `E2E desplegado` | [#52](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/52) | `img/pr-comprobaciones.png` |
 | Versión retenida por Vercel | [`Integración continua` en rojo](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45848616296) y [`Despliegue` en rojo](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/actions/runs/45848638591) | `img/vercel-retenido.png` |
-| Release `v1.0` | Pendiente: se publica en la entrega final (la prueba con la [`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9) ya está hecha) | — |
+| Release `v1.0` | [`v1.0`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v1.0) | — |
 
 #### 1. La web publicada
 
@@ -1567,8 +1568,20 @@ comprobaciones.
 
 #### 4. Release `v1.0`
 
-Pendiente: se publica en la entrega final. Ya he probado el proceso con la
-[`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9).
+[`v1.0`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v1.0):
+la versión que se corrige.
+
+- **Cómo se creó:** el *tag* `v1.0` está en el *commit* de `main` de la entrega final, puesto cuando
+  Vercel ya lo había publicado. `release.yml` ejecutó `Comprobar`, `Humo` contra la web publicada y
+  `Release`.
+- **Qué contiene:** `v1.0.zip`, con el contenido de la carpeta `dist/` de `npm run build` en la raíz
+  del zip (además, GitHub añade siempre el código fuente, «Source code»). Dentro están las cinco
+  páginas HTML, `css/`, `js/`, `img/` y el CSS de Bootstrap en `node_modules/bootstrap/dist/css/`
+  (la misma ruta en la que lo enlazan las páginas). Se puede servir con cualquier servidor estático.
+- **Las notas:** las genera GitHub (`--generate-notes`): la lista de *pull requests* fusionadas
+  desde la versión anterior y un enlace «Full Changelog» con todos los cambios.
+- **Antes:** probé el proceso con la
+  [`v0.9`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/releases/tag/v0.9).
 
 #### 5. El camino de un cambio
 
@@ -1620,7 +1633,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 - [ ] **Rama y pull request:** el trabajo está en su propia rama, ha llegado a `main` por *pull request* y la rama no se ha borrado.
 - [ ] **Calidad:** `npm run lint` y `npm run format:check` terminan sin errores.
 - [ ] **Tests:** `npm test` pasa. Si la tarea añade lógica (validadores, módulos de datos, `paginar`…), incluye sus tests en `tests/unitarios/` o `tests/integracion/`.
-- [ ] **Workflow en verde:** desde que existe `ci.yml`, todos los trabajos de la *pull request* (`Calidad`, `Tests` y `E2E`) salen en verde antes de fusionar.
+- [ ] **Workflow en verde:** desde que existe `ci.yml`, todos los trabajos de la *pull request* (`Calidad`, `Tests` y `E2E`) salen en verde antes de fusionar. Desde que existe `despliegue.yml`, también `E2E desplegado` contra su vista previa; y, después de fusionar, Vercel publica la versión (no se queda retenida).
 - [ ] **Reglas del proyecto:** no hay librerías (solo el CSS de Bootstrap), ni APIs remotas, ni `innerHTML` con datos, ni estilos en el JavaScript. Se comprueba buscando `innerHTML` y `style` en `js/`.
 - [ ] **Probada a mano:** si la tarea cambia lo que se ve o se hace en la web, se ha probado en el navegador, en una ventana privada para empezar con el almacenamiento vacío.
 - [ ] **Documentada:** si la tarea cambia el comportamiento o la estructura, el README (y el JSDoc, desde el sprint 3) está al día. Los *commits* son pequeños y con mensajes que dicen qué cambia.
@@ -1643,6 +1656,12 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
   encontró dos fallos reales con todos los tests en verde (comparar nombres de usuario quitando las
   tildes y el doble envío de la ficha) y varias frases falsas en el README. La condición del
   *workflow* incluye ahora el trabajo `E2E`.
+- **Cierre del sprint 3 (27/11/2026):** la condición «Workflow en verde» incluye ahora
+  `E2E desplegado` contra la vista previa y que Vercel publique la versión fusionada. Desde que hay
+  Deployment Checks, una tarjeta puede estar en `main` sin haber llegado a la web. No añado más
+  condiciones: las que hay ya encontraron los fallos de este sprint («Probada a mano», en la
+  comprobación final, encontró el clic perdido; «Revisión independiente», los tests que no podían
+  fallar).
 
 ### Sprints
 
@@ -1650,7 +1669,7 @@ Una tarjeta del tablero solo pasa a «Hecho» cuando cumple **todas** estas cond
 |--------|-------|-------------|-----------|
 | 1 | `v0.1` | Las cinco páginas con su diseño; usuarios, sesión y roles; registro e inicio de sesión; cabecera común y protección de páginas; avisos; ESLint con cuatro reglas propias; 191 tests (unitarios y de integración); `ci.yml` con `Calidad` y `Tests` | **Bien:** módulos pequeños, cada uno con sus tests desde el principio (100 % de cobertura), y probar en el navegador además de con tests, que encontró fallos que los tests no veían. **Mal:** empecé tarde (las primeras tarjetas de código se pasaron de fecha), deseché el primer diseño entero y dos tarjetas de documentación se quedaron olvidadas hasta el cierre. **Cambio para el sprint 2:** repasar el tablero completo al empezar cada día, ir por orden de fecha y hacer la documentación de cada parte junto a su código, no al final. |
 | 2 | `v0.2` | Validadores de la captura, `paginar`, CRUD (ficha y listado), administración, validación en tiempo real, tests de integración y e2e, cobertura y `ci.yml` completo | **Bien:** el flujo por tarjetas con rama, pull request y comprobaciones en verde funcionó: 20 *pull requests* (de la #23 a la #42) y todo el CRUD, la administración, los tests e2e y el workflow completo. Los componentes comunes (buscador, paginación, validación) se escribieron una vez y se reutilizaron. **Mal:** dos fallos reales (comparar nombres sin tildes y el doble envío de la ficha) pasaron con todos los tests en verde y los encontró la revisión, y escribí en el README afirmaciones que no eran ciertas. También perdí parte del borrador del blog por sobrescribirlo. **Cambio para el sprint 3:** una revisión independiente antes de cada PR, comprobar cada frase de la documentación contra el código y no escribir nunca un archivo sin leerlo entero. |
-| 3 | `v1.0` | Vercel, Deployment Checks, `despliegue.yml`, prueba de humo, `release.yml`, evidencias, JSDoc y entrega | *(al cerrar el sprint)* |
+| 3 | `v1.0` | Vercel, Deployment Checks, `despliegue.yml`, prueba de humo, `release.yml`, evidencias, JSDoc y entrega | **Bien:** el despliegue continuo funciona de punta a punta. Cada *pull request* tiene su vista previa con `E2E desplegado`, y cada versión de `main` se prueba antes de publicarse. La versión retenida (#53 y #54) demostró que una versión rota no llega a la web. Hice 16 *pull requests* (de la #44 a la #59), todas fusionadas en verde salvo la #53, rota a propósito. La revisión independiente siguió encontrando cosas antes de fusionar: frases desfasadas en el README, tests que no podían fallar y una prueba e2e sin la espera obligatoria. **Mal:** bloqueé la publicación en producción al configurar `E2E desplegado` con un evento sin haber leído antes la documentación de Vercel (`d95fa0a`), y tuve que quitar el check hasta resolverlo con `repository_dispatch`. El README se fue desfasando durante el sprint y al final hubo que corregir unas diez frases. El clic perdido en «Añadir imagen» no apareció hasta la comprobación final, porque ningún e2e probaba las imágenes y happy-dom no tiene ratón. **Lo que me llevo:** leer la documentación del servicio antes de tocar algo que puede bloquear la publicación, poner al día el README en la misma *pull request* que el código y probar las interacciones con un e2e con clics reales, no solo con happy-dom. |
 
 **Tablero de Trello:** [Horizonte](https://trello.com/b/e5RiblPh/horizonte)
 
@@ -1722,6 +1741,7 @@ La carpeta `.claude/agents/` guarda los cinco subagentes de Claude Code (impleme
 | `ficha-anadir-imagen-clic` | Sprint 3: arregla el clic perdido en «Añadir imagen» (y en cualquier botón de un formulario validado): `mousedown` cancelado en `js/validacion.js` | [#58](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/58) |
 | `preparar-demostracion` | Sprint 3: prepara la demostración de la exposición (ensayo con datos ficticios y la rama `demo-camino-cambio`) | [#59](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/59) |
 | `demo-camino-cambio` | Rama preparada para la demostración: cambia el texto que invita a crear una cuenta | se abre en la exposición |
+| `entrega-final` | Sprint 3: entrada del blog, reflexión, repaso de la Definición de Hecho y enlace de la Release `v1.0` | [#60](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-dgonmor428/pull/60) |
 
 #### *Merge* o *rebase*
 

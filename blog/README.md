@@ -212,3 +212,113 @@ cambia a «Guardar cambios». Ese detalle solo lo vio el navegador.
 minutos en instalar Chromium. El informe de cobertura se sube con `if: always()` (también cuando el
 umbral falla, que es cuando más hace falta verlo) y el de Playwright con `if: failure()` (solo si
 algo falla).
+
+## 27/11/2026 · Sprint 3 · Publicar solo lo que funciona
+
+### Dificultades y cómo las resolví
+
+**Las pruebas pasaban en local y fallaban en Vercel.** La primera vez que pasé los e2e contra la web
+publicada (con `BASE_URL`) fallaron 3 de 10. Eran las que cierran la sesión y vuelven a entrar: el
+clic en «Cerrar sesión» llegaba antes de que el JavaScript de la página pusiera su oyente. En local
+los módulos cargan casi al instante; en Vercel tardan un poco más, y Playwright es más rápido que una
+persona. La solución no fue esperar un tiempo fijo (`waitForTimeout` está prohibido en mis pruebas),
+sino esperar a ver algo que escribe **la misma función** que pone el oyente:
+
+```js
+// e2e/ayudas.js
+export async function cerrarSesion(page, nombre = USUARIO.nombre) {
+  await expect(page.getByRole('banner').getByText(nombre)).toBeVisible();
+  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+  …
+```
+
+El nombre de la cabecera lo pinta `iniciarPaginaPrivada`, que también engancha «Cerrar sesión»: si
+se ve el nombre, el oyente ya está. Lo dejé como regla para todas las pruebas nuevas.
+
+**Bloqueé la publicación en producción.** Puse `E2E desplegado` como Deployment Check de Vercel y lo
+lanzaba con el evento `deployment_status`. Para las vistas previas funcionaba. Pero en producción
+Vercel no publicaba nunca: esperaba a que `E2E desplegado` pasara, y `E2E desplegado` esperaba a un
+aviso que Vercel solo manda **después** de publicar. Cada uno esperaba al otro. Paré, lo apunté y
+quité el check para no dejar la web sin publicar. Después, leyendo la documentación de Deployment
+Checks de Vercel, encontré el evento correcto: `repository_dispatch` de tipo
+`vercel.deployment.ready`, que llega con la versión construida pero **todavía retenida**. Con eso
+`E2E desplegado` volvió a ser un check y ahora cada versión de `main` se prueba antes de publicarse.
+
+**Romper a propósito para demostrar algo.** La evidencia de la versión retenida pide fusionar en
+`main` un cambio que rompa una prueba. Me costó hacerlo: era ir contra mi propia regla de no
+fusionar nunca en rojo. Cambié el título que espera la prueba de humo (#53), vi el workflow en rojo
+y Vercel marcó la versión «Checks Failed». Lo difícil fue demostrar que **no** se había publicado,
+porque la web se veía igual (solo había roto una prueba, no la página). La prueba estaba en Vercel:
+el distintivo «Production» seguía en el commit anterior. Después lo revertí (#54) y todo volvió a
+verde.
+
+**Un clic que se perdía.** En la comprobación final, con la dirección de una imagen vacía, un clic
+en «Añadir imagen» no hacía nada. Al pulsar, el campo perdía el foco, salía su error, el botón
+bajaba unos píxeles y al soltar el ratón ya no estaba encima: no hay `click` si pulsar y soltar
+caen en sitios distintos. Ningún test de happy-dom lo podía ver (no hay ratón ni posiciones); hizo
+falta un e2e con clics de verdad (ningún e2e tocaba las imágenes), y comprobé que ese e2e fallaba
+sin el arreglo y pasaba con él.
+
+**Herramientas que se pisan.** Vitest empezó a fallar porque recogía las pruebas de unas copias de
+trabajo del proyecto que había dentro de `.claude/`. Lo arreglé excluyendo esa carpeta en
+`vitest.config.js` y en ESLint. Y la prueba de humo abre `/index.html` y no `/`, porque en local
+`serve` enseña en la raíz un listado de carpetas.
+
+### Problemas conceptuales
+
+**Vista previa y producción.** Al principio pensaba que Vercel publicaba cada `push`. No: cada
+`push` a una rama crea una **vista previa** con su propia dirección, y solo lo que llega a `main`
+va a producción. Además, con los Deployment Checks, producción no cambia hasta que las cuatro
+comprobaciones (`Calidad`, `Tests`, `E2E` y `E2E desplegado`) están en verde. Si una falla, la
+versión se queda **retenida** y la web sigue con la anterior. Por eso la evidencia 3 se ve igual
+desde fuera.
+
+**Dos eventos para lo mismo.** `despliegue.yml` escucha dos eventos porque llegan en momentos
+distintos (resumido, sin los comentarios del archivo):
+
+```yaml
+on:
+  deployment_status:
+  repository_dispatch:
+    types: [vercel.deployment.ready]
+```
+
+- `deployment_status` llega cuando una vista previa termina. También llega para producción, pero
+  después de publicar, así que el trabajo lo ignora con su `if`.
+- `repository_dispatch` llega cuando la versión de producción está construida pero aún sin
+  publicar.
+
+Con `repository_dispatch`, además, la acción `vercel/repository-dispatch/actions/status@v1` escribe
+el estado `E2E desplegado` en el commit, que es lo que lee Vercel. Para eso el workflow necesita en
+`permissions`, además de `contents: read`, `statuses: write` (escribir el estado) y `actions: read`
+(la acción lee los trabajos de la ejecución para saber cómo ha terminado). Aprendí que los permisos se piden uno a uno, solo los necesarios.
+
+**Una prueba de humo prueba poco a propósito.** `e2e/humo.spec.js` solo abre la página de inicio y
+mira que salga el formulario. Si fallara, sería porque la web no responde, no por un detalle de una
+funcionalidad. Y prueba **la web publicada**, no el commit del *tag*: por eso el *tag* `v1.0` se pone
+en un commit de `main` que Vercel ya ha publicado.
+
+**No meter `${{ }}` dentro de un `run`.** En `release.yml` el nombre de la versión llega por `env`:
+
+```yaml
+run: (cd dist && zip -r "../$VERSION.zip" .)
+env:
+  VERSION: ${{ github.ref_name }}
+```
+
+Si escribiera `${{ github.ref_name }}` directamente en el `run`, GitHub lo pegaría en el script
+antes de ejecutarlo, y un nombre de *tag* raro podría colar órdenes. Como variable de entorno es
+solo texto.
+
+**Cancelar el `mousedown` no cancela el clic.** Para arreglar el clic perdido, `activarValidacion`
+hace `preventDefault()` en el `mousedown` de los botones del formulario. Lo que el navegador hace
+por defecto al pulsar es mover el foco; si se cancela, no hay `blur`, el botón no se mueve y el
+`click` llega. El campo se valida después, al enviar o cuando el código del clic mueve el foco. El
+orden con el ratón es `mousedown` → `blur` → `mouseup` → `click`; con el teclado no hay `mousedown`,
+así que no cambia nada.
+
+**La documentación del código también se comprueba.** Con JSDoc, `npm run docs` falla si un tipo está
+mal escrito (por ejemplo, `(x: string) => void`, que es de TypeScript; en JSDoc es
+`function(string): void`). `@listens` y `@fires` dicen qué eventos escucha o lanza cada función:
+cuando añadí el `mousedown`, tuve que añadir su `@listens` y su fila en la tabla de oyentes del
+README, que pasó de 18 a 19.

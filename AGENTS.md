@@ -335,8 +335,9 @@ preguntar antes de empezar.
 
 El documentador solo escribe un **borrador** en `blog/BORRADOR.md`, que no se sube (está en el
 `.gitignore`). El blog de verdad, `blog/README.md`, es el diario de aprendizaje del alumno: lo escribe
-él con sus palabras, porque le pueden preguntar por él en la exposición. (Excepción: la entrada del
-sprint 2 la escribió la IA porque el alumno lo pidió expresamente; el alumno la revisa y la defiende.)
+él con sus palabras, porque le pueden preguntar por él en la exposición. (Excepción: las entradas de los
+sprints 2 y 3 las escribió la IA porque el alumno lo pidió expresamente; el alumno las revisa y las
+defiende.)
 
 ### Con otra IA
 
@@ -369,7 +370,7 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - Los **tests de integración** de la ficha, el listado y la protección por rol están auditados y
   completos (740 tests en 24 archivos, `js/` al 100 %).
 - La sección «Eventos» del README está escrita (rama `readme-eventos`): eventos en el HTML, tipos de
-  eventos y la tabla de los 18 oyentes de `js/`. Si se añade o quita un `addEventListener`, hay que
+  eventos y la tabla de los 19 oyentes de `js/`. Si se añade o quita un `addEventListener`, hay que
   actualizar esa tabla.
 - Hechas las **pruebas e2e** (sesión y CRUD de capturas) y la **cobertura con umbral** del 90 %
   (rama `e2e-cobertura`).
@@ -426,7 +427,7 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
 - **Evidencias del despliegue continuo** (rama `evidencias-despliegue`): hechas en el README
   («Despliegue continuo»): PR #52 con su vista previa, versión retenida (PR #53 rota a propósito, la
   única fusión en rojo permitida, y revertida con la #54) y «El camino de un cambio». La Release
-  `v1.0` queda pendiente para la entrega final.
+  `v1.0` se añadió en la entrega final (rama `entrega-final`).
 - **JSDoc en todos los módulos** (rama `jsdoc-modulos`): auditados los 19 módulos (HTML de cada página, `@listens`/`@fires`, `@example` en las funciones puras). Añadidos `@event aviso` en `js/avisos.js` y los typedefs `ImagenCaptura`, `DatosEspacio` y `DatosCaptura` en `js/capturas.js`. Criterio: `@listens` va en la función que hace el `addEventListener`; `@fires aviso` en toda función que llama a `lanzarAviso` o `mostrarAvisoPendiente`.
 - **README completo y revisado** (rama `readme-final`): sin comentarios de plantilla y con las frases
   desfasadas corregidas; la comprobación final pasó (las siete órdenes en verde).
@@ -438,6 +439,13 @@ mismo flujo haciendo ella misma cada papel, en el mismo orden y con las mismas r
   pasa a «¿Todavía no tienes diario? Crea tu cuenta»). **No se fusiona ni se borra antes de la
   exposición**: el alumno abre la PR allí. Ensayado el punto 1 contra la web publicada con datos
   ficticios (usuario `astronoma`; observatorio `OBS-4821-3` da «El dígito de control no es
-  correcto.» y se corrige a `OBS-4821-7`).
+  correcto.» y se corrige a `OBS-4821-7`). El guion paso a paso está en los comentarios de su tarjeta
+  de Trello.
+- **Entrega final** (rama `entrega-final`): entrada del sprint 3 en el blog, reflexión del sprint 3,
+  repaso de la Definición de Hecho («Workflow en verde» incluye `E2E desplegado` y que Vercel
+  publique) y enlace de la Release `v1.0` en las evidencias. El *tag* `v1.0` se pone en el commit de
+  fusión de esta rama cuando Vercel ya lo ha publicado (`Humo` prueba la web publicada). **Con el
+  tag `v1.0` el proyecto queda entregado:** lo que se fusione después (la rama de la demostración en
+  la exposición) no cambia la versión que se corrige.
 - **Decidido:** el problema con el depurador de las DevTools que sugería la plantilla del README no
   lo pide el enunciado y se ha quitado. Si el profesor lo pide, se hace de verdad (no se inventa).
