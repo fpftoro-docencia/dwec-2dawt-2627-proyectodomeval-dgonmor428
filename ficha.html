@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Captura · Horizonte</title>
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body class="app">
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <!-- Cabecera común de las páginas privadas. El usuario, su rol y «Usuarios» los rellena js/paginas/privada.js -->
+    <header class="cabecera cabecera--app">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="listado.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <nav class="menu" aria-label="Principal">
+          <ul>
+            <li><a href="listado.html">Mis capturas</a></li>
+            <li hidden><a href="usuarios.html">Usuarios</a></li>
+          </ul>
+        </nav>
+        <div class="sesion">
+          <p class="sesion__usuario">
+            <span id="sesion-nombre"></span><span id="sesion-rol" class="sesion__rol"></span>
+          </p>
+          <button class="btn btn-salir" id="cerrar-sesion" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido" class="pagina">
+      <div class="envoltorio">
+        <div class="pagina__cabeza">
+          <div>
+            <p class="seccion__marca">Cuaderno de campo</p>
+            <h1 class="pagina__titulo" id="ficha-encabezado">Nueva captura</h1>
+          </div>
+          <a class="volver" href="listado.html">Volver a mis capturas</a>
+        </div>
+
+        <section class="cristal panel panel--ficha" aria-labelledby="titulo-ficha">
+          <div id="avisos" class="avisos" role="status"></div>
+
+          <h2 id="titulo-ficha" class="panel__titulo">Datos de la captura</h2>
+          <p class="panel__entrada">
+            Todos los campos son obligatorios salvo el código de observatorio.
+          </p>
+
+          <!-- novalidate: los mensajes los pone js/validacion.js, no los globos del navegador -->
+          <form id="form-ficha" method="post" novalidate>
+            <div class="rejilla-ficha">
+              <div class="campo rejilla-ficha__ancho">
+                <label class="form-label" for="ficha-titulo">Título</label>
+                <input
+                  class="form-control"
+                  id="ficha-titulo"
+                  name="titulo"
+                  type="text"
+                  maxlength="80"
+                  aria-describedby="ficha-titulo-error"
+                  required
+                  data-vacio="Escribe un título."
+                />
+                <p class="invalid-feedback" id="ficha-titulo-error"></p>
+              </div>
+
+              <!-- Botones de opción: el primero lleva required y los mensajes del grupo -->
+              <fieldset class="campo rejilla-ficha__ancho">
+                <legend class="form-label">Categoría</legend>
+                <div class="categorias">
+                  <div class="form-check categoria categoria--paisaje">
+                    <input
+                      class="form-check-input"
+                      id="ficha-categoria-paisaje"
+                      name="categoria"
+                      type="radio"
+                      value="paisaje"
+                      aria-describedby="ficha-categoria-error"
+                      required
+                      data-vacio="Elige una categoría."
+                    />
+                    <label class="form-check-label" for="ficha-categoria-paisaje">Paisaje</label>
+                  </div>
+                  <div class="form-check categoria categoria--cielo">
+                    <input
+                      class="form-check-input"
+                      id="ficha-categoria-cielo"
+                      name="categoria"
+                      type="radio"
+                      value="cielo"
+                      aria-describedby="ficha-categoria-error"
+                    />
+                    <label class="form-check-label" for="ficha-categoria-cielo">Cielo</label>
+                  </div>
+                  <div class="form-check categoria categoria--espacio">
+                    <input
+                      class="form-check-input"
+                      id="ficha-categoria-espacio"
+                      name="categoria"
+                      type="radio"
+                      value="espacio"
+                      aria-describedby="ficha-categoria-error"
+                    />
+                    <label class="form-check-label" for="ficha-categoria-espacio">Espacio</label>
+                  </div>
+                </div>
+                <p class="invalid-feedback" id="ficha-categoria-error"></p>
+              </fieldset>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-fecha">Fecha y hora</label>
+                <!-- El max (ahora mismo) lo pone js/paginas/ficha.js -->
+                <input
+                  class="form-control"
+                  id="ficha-fecha"
+                  name="fecha"
+                  type="datetime-local"
+                  aria-describedby="ficha-fecha-error"
+                  required
+                  data-vacio="Escribe la fecha y la hora."
+                  data-invalido="La fecha no puede ser futura."
+                />
+                <p class="invalid-feedback" id="ficha-fecha-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-lugar">Lugar</label>
+                <input
+                  class="form-control"
+                  id="ficha-lugar"
+                  name="lugar"
+                  type="text"
+                  maxlength="80"
+                  aria-describedby="ficha-lugar-error"
+                  required
+                  data-vacio="Escribe el lugar."
+                />
+                <p class="invalid-feedback" id="ficha-lugar-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-gps">Coordenadas GPS</label>
+                <input
+                  class="form-control dato"
+                  id="ficha-gps"
+                  name="gps"
+                  type="text"
+                  inputmode="decimal"
+                  spellcheck="false"
+                  placeholder="36.7213, -4.4214"
+                  aria-describedby="ficha-gps-ayuda ficha-gps-error"
+                  required
+                  data-validar="gps"
+                  data-vacio="Escribe las coordenadas."
+                />
+                <p class="form-text" id="ficha-gps-ayuda">
+                  Latitud y longitud, separadas por una coma.
+                </p>
+                <p class="invalid-feedback" id="ficha-gps-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-altitud">Altitud (m)</label>
+                <input
+                  class="form-control dato"
+                  id="ficha-altitud"
+                  name="altitud"
+                  type="number"
+                  min="-430"
+                  max="8849"
+                  step="any"
+                  aria-describedby="ficha-altitud-ayuda ficha-altitud-error"
+                  required
+                  data-vacio="Escribe la altitud."
+                  data-invalido="La altitud va de −430 a 8849 m."
+                />
+                <p class="form-text" id="ficha-altitud-ayuda">
+                  De la orilla del mar Muerto (−430) a la cima del Everest (8849).
+                </p>
+                <p class="invalid-feedback" id="ficha-altitud-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-condiciones">Condiciones del cielo</label>
+                <select
+                  class="form-select"
+                  id="ficha-condiciones"
+                  name="condiciones"
+                  aria-describedby="ficha-condiciones-error"
+                  required
+                  data-vacio="Elige las condiciones del cielo."
+                >
+                  <option value="">Elige…</option>
+                  <option value="despejado">Despejado</option>
+                  <option value="nubes">Nubes</option>
+                  <option value="niebla">Niebla</option>
+                  <option value="lluvia">Lluvia</option>
+                  <option value="tormenta">Tormenta</option>
+                  <option value="nieve">Nieve</option>
+                  <option value="aurora">Aurora</option>
+                </select>
+                <p class="invalid-feedback" id="ficha-condiciones-error"></p>
+              </div>
+
+              <div class="campo">
+                <label class="form-label" for="ficha-equipo">Equipo</label>
+                <select
+                  class="form-select"
+                  id="ficha-equipo"
+                  name="equipo"
+                  aria-describedby="ficha-equipo-error"
+                  required
+                  data-vacio="Elige el equipo."
+                >
+                  <option value="">Elige…</option>
+                  <option value="movil">Móvil</option>
+                  <option value="camara">Cámara</option>
+                  <option value="prismaticos">Prismáticos</option>
+                  <option value="telescopio">Telescopio</option>
+                </select>
+                <p class="invalid-feedback" id="ficha-equipo-error"></p>
+              </div>
+
+              <div class="campo rejilla-ficha__ancho">
+                <label class="form-label" for="ficha-observatorio">
+                  Código de observatorio <span class="opcional">(opcional)</span>
+                </label>
+                <input
+                  class="form-control dato"
+                  id="ficha-observatorio"
+                  name="observatorio"
+                  type="text"
+                  spellcheck="false"
+                  placeholder="OBS-4821-7"
+                  aria-describedby="ficha-observatorio-ayuda ficha-observatorio-error"
+                  data-validar="observatorio"
+                />
+                <p class="form-text" id="ficha-observatorio-ayuda">
+                  Si la tomaste desde un observatorio: OBS, cuatro cifras y su dígito de control.
+                </p>
+                <p class="invalid-feedback" id="ficha-observatorio-error"></p>
+              </div>
+
+              <!--
+                Campo condicional: solo con la categoría «Espacio». js/paginas/ficha.js le quita
+                hidden (para que se vea) y disabled (para que se valide y se envíe). Desactivar el
+                fieldset desactiva todos sus campos de una vez.
+              -->
+              <fieldset class="espacio rejilla-ficha__ancho" id="ficha-espacio" hidden disabled>
+                <legend class="espacio__titulo">Datos del espacio</legend>
+                <div class="rejilla-ficha rejilla-ficha--tres">
+                  <div class="campo">
+                    <label class="form-label" for="ficha-catalogo">Código de catálogo</label>
+                    <input
+                      class="form-control dato"
+                      id="ficha-catalogo"
+                      name="catalogo"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="M42"
+                      aria-describedby="ficha-catalogo-error"
+                      required
+                      data-validar="catalogo"
+                      data-vacio="Escribe el código de catálogo."
+                    />
+                    <p class="invalid-feedback" id="ficha-catalogo-error"></p>
+                  </div>
+                  <div class="campo">
+                    <label class="form-label" for="ficha-ascension">Ascensión recta</label>
+                    <input
+                      class="form-control dato"
+                      id="ficha-ascension"
+                      name="ascension"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="05h 35m 17s"
+                      aria-describedby="ficha-ascension-error"
+                      required
+                      data-validar="ascensionRecta"
+                      data-vacio="Escribe la ascensión recta."
+                    />
+                    <p class="invalid-feedback" id="ficha-ascension-error"></p>
+                  </div>
+                  <div class="campo">
+                    <label class="form-label" for="ficha-declinacion">Declinación</label>
+                    <input
+                      class="form-control dato"
+                      id="ficha-declinacion"
+                      name="declinacion"
+                      type="text"
+                      spellcheck="false"
+                      placeholder="-05° 23′ 28″"
+                      aria-describedby="ficha-declinacion-error"
+                      required
+                      data-validar="declinacion"
+                      data-vacio="Escribe la declinación."
+                    />
+                    <p class="invalid-feedback" id="ficha-declinacion-error"></p>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!--
+                Grupo dinámico: de 0 a 3 imágenes. Cada una se crea desde la plantilla
+                #plantilla-imagen; js/paginas/ficha.js le pone ids únicos y la añade a la lista.
+                «Añadir» y «Quitar» los atiende un solo oyente en el fieldset (delegación).
+              -->
+              <fieldset class="campo imagenes rejilla-ficha__ancho" id="ficha-imagenes">
+                <legend class="form-label">Imágenes <span class="opcional">(hasta 3)</span></legend>
+                <p class="form-text imagenes__ayuda">
+                  Pega la dirección de cada imagen: se guarda el enlace, no el archivo.
+                  <span id="ficha-imagenes-cuenta" class="imagenes__cuenta">0 de 3</span>
+                </p>
+                <ol class="imagenes__lista" id="ficha-imagenes-lista"></ol>
+                <button class="btn btn-luz btn-sm" type="button" data-accion="anadir-imagen">
+                  Añadir imagen
+                </button>
+              </fieldset>
+            </div>
+
+            <button class="btn btn-amanecer" id="ficha-guardar" type="submit">
+              Guardar captura
+            </button>
+          </form>
+
+          <!-- Plantilla de una imagen: no se ve ni se envía hasta que el código la copia -->
+          <template id="plantilla-imagen">
+            <li class="imagen">
+              <div class="imagen__cabeza">
+                <span class="imagen__numero">Imagen</span>
+                <button class="btn-quitar" type="button" data-accion="quitar-imagen">Quitar</button>
+              </div>
+              <div class="imagen__campos">
+                <div>
+                  <label class="form-label" data-parte="url">Dirección (URL)</label>
+                  <input
+                    class="form-control dato"
+                    name="imagen-url"
+                    type="text"
+                    inputmode="url"
+                    spellcheck="false"
+                    placeholder="https://"
+                    data-parte="url"
+                    required
+                    data-validar="urlImagen"
+                    data-vacio="Escribe la dirección de la imagen."
+                  />
+                  <p class="invalid-feedback" data-parte="url-error"></p>
+                </div>
+                <div>
+                  <label class="form-label" data-parte="pie">
+                    Pie de foto <span class="opcional">(opcional)</span>
+                  </label>
+                  <input
+                    class="form-control"
+                    name="imagen-pie"
+                    type="text"
+                    maxlength="120"
+                    data-parte="pie"
+                    data-invalido="Usa 120 caracteres como mucho."
+                  />
+                  <p class="invalid-feedback" data-parte="pie-error"></p>
+                </div>
+              </div>
+            </li>
+          </template>
+        </section>
+      </div>
+    </main>
+    <!-- Protege la página (sesión), prepara la cabecera común y, si hay sesión, la ficha -->
+    <script type="module">
+      import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+      import { iniciarFicha } from './js/paginas/ficha.js';
+
+      const sesion = iniciarPaginaPrivada({
+        documento: document,
+        almacenSesion: sessionStorage,
+        reemplazar: (url) => location.replace(url),
+      });
+      if (sesion !== null) {
+        iniciarFicha({
+          documento: document,
+          sesion,
+          almacenCapturas: localStorage,
+          almacenSesion: sessionStorage,
+          busqueda: location.search,
+          navegar: (url) => location.assign(url),
+          reemplazar: (url) => location.replace(url),
+        });
+      }
+    </script>
+  </body>
+</html>

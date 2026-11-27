@@ -1,0 +1,80 @@
+# Pruebas contra lo desplegado.
+# Que las pruebas pasen con `serve` no garantiza que la web publicada funcione: puede faltar un
+# fichero en dist/ o una ruta puede comportarse distinto. Por eso se ejecutan los mismos recorridos
+# de Playwright contra cada despliegue de Vercel:
+# - Vistas previas de las pull requests: con el evento `deployment_status`, que Vercel envía cuando
+#   termina de construir la vista previa.
+# - Producción (main): con el evento `repository_dispatch` de tipo `vercel.deployment.ready`, que
+#   Vercel envía cuando la versión está construida pero TODAVÍA NO publicada. Con
+#   `deployment_status` no se puede: para producción Vercel solo avisa después de publicar, y
+#   como `E2E desplegado` es un Deployment Check, la publicación esperaría un aviso que no llega.
+name: Despliegue
+
+on:
+  # Vista previa terminada (también llega para producción, pero después de publicar: se ignora)
+  deployment_status:
+  # Versión de producción construida y retenida a la espera de las comprobaciones.
+  # Este evento solo dispara el workflow que está en la rama por defecto (main)
+  repository_dispatch:
+    types: [vercel.deployment.ready]
+
+# Leer el código; leer los trabajos de esta ejecución y escribir el estado del commit, que es lo
+# que necesita la acción de Vercel para avisarle del resultado
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+
+# Una ejecución por commit desplegado; no se cancela, porque Vercel espera su resultado
+concurrency:
+  group: despliegue-${{ github.event.client_payload.git.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  e2e-desplegado:
+    name: E2E desplegado
+    # - deployment_status: solo una vista previa (no producción) que ha terminado bien
+    # - repository_dispatch: solo la versión de producción
+    if: >-
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment != 'Production') ||
+      (github.event_name == 'repository_dispatch' &&
+       github.event.client_payload.environment == 'production')
+    runs-on: ubuntu-latest
+    steps:
+      # Con repository_dispatch, GitHub ejecuta sobre el último commit de main: se descarga el
+      # commit que Vercel ha desplegado (client_payload.git.sha). Con deployment_status, github.sha
+      # ya es el commit desplegado
+      - name: Descargar el código del commit desplegado
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.client_payload.git.sha || github.sha }}
+
+      # Solo en producción: escribe el estado «E2E desplegado» en el commit desplegado (pendiente al
+      # empezar y, al terminar el trabajo, éxito o fallo). Es lo que Vercel mira para publicar
+      - name: Avisar a Vercel del resultado
+        if: github.event_name == 'repository_dispatch'
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          name: E2E desplegado
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar las dependencias exactas de package-lock.json
+        run: npm ci
+
+      - name: Instalar Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      # Con BASE_URL, playwright.config.js no arranca `serve`: prueba la web desplegada
+      - name: Pasar las pruebas de extremo a extremo contra el despliegue
+        run: npm run e2e
+        env:
+          BASE_URL: >-
+            ${{ github.event.client_payload.url ||
+            github.event.deployment_status.environment_url }}

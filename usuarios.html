@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Usuarios · Horizonte</title>
+    <meta name="theme-color" content="#050816" />
+    <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body class="app">
+    <a class="visually-hidden-focusable saltar" href="#contenido">Saltar al contenido</a>
+
+    <!-- Cabecera común de las páginas privadas. El usuario y su rol los rellena js/paginas/privada.js -->
+    <header class="cabecera cabecera--app">
+      <div class="envoltorio cabecera__fila">
+        <a class="marca" href="listado.html">
+          <svg class="marca__simbolo" viewBox="0 0 32 32" aria-hidden="true">
+            <ellipse
+              cx="16"
+              cy="18"
+              rx="14"
+              ry="6"
+              fill="none"
+              stroke="#3ef0c0"
+              stroke-width="1.5"
+            />
+            <path d="M7 20a9 9 0 0 1 18 0z" fill="#ffc36b" />
+            <path d="M2 20h28" stroke="#eef1ff" stroke-width="2" stroke-linecap="round" />
+            <circle cx="25" cy="7" r="1.5" fill="#eef1ff" />
+          </svg>
+          Horizonte
+        </a>
+        <nav class="menu" aria-label="Principal">
+          <ul>
+            <li><a href="listado.html">Mis capturas</a></li>
+            <li><a href="usuarios.html" aria-current="page">Usuarios</a></li>
+          </ul>
+        </nav>
+        <div class="sesion">
+          <p class="sesion__usuario">
+            <span id="sesion-nombre"></span><span id="sesion-rol" class="sesion__rol"></span>
+          </p>
+          <button class="btn btn-salir" id="cerrar-sesion" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido" class="pagina">
+      <div class="envoltorio">
+        <div class="pagina__cabeza">
+          <div>
+            <p class="seccion__marca">Administración</p>
+            <!-- tabindex="-1": el código le da el foco después de cambiar de página, sin meterlo en el Tab -->
+            <h1 class="pagina__titulo" id="usuarios-titulo" tabindex="-1">Usuarios</h1>
+          </div>
+        </div>
+
+        <!-- Los avisos, debajo del título: después de un cambio, el foco va al título y se ven -->
+        <div id="avisos" class="avisos avisos--listado" role="status"></div>
+
+        <!-- Buscador y contador. Es un <div role="search">, no un <form>: Intro no recarga la página -->
+        <div class="listado__herramientas" id="usuarios-herramientas" role="search">
+          <div class="listado__buscador">
+            <label class="form-label" for="usuarios-buscar">Buscar usuarios</label>
+            <input
+              class="form-control"
+              type="search"
+              id="usuarios-buscar"
+              name="buscar"
+              placeholder="Nombre, correo o rol"
+              autocomplete="off"
+            />
+          </div>
+          <!-- aria-live="polite": el lector de pantalla dice cuántos hay al terminar de buscar -->
+          <p class="listado__contador" id="usuarios-contador" aria-live="polite"></p>
+        </div>
+
+        <!-- La búsqueda no encuentra nada -->
+        <p class="cristal listado__sin-resultados" id="usuarios-sin-resultados" hidden>
+          Ningún usuario coincide con tu búsqueda. Prueba con otras palabras.
+        </p>
+
+        <!--
+          Los usuarios: js/paginas/usuarios.js crea un <li> por usuario desde #plantilla-usuario y
+          sustituye el contenido de la lista de una vez. Un solo oyente en la lista atiende todos
+          los botones de rol (delegación)
+        -->
+        <ul class="usuarios" id="usuarios-lista" hidden></ul>
+
+        <!-- Paginación: js/controlesPaginacion.js crea los botones dentro de la lista -->
+        <nav class="paginacion" id="usuarios-paginacion" aria-label="Paginación" hidden>
+          <ul class="pagination" id="usuarios-controles"></ul>
+        </nav>
+      </div>
+
+      <!-- Plantilla de un usuario: no se ve hasta que el código la copia y la rellena -->
+      <template id="plantilla-usuario">
+        <li class="usuario">
+          <article class="cristal usuario__tarjeta">
+            <div class="usuario__datos">
+              <h2 class="usuario__nombre" data-parte="nombre"></h2>
+              <p class="usuario__correo" data-parte="correo"></p>
+              <p class="chapa" data-parte="rol"></p>
+            </div>
+            <div class="usuario__acciones">
+              <button class="btn btn-luz btn-sm" type="button" data-accion="cambiar-rol"></button>
+              <!--
+                Solo se ve en la fila de quien tiene la sesión abierta (el código la muestra).
+                Este texto es el mismo del aviso de error de js/paginas/usuarios.js: deben coincidir
+              -->
+              <p class="usuario__explicacion" data-parte="explicacion" hidden>
+                No puedes quitarte el rol a ti mismo: siempre tiene que quedar un administrador.
+              </p>
+            </div>
+          </article>
+        </li>
+      </template>
+    </main>
+    <!-- Protege la página (sesión y rol), prepara la cabecera común y, si hay sesión, la lista -->
+    <script type="module">
+      import { iniciarPaginaPrivada } from './js/paginas/privada.js';
+      import { iniciarUsuarios } from './js/paginas/usuarios.js';
+
+      const sesion = iniciarPaginaPrivada({
+        documento: document,
+        almacenSesion: sessionStorage,
+        reemplazar: (url) => location.replace(url),
+        soloAdministradores: true,
+      });
+      if (sesion !== null) {
+        iniciarUsuarios({
+          documento: document,
+          sesion,
+          almacenUsuarios: localStorage,
+          busqueda: location.search,
+          actualizarDireccion: (url) => history.replaceState(null, '', url),
+        });
+      }
+    </script>
+  </body>
+</html>
